@@ -74,31 +74,25 @@ const eventSchema = new Schema(
 
 // team-type events must specify a valid team size — enforced at the
 // schema level rather than left to the application layer.
-eventSchema.pre("validate", function (next) {
+eventSchema.pre("validate", function () {
   if (this.registrationType === "team") {
     if (!this.teamSize || !this.teamSize.min || !this.teamSize.max) {
-      return next(
-        new Error(
-          'teamSize.min and teamSize.max are required when registrationType is "team"'
-        )
+      throw new Error(
+        'teamSize.min and teamSize.max are required when registrationType is "team"'
       );
     }
     if (this.teamSize.min > this.teamSize.max) {
-      return next(new Error("teamSize.min cannot exceed teamSize.max"));
+      throw new Error("teamSize.min cannot exceed teamSize.max");
     }
   }
 
   if (this.registrationDeadline && this.registrationDeadline > this.eventDate) {
-    return next(
-      new Error("registrationDeadline cannot be after eventDate")
-    );
+    throw new Error("registrationDeadline cannot be after eventDate");
   }
 
   if (this.eventEndDate && this.eventEndDate < this.eventDate) {
-    return next(new Error("eventEndDate cannot be before eventDate"));
+    throw new Error("eventEndDate cannot be before eventDate");
   }
-
-  next();
 });
 
 // ── Indexes ──────────────────────────────────────────────────────

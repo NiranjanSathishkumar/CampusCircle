@@ -3,9 +3,7 @@ const { Signup, Login, CheckUser } = require("../controllers/AuthController");
 const { userVerification } = require("../middleware/AuthMiddleware");
 const router = require("express").Router();
 
-router.post("/signup", wrapAsync(Signup));
-router.post("/login", wrapAsync(Login));
-router.post("/check-user", wrapAsync(CheckUser));
-router.post("/", userVerification);
+router.post("/api/signup", wrapAsync(Signup));
+router.post("/api/login", wrapAsync(Login));
 
 module.exports = router;

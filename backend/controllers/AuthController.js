@@ -1,96 +1,65 @@
 const User = require("../models/User");
-const { createSecretToken } = require("../utils/SecretToken");
 const ExpressError = require("../utils/ExpressError");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
-module.exports.Signup = async (req, res) => {
-    const { email, password, name, createdAt } = req.body;
+module.exports.Signup = async(req, res, next) => {
+    const { email, password, name } = req.body;
 
-    if (!email || !password || !name) {
-        throw new ExpressError(400, "All fields (name, email, password) are required");
+    if(!email || !password || !name ){
+        return res.status(400).json({message: "All Fields are Required"});
     }
 
-    const existingUser = await User.findOne({ email: email.toLowerCase().trim() });
-    if (existingUser) {
-        throw new ExpressError(400, "User already exists");
-    }
+    const emailLower = email.trim().toLowerCase();
 
-    const user = await User.create({
-        email: email.toLowerCase().trim(),
-        password,
-        name: name.trim(),
-        createdAt,
+    const user = await User.findOne({
+        email: emailLower   
     });
 
-    const token = createSecretToken(user._id);
-    res.cookie("token", token, {
-        httpOnly: true,
-        maxAge: 3 * 24 * 60 * 60 * 1000,
-        sameSite: "lax",
-    });
-
-    res.status(201).json({
-        message: "User signed up successfully",
-        success: true,
-        user: {
-            id: user._id,
-            name: user.name,
-            email: user.email,
-        },
-    });
-};
-
-module.exports.Login = async (req, res) => {
-    const { email, password } = req.body;
-    if (!email || !password) {
-        throw new ExpressError(400, "All fields are required");
+    if(user){
+        return res.status(400).json({message: "User Already Exists"});
     }
 
-    const user = await User.findOne({ email: email.toLowerCase().trim() }).select("+password");
-    if (!user) {
-        throw new ExpressError(400, "Incorrect password or email");
-    }
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    const auth = await user.comparePassword(password);
-    if (!auth) {
-        throw new ExpressError(400, "Incorrect password or email");
-    }
-
-    const token = createSecretToken(user._id);
-    res.cookie("token", token, {
-        httpOnly: true,
-        maxAge: 3 * 24 * 60 * 60 * 1000,
-        sameSite: "lax",
+    const newUser = new User({
+        email: emailLower,
+        password: hashedPassword,
+        name
     });
 
-    res.status(200).json({
-        message: "User logged in successfully",
-        success: true,
-        user: {
-            id: user._id,
-            name: user.name,
-            email: user.email,
-        },
-    });
-};
+    await newUser.save();
 
-module.exports.CheckUser = async (req, res) => {
-    const { email } = req.body;
-    if (!email) {
-        throw new ExpressError(400, "Email is required");
+    return res.status(201).json({message: "User Registered Successfully!"});
+}
+
+module.exports.Login = async(req, res, next) => {
+    const {email, password} = req.body;
+
+    if(!email || !password){
+        return res.status(400).json({message: "All Fields are Required"});
     }
 
-    const existingUser = await User.findOne({ email: email.toLowerCase().trim() });
-    if (existingUser) {
-        return res.status(400).json({
-            success: false,
-            exists: true,
-            message: "An account with this email already exists.",
-        });
+    const emailLower = email.trim().toLowerCase();
+
+    const user = await User.findOne({
+        email: emailLower
+    }).select("+password");
+
+    if(!user){
+        return res.status(404).json({message: "User Does NOT Exists"});
     }
 
-    return res.status(200).json({
-        success: true,
-        exists: false,
-        message: "Email is available",
-    });
-};
+    const isMatch = await bcrypt.compare(password, user.password);
+    if(!isMatch){
+        return res.status(400).json({message: "Invalid Credentials"})
+    }
+  
+    const token = jwt.sign(
+        {id: user._id},
+        process.env.JWT_SECRET,
+        {expiresIn: "7d"}
+    );
+
+    return res.status(200).json({message: "LoggedIn Successfully", token});
+}

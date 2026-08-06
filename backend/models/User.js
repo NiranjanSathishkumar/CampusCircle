@@ -1,10 +1,8 @@
 const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
+const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const { Schema } = mongoose;
 
-// Fixed department list — enum, not free text, because branch is the
-// analytics engine's core grouping dimension (Data Requirements Brief §3.1 / §8).
 const BRANCHES = [
   "Computer Engineering 1",
   "Computer Engineering 2",
@@ -17,24 +15,25 @@ const BRANCHES = [
 ];
 
 const COURSE_DURATION_YEARS = 4;
-const ACADEMIC_YEAR_ROLLOVER_MONTH = 5; // June (Date.getMonth() is 0-indexed)
+const ACADEMIC_YEAR_ROLLOVER_MONTH = 5; // June (0-indexed)
 
-/**
- * The academic "cutover year" — flips every June 1st.
- * e.g. Feb 2026 -> cutover 2025 (still inside the "2025-26" academic year)
- *      Aug 2026 -> cutover 2026 (the "2026-27" academic year has begun)
- */
+// Default images, shown until the user uploads their own
+const DEFAULT_PROFILE_PICTURE = "https://ui-avatars.com/api/?name=User&background=random&color=fff&size=512";
+const DEFAULT_PROFILE_BANNER = "https://alkuwaiti.com/wp-content/uploads/2020/05/Hero-Banner-Placeholder-Dark-1024x480.png";
+
+module.exports = {
+    DEFAULT_PROFILE_PICTURE,
+    DEFAULT_PROFILE_BANNER
+};
+
+// Academic year flips every June 1st
 function getAcademicCutoverYear(referenceDate = new Date()) {
   const month = referenceDate.getMonth();
   const year = referenceDate.getFullYear();
   return month >= ACADEMIC_YEAR_ROLLOVER_MONTH ? year : year - 1;
 }
 
-/**
- * Derives a student's current year (1-4; 5+ effectively means graduated)
- * from yearOfJoining. Computed on demand — nothing is ever stored or
- * batch-updated, so it can never drift out of sync.
- */
+// Current year of study from joining year
 function computeCurrentYear(yearOfJoining, referenceDate = new Date()) {
   return getAcademicCutoverYear(referenceDate) - yearOfJoining + 1;
 }
@@ -53,16 +52,24 @@ const socialLinkSchema = new Schema(
       type: String,
       required: true,
       trim: true,
+      maxlength: 500,
       match: [URL_REGEX, "Please provide a valid URL"],
     },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const userSchema = new Schema(
   {
     // ── Identity / login ──────────────────────────────────────
-    name: { type: String, required: true, trim: true },
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+      minlength: 2,
+      maxlength: 128,
+    },
+
     email: {
       type: String,
       required: true,
@@ -70,14 +77,16 @@ const userSchema = new Schema(
       lowercase: true,
       trim: true,
       match: [EMAIL_REGEX, "Please provide a valid email address"],
+      maxlength: 200,
     },
-    // select: false at the schema level = never returned unless a query
-    // explicitly opts in with .select('+password') — defense in depth.
-    password: { type: String, required: true, select: false, minlength: 8 },
 
-    createdAt: {
-      type: Date,
-      default: Date.now,
+    // Hidden by default; only returned via .select('+password')
+    password: {
+      type: String,
+      required: true,
+      select: false,
+      minlength: 8,
+      maxlength: 128,
     },
 
     // ── Academic identity ─────────────────────────────────────
@@ -97,8 +106,6 @@ const userSchema = new Schema(
     },
     branch: { type: String, enum: BRANCHES },
 
-    // Source of truth for "year" — see computeCurrentYear() above.
-    // This is the ONLY year-related field stored on the document.
     yearOfJoining: {
       type: Number,
       validate: {
@@ -109,42 +116,78 @@ const userSchema = new Schema(
       },
     },
 
+    // Auto-set true once email, rollNo, prnNo, branch, and yearOfJoining are filled
+    isProfileComplete: { type: Boolean, default: false },
+
     // ── Discover personalization ──────────────────────────────
-    interestTags: [{ type: String, trim: true, lowercase: true }],
+    interestTags: {
+      type: [{ type: String, trim: true, lowercase: true, maxlength: 30 }],
+      validate: {
+        validator: (arr) => arr.length <= 20,
+        message: "interestTags cannot exceed 20 tags",
+      },
+    },
 
     // ── Profile ─────────────────────────────────────────────────
-    avatar: {
+    profilePicture: {
       type: String,
       trim: true,
-      match: [URL_REGEX, "Please provide a valid URL"],
+      maxlength: 500,
+      default: DEFAULT_PROFILE_PICTURE,
     },
-    bio: { type: String, trim: true, maxlength: 300 },
-    skills: [{ type: String, trim: true }],
-    education: [{ type: String, trim: true }],
-    socialLinks: [socialLinkSchema],
-    followerCount: { type: Number, default: 0, min: 0 },
 
-    // Reserved for future use — see PRD §4.3 (student suspension, future scope)
+    profileBanner: {
+      type: String,
+      trim: true,
+      maxlength: 500,
+      default: DEFAULT_PROFILE_BANNER,
+    },
+
+    bio: { type: String, trim: true, maxlength: 300 },
+
+    skills: {
+      type: [{ type: String, trim: true, maxlength: 40 }],
+      validate: {
+        validator: (arr) => arr.length <= 30,
+        message: "skills cannot exceed 30 entries",
+      },
+    },
+
+    education: {
+      type: [{ type: String, trim: true, maxlength: 150 }],
+      validate: {
+        validator: (arr) => arr.length <= 10,
+        message: "education cannot exceed 10 entries",
+      },
+    },
+
+    socialLinks: {
+      type: [socialLinkSchema],
+      validate: {
+        validator: (arr) => arr.length <= 5,
+        message: "socialLinks cannot exceed 5 entries",
+      },
+    },
+
+    // Maintained by Follow model hooks — never set directly in controllers
+    followerCount: { type: Number, default: 0, min: 0 },
+    followingCount: { type: Number, default: 0, min: 0 },
+
+    // Future scope
     isSuspended: { type: Boolean, default: false },
+    // passwordChangedAt — to invalidate old JWTs issued before a reset
 
     // ── Forgot password ─────────────────────────────────────────
-    // Only the HASH of the reset token is stored. The raw token is what's
-    // emailed to the student and never touches the database — so a DB
-    // leak alone can't be used to reset anyone's password.
+    // Only the hash is stored; the raw token is emailed and never saved
     passwordResetTokenHash: { type: String, select: false },
     passwordResetExpires: { type: Date, select: false },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // ── Indexes ──────────────────────────────────────────────────────
-// {branch, yearOfJoining}: every analytics query filters/groups on both
-// together (Data Requirements Brief §3.9 — "make sure {branch, year} is
-// properly indexed on User").
 userSchema.index({ branch: 1, yearOfJoining: 1 });
-// Multikey index — hit on every Discover feed load (tag-match join, §3.2).
 userSchema.index({ interestTags: 1 });
-// email / rollNo / prnNo already get unique indexes automatically from `unique: true`.
 
 // ── Virtuals ───────────────────────────────────────────────────────
 userSchema.virtual("currentYear").get(function () {
@@ -157,38 +200,40 @@ userSchema.virtual("isEnrolled").get(function () {
 userSchema.set("toJSON", { virtuals: true });
 userSchema.set("toObject", { virtuals: true });
 
-// ── Password hashing ─────────────────────────────────────────────
-userSchema.pre("save", async function () {
-  if (!this.isModified("password")) return;
-  this.password = await bcrypt.hash(this.password, 12);
+// ── Auto-complete check ───────────────────────────────────────────
+// Recomputes isProfileComplete before every save
+userSchema.pre("save", function () {
+  this.isProfileComplete = Boolean(
+    this.email &&
+      this.rollNo &&
+      this.prnNo &&
+      this.branch &&
+      this.yearOfJoining,
+  );
 });
 
+// ── Password comparison ───────────────────────────────────────────
 userSchema.methods.comparePassword = function (candidatePassword) {
-  // this.password is only present if the query explicitly did .select('+password')
   return bcrypt.compare(candidatePassword, this.password);
 };
 
 // ── Forgot password ───────────────────────────────────────────────
-// Generates the raw token (email THIS one, never store it), stores only
-// its SHA-256 hash + a 15-minute expiry. Service layer clears both fields
-// after a successful reset, making the token single-use.
+// Returns the raw token (send by email); stores only its hash + a 15-min expiry
 userSchema.methods.createPasswordResetToken = function () {
   const rawToken = crypto.randomBytes(32).toString("hex");
   this.passwordResetTokenHash = crypto
     .createHash("sha256")
     .update(rawToken)
     .digest("hex");
-  this.passwordResetExpires = Date.now() + 15 * 60 * 1000; // 15 minutes
+  this.passwordResetExpires = Date.now() + 15 * 60 * 1000;
   return rawToken;
 };
 
-// ── Static helpers (used by controllers / analytics pipelines) ─────
+// ── Static helpers ─────────────────────────────────────────────
 userSchema.statics.getAcademicCutoverYear = getAcademicCutoverYear;
 userSchema.statics.computeCurrentYear = computeCurrentYear;
 
-// Inverse of computeCurrentYear — turns "give me 2nd years" into the
-// yearOfJoining value to query on, so filtering is a plain indexed
-// equality check rather than a computed-field scan.
+// Converts a "current year" filter into the matching yearOfJoining
 userSchema.statics.yearOfJoiningFor = function (currentYear, referenceDate) {
   const cutover = getAcademicCutoverYear(referenceDate);
   return cutover - currentYear + 1;

@@ -1,35 +1,61 @@
 const express = require("express");
 const router = express.Router();
-const { isLoggedIn } = require("../middleware/AuthMiddleware");
+const multer = require("multer");
+const path = require("path");
+
 const wrapAsync = require("../utils/wrapAsync");
+const {requireAuth } = require("../middleware/AuthMiddleware");
+
 const {
-    updateProfile,
-    getProfile,
-    getCurrentProfile,
-    getAllStudents,
-    deleteProfile,
-} = require("../controllers/StudentController");
+    uploadProfilePicture,
+    uploadProfileBanner,
+    getUserProfile,
+    updateUserProfile,
+    removeProfilePicture,
+    removeProfileBanner
+} = require("../controllers/StudentController")
 
-// GET /api/profile/me - Fetch currently logged in student profile
-router.get("/me", isLoggedIn, wrapAsync(getCurrentProfile));
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, "uploads/")
+    },
+    filename: (req, file, cb) => {
+        const ext = path.extname(file.originalname);
+        cb(null, `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`);
+    },
+})
 
-// GET /api/profile - Fetch all student profiles
-router.get("/", wrapAsync(getAllStudents));
+const upload = multer({
+    storage,
+    limits: { fileSize: 5 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+        cb(null, /^image\/(jpeg|png|webp)$/.test(file.mimetype));
+    }
+});
 
-// GET /api/profile/:id - Fetch student profile by ID
-router.get("/:id", wrapAsync(getProfile));
+router.use(requireAuth);
 
-// PUT /api/profile/:id - Update student profile by ID
-router.put("/:id", isLoggedIn, wrapAsync(updateProfile));
+router.route("/get_profile")
+    .get(wrapAsync(getUserProfile));
 
-// POST /api/profile - Update student profile
-router.post("/", isLoggedIn, wrapAsync(updateProfile));
+router.route("/update_profile")
+    .patch(wrapAsync(updateUserProfile))
+    .put(upload.single("profile_picture"), wrapAsync(uploadProfilePicture))
+    .put(upload.single("profile_banner"), wrapAsync(uploadProfileBanner))
+    .delete(wrapAsync(removeProfilePicture))
+    .delete(wrapAsync(removeProfileBanner));
 
-// DELETE /api/profile - Delete student account
-router.delete("/", isLoggedIn, wrapAsync(deleteProfile));
+router.route("/update_profile_picture")
+    .put(upload.single("profile_picture"), wrapAsync(uploadProfilePicture));
 
-// DELETE /api/profile/:id - Delete student account by ID
-router.delete("/:id", isLoggedIn, wrapAsync(deleteProfile));
+router.route("/update_profile_banner")
+    .put(upload.single("profile_banner"), wrapAsync(uploadProfileBanner));
+
+router.route("/remove_profile_picture")
+    .delete(wrapAsync(removeProfilePicture));
+
+router.route("/remove_profile_banner")
+    .delete(wrapAsync(removeProfileBanner));
 
 module.exports = router;
 

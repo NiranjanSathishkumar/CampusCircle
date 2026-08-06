@@ -19,13 +19,7 @@ app.use(cors({
 
 app.use(express.json());
 app.use((err, req, res, next) => {
-    if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
-        return res.status(400).json({
-            success: false,
-            message: "Invalid or empty JSON payload in request body"
-        });
-    }
-    next(err);
+    res.status(err.statusCode || 500).json({ success: false, message: err.message });
 });
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));

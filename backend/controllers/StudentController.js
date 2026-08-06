@@ -1,118 +1,94 @@
 const mongoose = require("mongoose");
-const jwt = require("jsonwebtoken");
-const User = require("../models/User");
+const {User, DEFAULT_PROFILE_BANNER, DEFAULT_PROFILE_PICTURE} = require("../models/User");
 const ExpressError = require("../utils/ExpressError");
+const multer = require("multer");
+const fs = require("fs");
+const path = require("path");
+const { DEFAULT_CIPHERS } = require("tls");
 
-// Helper function to escape special regex characters to prevent ReDoS / search crashes
-const escapeRegex = (text) => {
-    return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
-};
+module.exports.uploadProfilePicture = async (req, res) => {
+    const user = req.user;
 
-// GET /api/profile/me - Fetch logged-in student profile
-module.exports.getCurrentProfile = async (req, res) => {
-    if (!req.user || !req.user._id) {
-        throw new ExpressError(401, "You must be logged in");
-    }
-
-    const user = await User.findById(req.user._id);
-    if (!user) {
-        throw new ExpressError(404, "User profile not found");
-    }
-
-    res.status(200).json({
-        success: true,
-        user,
-    });
-};
-
-// GET /api/profile/:id - Fetch student profile by ID or "me"
-module.exports.getProfile = async (req, res) => {
-    let { id } = req.params;
-
-    if (id === "me") {
-        if (!req.user) {
-            let token = req.cookies?.token;
-            if (!token && req.headers.authorization && req.headers.authorization.startsWith("Bearer ")) {
-                token = req.headers.authorization.split(" ")[1];
+    // delete the old picture if one exists
+    if (user.profilePicture) {
+        const oldPath = path.join("uploads", user.profilePicture);
+        fs.unlink(oldPath, (err) => {
+            if (err && err.code !== "ENOENT") {
+                console.error("Failed to delete old profile picture:", err);
             }
-            if (token) {
-                try {
-                    const secret = process.env.TOKEN_KEY || "campus_circle_secret_key";
-                    const decoded = jwt.verify(token, secret);
-                    req.user = await User.findById(decoded.id);
-                } catch (e) {
-                    // Invalid token
-                }
+        });
+    }
+
+    if (!req.file) {
+        return res.status(400).json({
+            message: "No image uploaded"
+        });
+    }
+
+    user.profilePicture = req.file.filename;
+    await user.save();
+
+    return res.status(200).json({ message: "Profile Picture Updated" });
+}
+
+module.exports.uploadProfileBanner = async (req, res) => {
+    const user = req.user;
+
+    // delete the old banner if one exists
+    if (user.profileBanner) {
+        const oldPath = path.join("uploads", user.profileBanner);
+        fs.unlink(oldPath, (err) => {
+            if (err && err.code !== "ENOENT") {
+                console.error("Failed to delete old profile banner:", err);
             }
-        }
-        if (!req.user || !req.user._id) {
-            throw new ExpressError(401, "You must be logged in to access this profile");
-        }
-        id = req.user._id.toString();
+        });
     }
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-        throw new ExpressError(400, "Invalid user ID format");
-    }
-
-    const user = await User.findById(id);
-    if (!user) {
-        throw new ExpressError(404, "User profile not found");
-    }
-
-    res.status(200).json({
-        success: true,
-        user,
+    if (!req.file) {
+    return res.status(400).json({
+        message: "No image uploaded"
     });
-};
-
-// GET /api/profile - Fetch all students (with optional branch / search filter)
-module.exports.getAllStudents = async (req, res) => {
-    const { branch, search } = req.query;
-    const query = {};
-
-    if (branch && branch !== "All Branches") {
-        query.branch = branch;
     }
 
-    if (search && search.trim()) {
-        const safeSearch = escapeRegex(search.trim());
-        const regex = new RegExp(safeSearch, "i");
-        query.$or = [
-            { name: regex },
-            { skills: regex },
-            { interestTags: regex },
-            { bio: regex },
-        ];
+    user.profileBanner = req.file.filename;
+    await user.save();
+
+    return res.status(200).json({message: "Profile Banner Updated"})
+}
+
+module.exports.getUserProfile = async(req, res) => {
+    return res.status(200).json({success: true, user: req.user});
+}
+
+module.exports.updateUserProfile = async (req, res) => {
+    const user = req.user;
+    const updatedUserData = req.body;
+
+    // Check unique constraints for email, rollNo, and prnNo against other users
+    const conflictConditions = [];
+    if (updatedUserData.email && updatedUserData.email.trim().toLowerCase() !== user.email) {
+        conflictConditions.push({ email: updatedUserData.email.trim().toLowerCase() });
+    }
+    if (updatedUserData.rollNo && updatedUserData.rollNo.trim().toUpperCase() !== user.rollNo) {
+        conflictConditions.push({ rollNo: updatedUserData.rollNo.trim().toUpperCase() });
+    }
+    if (updatedUserData.prnNo && updatedUserData.prnNo.trim().toUpperCase() !== user.prnNo) {
+        conflictConditions.push({ prnNo: updatedUserData.prnNo.trim().toUpperCase() });
     }
 
-    const students = await User.find(query).select("-password");
+    if (conflictConditions.length > 0) {
+        const existingUser = await User.findOne({
+            _id: { $ne: user._id },
+            $or: conflictConditions
+        });
 
-    res.status(200).json({
-        success: true,
-        count: students.length,
-        students,
-    });
-};
-
-// POST /api/profile or PUT /api/profile/:id - Update student profile
-module.exports.updateProfile = async (req, res) => {
-    const userId = req.user?.id || req.user?._id?.toString();
-    let id = req.params.id || userId;
-
-    if (id === "me") {
-        id = userId;
+        if (existingUser) {
+            return res.status(400).json({ message: "Email, Roll Number, or PRN Number already in use by another user" });
+        }
     }
 
-    if (!userId || !id || userId.toString() !== id.toString()) {
-        throw new ExpressError(403, "You can only update your own profile");
-    }
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-        throw new ExpressError(400, "Invalid user ID format");
-    }
-
-    const ALLOWED_FIELDS = [
+    // Allowed profile fields in User schema
+    const allowedUpdates = [
         "name",
         "email",
         "rollNo",
@@ -120,52 +96,70 @@ module.exports.updateProfile = async (req, res) => {
         "branch",
         "yearOfJoining",
         "bio",
-        "avatar",
         "skills",
         "education",
         "socialLinks",
-        "interestTags",
+        "interestTags"
     ];
 
-    const updates = {};
-    for (const field of ALLOWED_FIELDS) {
-        if (field in req.body) updates[field] = req.body[field];
+    for (const key of Object.keys(updatedUserData)) {
+        if (allowedUpdates.includes(key)) {
+            if (key === "email" && typeof updatedUserData[key] === "string") {
+                user[key] = updatedUserData[key].trim().toLowerCase();
+            } else if ((key === "rollNo" || key === "prnNo") && typeof updatedUserData[key] === "string") {
+                user[key] = updatedUserData[key].trim().toUpperCase();
+            } else {
+                user[key] = updatedUserData[key];
+            }
+        }
     }
 
-    const user = await User.findByIdAndUpdate(id, updates, { new: true, runValidators: true });
+    await user.save();
 
-    if (!user) {
-        throw new ExpressError(404, "User profile not found");
-    }
-
-    res.status(200).json({ success: true, message: "Profile updated successfully", user });
+    return res.status(200).json({
+        message: "User Profile Updated Successfully",
+        user
+    });
 };
 
-// DELETE /api/profile or DELETE /api/profile/:id - Delete student account
-module.exports.deleteProfile = async (req, res) => {
-    const userId = req.user?.id || req.user?._id?.toString();
-    let id = req.params.id || userId;
 
-    if (id === "me") {
-        id = userId;
+module.exports.removeProfilePicture = async (req, res) => {
+    const user = req.user;
+
+    if(!user.profilePicture){
+        return res.status(400).json({message: "No profile picture to remove"});
     }
 
-    if (!userId || !id || userId.toString() !== id.toString()) {
-        throw new ExpressError(403, "You can only delete your own profile");
-    }
+    const oldPath = path.join("uploads", user.profilePicture);
+    fs.unlink(oldPath, (err) => {
+        if(err && err.code != "ENOENT"){
+            console.error("Failed to delete profile picture: ", err);
+        }
+    });
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-        throw new ExpressError(400, "Invalid user ID format");
-    }
+    user.profilePicture = DEFAULT_PROFILE_PICTURE;
+    await user.save();
 
-    const user = await User.findByIdAndDelete(id);
-
-    if (!user) {
-        throw new ExpressError(404, "User profile not found");
-    }
-
-    res.clearCookie("token");
-    res.status(200).json({ success: true, message: "Account deleted successfully" });
+    return res.status(200).json({message: "Profile Picture Removed"});
 };
 
+module.exports.removeProfileBanner = async (req, res) => {
+    const user = req.user;
+
+    if(!user.profileBanner){
+        return res.status(400).json({message: "No profile banner to remove"});
+    }
+
+    const oldPath = path.join("uplods", user.profileBanner);
+    fs.unlink(oldPath, (err) => {
+        if(err && err.code !== "ENOENT"){
+            console.error("Failed to delete profile banner: ", err);
+        }
+    });
+
+    user.profileBanner = DEFAULT_PROFILE_BANNER;
+    await user.save();
+
+    return res.status(200).json({message: "Profile Banner Removed"});
+}
 
