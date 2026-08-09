@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../services/api';
 import './LoginPage.css';
 import LoginBrandPanel from './LoginBrandPanel';
 import LoginForm from './LoginForm';
@@ -29,19 +29,28 @@ function LoginPage({ onLoginSuccess }) {
     }
 
     try {
-      const { data } = await axios.post(
-        'http://localhost:8080/login',
-        {
-          email: email.trim(),
-          password,
-        },
-        { withCredentials: true }
-      );
+      const { data } = await api.post('/api/login', {
+        email: email.trim(),
+        password,
+      });
 
-      if (data && data.success) {
+      if (data && data.token) {
+        localStorage.setItem('token', data.token);
+        
+        // Fetch full student profile using the JWT token
+        let userObj = null;
+        try {
+          const profileRes = await api.get('/api/profile/get_profile');
+          if (profileRes.data && profileRes.data.user) {
+            userObj = profileRes.data.user;
+          }
+        } catch (profileErr) {
+          console.warn('Failed to fetch user profile after login:', profileErr);
+        }
+
         setApiError('');
         if (onLoginSuccess) {
-          onLoginSuccess(data.user);
+          onLoginSuccess(userObj, data.token);
         }
         navigate('/discover');
       } else {

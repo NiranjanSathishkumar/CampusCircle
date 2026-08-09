@@ -1,23 +1,9 @@
-const mongoose = require("mongoose");
-const {User, DEFAULT_PROFILE_BANNER, DEFAULT_PROFILE_PICTURE} = require("../models/User");
-const ExpressError = require("../utils/ExpressError");
-const multer = require("multer");
-const fs = require("fs");
-const path = require("path");
-const { DEFAULT_CIPHERS } = require("tls");
+const { User, DEFAULT_PROFILE_BANNER, DEFAULT_PROFILE_PICTURE } = require("../models/User");
+const { deleteEverywhere } = require("../utils/fileStorage");
+
 
 module.exports.uploadProfilePicture = async (req, res) => {
     const user = req.user;
-
-    // delete the old picture if one exists
-    if (user.profilePicture) {
-        const oldPath = path.join("uploads", user.profilePicture);
-        fs.unlink(oldPath, (err) => {
-            if (err && err.code !== "ENOENT") {
-                console.error("Failed to delete old profile picture:", err);
-            }
-        });
-    }
 
     if (!req.file) {
         return res.status(400).json({
@@ -25,24 +11,22 @@ module.exports.uploadProfilePicture = async (req, res) => {
         });
     }
 
-    user.profilePicture = req.file.filename;
-    await user.save();
+    if (user.profilePicture?.filename && user.profilePicture.filename !== DEFAULT_PROFILE_PICTURE) {
+        await deleteEverywhere(user.profilePicture.filename, user.profilePicture.cloudinaryId);
+    }
 
+    user.profilePicture = {
+        filename: req.file.filename,
+        cloudinaryUrl: req.file.cloudinary.url,
+        cloudinaryId: req.file.cloudinary.publicId,
+    };
+
+    await user.save();
     return res.status(200).json({ message: "Profile Picture Updated" });
 }
 
 module.exports.uploadProfileBanner = async (req, res) => {
     const user = req.user;
-
-    // delete the old banner if one exists
-    if (user.profileBanner) {
-        const oldPath = path.join("uploads", user.profileBanner);
-        fs.unlink(oldPath, (err) => {
-            if (err && err.code !== "ENOENT") {
-                console.error("Failed to delete old profile banner:", err);
-            }
-        });
-    }
 
     if (!req.file) {
     return res.status(400).json({
@@ -50,9 +34,17 @@ module.exports.uploadProfileBanner = async (req, res) => {
     });
     }
 
-    user.profileBanner = req.file.filename;
-    await user.save();
+    if (user.profileBanner?.filename && user.profileBanner.filename !== DEFAULT_PROFILE_BANNER) {
+        await deleteEverywhere(user.profileBanner.filename, user.profileBanner.cloudinaryId);
+    }
 
+    user.profileBanner = {
+        filename: req.file.filename,
+        cloudinaryUrl: req.file.cloudinary.url,
+        cloudinaryId: req.file.cloudinary.publicId,
+    };
+
+    await user.save();
     return res.status(200).json({message: "Profile Banner Updated"})
 }
 
@@ -66,13 +58,13 @@ module.exports.updateUserProfile = async (req, res) => {
 
     // Check unique constraints for email, rollNo, and prnNo against other users
     const conflictConditions = [];
-    if (updatedUserData.email && updatedUserData.email.trim().toLowerCase() !== user.email) {
+    if (typeof updatedUserData.email === "string" && updatedUserData.email.trim().toLowerCase() !== user.email) {
         conflictConditions.push({ email: updatedUserData.email.trim().toLowerCase() });
     }
-    if (updatedUserData.rollNo && updatedUserData.rollNo.trim().toUpperCase() !== user.rollNo) {
+    if (typeof updatedUserData.rollNo === "string" && updatedUserData.rollNo.trim().toUpperCase() !== user.rollNo) {
         conflictConditions.push({ rollNo: updatedUserData.rollNo.trim().toUpperCase() });
     }
-    if (updatedUserData.prnNo && updatedUserData.prnNo.trim().toUpperCase() !== user.prnNo) {
+    if (typeof updatedUserData.prnNo === "string" && updatedUserData.prnNo.trim().toUpperCase() !== user.prnNo) {
         conflictConditions.push({ prnNo: updatedUserData.prnNo.trim().toUpperCase() });
     }
 
@@ -126,18 +118,13 @@ module.exports.updateUserProfile = async (req, res) => {
 module.exports.removeProfilePicture = async (req, res) => {
     const user = req.user;
 
-    if(!user.profilePicture){
+    if(!user.profilePicture?.filename || user.profilePicture.filename === DEFAULT_PROFILE_PICTURE){
         return res.status(400).json({message: "No profile picture to remove"});
     }
 
-    const oldPath = path.join("uploads", user.profilePicture);
-    fs.unlink(oldPath, (err) => {
-        if(err && err.code != "ENOENT"){
-            console.error("Failed to delete profile picture: ", err);
-        }
-    });
+    await deleteEverywhere(user.profilePicture.filename, user.profilePicture.cloudinaryId);
 
-    user.profilePicture = DEFAULT_PROFILE_PICTURE;
+    user.profilePicture = { filename: DEFAULT_PROFILE_PICTURE };
     await user.save();
 
     return res.status(200).json({message: "Profile Picture Removed"});
@@ -146,18 +133,13 @@ module.exports.removeProfilePicture = async (req, res) => {
 module.exports.removeProfileBanner = async (req, res) => {
     const user = req.user;
 
-    if(!user.profileBanner){
+    if(!user.profileBanner?.filename || user.profileBanner.filename === DEFAULT_PROFILE_BANNER){
         return res.status(400).json({message: "No profile banner to remove"});
     }
 
-    const oldPath = path.join("uplods", user.profileBanner);
-    fs.unlink(oldPath, (err) => {
-        if(err && err.code !== "ENOENT"){
-            console.error("Failed to delete profile banner: ", err);
-        }
-    });
+    await deleteEverywhere(user.profileBanner.filename, user.profileBanner.cloudinaryId);
 
-    user.profileBanner = DEFAULT_PROFILE_BANNER;
+    user.profileBanner = { filename: DEFAULT_PROFILE_BANNER };
     await user.save();
 
     return res.status(200).json({message: "Profile Banner Removed"});

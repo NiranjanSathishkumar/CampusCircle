@@ -21,10 +21,6 @@ const ACADEMIC_YEAR_ROLLOVER_MONTH = 5; // June (0-indexed)
 const DEFAULT_PROFILE_PICTURE = "https://ui-avatars.com/api/?name=User&background=random&color=fff&size=512";
 const DEFAULT_PROFILE_BANNER = "https://alkuwaiti.com/wp-content/uploads/2020/05/Hero-Banner-Placeholder-Dark-1024x480.png";
 
-module.exports = {
-    DEFAULT_PROFILE_PICTURE,
-    DEFAULT_PROFILE_BANNER
-};
 
 // Academic year flips every June 1st
 function getAcademicCutoverYear(referenceDate = new Date()) {
@@ -130,17 +126,15 @@ const userSchema = new Schema(
 
     // ── Profile ─────────────────────────────────────────────────
     profilePicture: {
-      type: String,
-      trim: true,
-      maxlength: 500,
-      default: DEFAULT_PROFILE_PICTURE,
+      filename: { type: String, trim: true, maxlength: 500, default: DEFAULT_PROFILE_PICTURE },
+      cloudinaryUrl: {type: String},
+      cloudinaryId: {type: String},
     },
 
     profileBanner: {
-      type: String,
-      trim: true,
-      maxlength: 500,
-      default: DEFAULT_PROFILE_BANNER,
+      filename: { type: String, trim: true, maxlength: 500, default: DEFAULT_PROFILE_BANNER },
+      cloudinaryUrl: {type: String},
+      cloudinaryId: {type: String},
     },
 
     bio: { type: String, trim: true, maxlength: 300 },
@@ -240,4 +234,4 @@ userSchema.statics.yearOfJoiningFor = function (currentYear, referenceDate) {
 };
 
 const User = mongoose.model("User", userSchema);
-module.exports = User;
+module.exports = { User, DEFAULT_PROFILE_PICTURE, DEFAULT_PROFILE_BANNER };

@@ -4,7 +4,8 @@ const multer = require("multer");
 const path = require("path");
 
 const wrapAsync = require("../utils/wrapAsync");
-const {requireAuth } = require("../middleware/AuthMiddleware");
+const { requireAuth } = require("../middleware/AuthMiddleware");
+const syncToCloudinary = require("../middleware/syncToCloudinary");
 
 const {
     uploadProfilePicture,
@@ -17,7 +18,7 @@ const {
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, "uploads/")
+        cb(null, path.join(__dirname, "../uploads"));
     },
     filename: (req, file, cb) => {
         const ext = path.extname(file.originalname);
@@ -39,17 +40,13 @@ router.route("/get_profile")
     .get(wrapAsync(getUserProfile));
 
 router.route("/update_profile")
-    .patch(wrapAsync(updateUserProfile))
-    .put(upload.single("profile_picture"), wrapAsync(uploadProfilePicture))
-    .put(upload.single("profile_banner"), wrapAsync(uploadProfileBanner))
-    .delete(wrapAsync(removeProfilePicture))
-    .delete(wrapAsync(removeProfileBanner));
+    .patch(wrapAsync(updateUserProfile));
 
 router.route("/update_profile_picture")
-    .put(upload.single("profile_picture"), wrapAsync(uploadProfilePicture));
+    .put(upload.single("profile_picture"), syncToCloudinary("profile-pictures"), wrapAsync(uploadProfilePicture));
 
 router.route("/update_profile_banner")
-    .put(upload.single("profile_banner"), wrapAsync(uploadProfileBanner));
+    .put(upload.single("profile_banner"), syncToCloudinary("profile-banners"), wrapAsync(uploadProfileBanner));
 
 router.route("/remove_profile_picture")
     .delete(wrapAsync(removeProfilePicture));

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
+import { getMediaUrl } from "../services/api";
 
 const NAV_LINKS = [
   { label: "Discover",    path: "/discover",    icon: "fa-compass" },
@@ -22,6 +23,7 @@ function Navbar({ isLoggedIn, onLogin, onSignup, onLogout }) {
   const savedUser = JSON.parse(localStorage.getItem('user') || '{}');
   const userProfileId = savedUser?.id || savedUser?._id;
   const profilePath = userProfileId ? `/profile/${userProfileId}` : '/profile';
+  const avatarUrl = getMediaUrl(savedUser?.profilePicture);
 
   const handleLogoutClick = () => {
     if (onLogout) onLogout();
@@ -299,7 +301,11 @@ function Navbar({ isLoggedIn, onLogin, onSignup, onLogout }) {
               ) : (
                 <>
                   <NavLink to={profilePath} className={({ isActive }) => `cc-avatar${isActive ? " cc-avatar--active" : ""}`} title="My profile">
-                    <i className="fa-solid fa-user" />
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt={savedUser.name || "User"} style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} />
+                    ) : (
+                      <i className="fa-solid fa-user" />
+                    )}
                   </NavLink>
                   <button className="cc-btn cc-btn--ghost cc-btn--logout" onClick={handleLogoutClick}>
                     <i className="fa-solid fa-right-from-bracket" />

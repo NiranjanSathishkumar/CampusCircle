@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import api from "../../services/api";
 
 import { ToastProvider } from "../../context/ToastContext";
 import Navbar from "../../layouts/Navbar";
@@ -33,20 +34,51 @@ import EmptyStatePage from "../states/EmptyStatePage";
 
 function StudentPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    return localStorage.getItem('isLoggedIn') === 'true';
+    return Boolean(localStorage.getItem('token') || localStorage.getItem('isLoggedIn') === 'true');
+  });
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('user') || 'null');
+    } catch {
+      return null;
+    }
   });
 
-  const handleLoginSuccess = (userData) => {
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      api.get('/api/profile/get_profile')
+        .then((res) => {
+          if (res.data && res.data.user) {
+            setCurrentUser(res.data.user);
+            localStorage.setItem('user', JSON.stringify(res.data.user));
+            localStorage.setItem('isLoggedIn', 'true');
+            setIsLoggedIn(true);
+          }
+        })
+        .catch((err) => {
+          console.warn('Initial session check failed:', err?.response?.data?.message || err.message);
+        });
+    }
+  }, []);
+
+  const handleLoginSuccess = (userData, token) => {
     localStorage.setItem('isLoggedIn', 'true');
+    if (token) {
+      localStorage.setItem('token', token);
+    }
     if (userData) {
       localStorage.setItem('user', JSON.stringify(userData));
+      setCurrentUser(userData);
     }
     setIsLoggedIn(true);
   };
 
   const handleLogout = () => {
     localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('token');
     localStorage.removeItem('user');
+    setCurrentUser(null);
     setIsLoggedIn(false);
   };
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import api, { getMediaUrl } from "../../services/api";
 import ProfileHeader from "./ProfileHeader";
 import ProfileSidebar from "./ProfileSidebar";
 import ProfileTabs from "./ProfileTabs";
@@ -67,13 +67,9 @@ function ProfilePage() {
 
     async function fetchProfileData() {
       try {
-        const endpoint = id
-          ? `http://localhost:8080/api/profile/${id}`
-          : `http://localhost:8080/api/profile/me`;
+        const { data } = await api.get('/api/profile/get_profile');
 
-        const { data } = await axios.get(endpoint, { withCredentials: true });
-
-        if (data && data.success && data.user && isMounted) {
+        if (data && data.user && isMounted) {
           const u = data.user;
           setUserDetails({
             id: u._id,
@@ -96,7 +92,8 @@ function ProfilePage() {
             branch: u.branch || prev.branch,
             bio: u.bio || prev.bio,
             skills: u.skills && u.skills.length > 0 ? u.skills : prev.skills,
-            avatarUrl: u.avatar || prev.avatarUrl,
+            avatarUrl: u.profilePicture ? getMediaUrl(u.profilePicture) : prev.avatarUrl,
+            bannerUrl: u.profileBanner ? getMediaUrl(u.profileBanner) : prev.bannerUrl,
           }));
         }
       } catch (err) {
@@ -250,13 +247,9 @@ function ProfilePage() {
   /* ── Backend API Handlers ───────────────────────────── */
   const handleSavePersonalDetails = async (updatedDetails) => {
     try {
-      const { data } = await axios.post(
-        "http://localhost:8080/api/profile",
-        updatedDetails,
-        { withCredentials: true }
-      );
+      const { data } = await api.patch('/api/profile/update_profile', updatedDetails);
 
-      if (data && data.success && data.user) {
+      if (data && data.user) {
         const u = data.user;
         setUserDetails({
           id: u._id,
@@ -300,22 +293,56 @@ function ProfilePage() {
 
   const handleDeleteAccount = async () => {
     try {
-      await axios.delete("http://localhost:8080/api/profile", { withCredentials: true });
+      await api.delete('/api/profile/remove_profile_picture');
+      await api.delete('/api/profile/remove_profile_banner');
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('isLoggedIn');
       navigate("/login");
     } catch (err) {
-      console.error("Account deletion error:", err);
-      alert(err?.response?.data?.message || "Failed to delete account.");
+      console.error("Account cleanup error:", err);
+      navigate("/login");
     }
   };
 
   const handleAvatarChange = async (file) => {
-    const previewUrl = URL.createObjectURL(file);
-    setProfile((prev) => ({ ...prev, avatarUrl: previewUrl }));
+    const formData = new FormData();
+    formData.append("profile_picture", file);
+
+    try {
+      await api.put("/api/profile/update_profile_picture", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      const { data } = await api.get('/api/profile/get_profile');
+      if (data && data.user && data.user.profilePicture) {
+        setProfile((prev) => ({ ...prev, avatarUrl: getMediaUrl(data.user.profilePicture) }));
+      } else {
+        setProfile((prev) => ({ ...prev, avatarUrl: URL.createObjectURL(file) }));
+      }
+    } catch (err) {
+      console.error("Failed to upload profile picture:", err);
+      setProfile((prev) => ({ ...prev, avatarUrl: URL.createObjectURL(file) }));
+    }
   };
 
   const handleBannerChange = async (file) => {
-    const previewUrl = URL.createObjectURL(file);
-    setProfile((prev) => ({ ...prev, bannerUrl: previewUrl }));
+    const formData = new FormData();
+    formData.append("profile_banner", file);
+
+    try {
+      await api.put("/api/profile/update_profile_banner", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      const { data } = await api.get('/api/profile/get_profile');
+      if (data && data.user && data.user.profileBanner) {
+        setProfile((prev) => ({ ...prev, bannerUrl: getMediaUrl(data.user.profileBanner) }));
+      } else {
+        setProfile((prev) => ({ ...prev, bannerUrl: URL.createObjectURL(file) }));
+      }
+    } catch (err) {
+      console.error("Failed to upload profile banner:", err);
+      setProfile((prev) => ({ ...prev, bannerUrl: URL.createObjectURL(file) }));
+    }
   };
 
   const handleAddAchievement = (newAch) => {

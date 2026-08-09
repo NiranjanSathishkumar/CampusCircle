@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../services/api';
 import '../login/LoginPage.css'; /* shared auth styles */
 
 import SignupBrandPanel from './SignupBrandPanel';
@@ -87,23 +87,48 @@ function SignupPage({ onSignupSuccess }) {
     const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
 
     try {
-      const { data } = await axios.post(
-        'http://localhost:8080/signup',
-        {
-          email: email.trim(),
-          password,
-          name: fullName,
-        },
-        { withCredentials: true }
-      );
+      const { data } = await api.post('/api/signup', {
+        email: email.trim(),
+        password,
+        name: fullName,
+      });
 
-      if (data && data.success) {
+      // Backend returns message: "User Registered Successfully!"
+      if (data) {
         setApiError('');
-        if (onSignupSuccess) {
-          onSignupSuccess(data.user);
+
+        // Perform automatic login to get JWT token
+        try {
+          const loginRes = await api.post('/api/login', {
+            email: email.trim(),
+            password,
+          });
+
+          if (loginRes.data && loginRes.data.token) {
+            localStorage.setItem('token', loginRes.data.token);
+
+            let userObj = null;
+            try {
+              const profileRes = await api.get('/api/profile/get_profile');
+              if (profileRes.data && profileRes.data.user) {
+                userObj = profileRes.data.user;
+              }
+            } catch (pErr) {
+              console.warn('Failed to fetch profile after signup auto-login:', pErr);
+            }
+
+            if (onSignupSuccess) {
+              onSignupSuccess(userObj, loginRes.data.token);
+            }
+            navigate('/profile');
+            return;
+          }
+        } catch (loginErr) {
+          console.warn('Auto-login after signup failed:', loginErr);
         }
-        const userProfileId = data.user?.id || data.user?._id;
-        navigate(userProfileId ? `/profile/${userProfileId}` : '/profile');
+
+        // If auto-login fails, redirect to login page
+        navigate('/login');
       } else {
         const msg = data?.message || 'An account with this email already exists';
         setApiError(msg);
