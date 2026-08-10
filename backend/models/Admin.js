@@ -18,11 +18,14 @@ const adminSchema = new Schema(
     },
     password: { type: String, required: true, select: false, minlength: 8 },
 
+    role: { type: String, enum: ["admin"], default: "admin", immutable: true },
+
     // ── Forgot password — identical pattern to User/Community ──
     passwordResetTokenHash: { type: String, select: false },
     passwordResetExpires: { type: Date, select: false },
   },
-  { timestamps: true }
+  { timestamps: true },
+
 );
 
 // No indexes beyond the automatic unique index on `email`. This collection

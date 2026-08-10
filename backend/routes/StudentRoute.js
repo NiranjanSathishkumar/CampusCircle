@@ -4,7 +4,7 @@ const multer = require("multer");
 const path = require("path");
 
 const wrapAsync = require("../utils/wrapAsync");
-const { requireAuth } = require("../middleware/AuthMiddleware");
+const { requireAuth, requireRole } = require("../middleware/AuthMiddleware");
 const syncToCloudinary = require("../middleware/syncToCloudinary");
 
 const {
@@ -35,6 +35,7 @@ const upload = multer({
 });
 
 router.use(requireAuth);
+router.use(requireRole("student"));
 
 router.route("/get_profile")
     .get(wrapAsync(getUserProfile));

@@ -85,6 +85,8 @@ const userSchema = new Schema(
       maxlength: 128,
     },
 
+    role: { type: String, enum: ["student"], default: "student", immutable: true },
+
     // ── Academic identity ─────────────────────────────────────
     rollNo: {
       type: String,

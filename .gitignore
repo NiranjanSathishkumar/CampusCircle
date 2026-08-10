@@ -32,6 +32,7 @@ lerna-debug.log*
 # Testing & Coverage
 coverage/
 .nyc_output/
+tests/
 
 # Caches and temporary files
 .cache/

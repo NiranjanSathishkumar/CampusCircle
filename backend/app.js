@@ -5,7 +5,7 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 require("dotenv").config();
 
-const User = require("./models/User");
+const { User } = require("./models/User");
 const authRoute = require("./routes/AuthRoute");
 const studentRoute = require("./routes/StudentRoute");
 const ExpressError = require("./utils/ExpressError");
@@ -18,9 +18,6 @@ app.use(cors({
 }));
 
 app.use(express.json());
-app.use((err, req, res, next) => {
-    res.status(err.statusCode || 500).json({ success: false, message: err.message });
-});
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 

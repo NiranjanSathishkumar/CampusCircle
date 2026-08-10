@@ -86,6 +86,8 @@ const communitySchema = new Schema(
       default: DEFAULT_COMMUNITY_BANNER,
     }, 
 
+    role: { type: String, enum: ["organizer"], default: "organizer", immutable: true },
+    
     tags: {
       type: [{ type: String, trim: true, lowercase: true, maxlength: 30 }],
       validate: {

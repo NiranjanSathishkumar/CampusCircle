@@ -1,7 +1,7 @@
-const { User } = require("../models/User");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const ExpressError = require("../utils/ExpressError");
+const roleModels = require("../utils/roleModels");
 
 module.exports.requireAuth = async (req, res, next) => {
     const authHeader = req.headers.authorization;
@@ -14,15 +14,28 @@ module.exports.requireAuth = async (req, res, next) => {
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const user = await User.findById(decoded.id);
-
-        if(!user) {
-            return res.status(404).json({message: "User NOT Found"});
+        const Model = roleModels[decoded.role];
+        if(!Model){
+            return res.status(401).json({message: "Invalid Token"});
         }
 
-        req.user = user;
+        const account = await Model.findById(decoded.id);
+        if(!account){
+            return res.status(404).json({message: "Account Not Found"});
+        }
+
+        req.user = account;
+        req.role = decoded.role;
         next();
+
     } catch (err) {
         return res.status(401).json({message: "Invalid or expired token"});
     }
 };
+
+module.exports.requireRole = (...allowedRoles) => (req, res, next) => {
+    if(!req.role || !allowedRoles.includes(req.role)){
+        return res.status(403).json({message: "Forbidden: Insufficient Role"});
+    }
+    next();
+}

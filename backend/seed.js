@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const User = require("./models/User");
+const { User } = require("./models/User");
 require("dotenv").config();
 
 const dbUrl = process.env.DB_URL || "mongodb://127.0.0.1:27017/campuscircle";

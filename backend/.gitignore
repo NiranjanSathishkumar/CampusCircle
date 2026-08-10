@@ -29,6 +29,7 @@ tmp/
 # Testing & Coverage
 coverage/
 .nyc_output/
+tests/
 
 # IDE & Editor files
 .vscode/
