@@ -1,6 +1,7 @@
 const Community = require("../models/Community");
 const Admin = require("../models/Admin");
 const bcrypt = require("bcrypt");
+const { ensureEmailUnique } = require("../utils/ensureEmailUnique");
 
 module.exports.CreateOrganizer = async (req, res) => {
     const {name, email, password, category, ...rest} = req.body;
@@ -9,12 +10,14 @@ module.exports.CreateOrganizer = async (req, res) => {
     }
     const emailLower = email.trim().toLowerCase();
 
-    const existing = await Community.findOne({email: emailLower});
-    if(existing) {
+    // Verify email uniqueness across User, Community, and Admin collections to prevent collision
+    const isUnique = await ensureEmailUnique(emailLower);
+    if(!isUnique) {
         return res.status(400).json({message: "Organizer Already Exists"});
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    // Organizers are modeled as Community documents that hold authentication credentials and community metadata
     const community = new Community({
         ...rest,
         name,

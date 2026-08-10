@@ -1,5 +1,6 @@
 const { User, DEFAULT_PROFILE_BANNER, DEFAULT_PROFILE_PICTURE } = require("../models/User");
 const { deleteEverywhere } = require("../utils/fileStorage");
+const { ensureEmailUnique } = require("../utils/ensureEmailUnique");
 
 
 module.exports.uploadProfilePicture = async (req, res) => {
@@ -11,6 +12,7 @@ module.exports.uploadProfilePicture = async (req, res) => {
         });
     }
 
+    // Delete previous custom media from local disk and Cloudinary while preserving the shared default image
     if (user.profilePicture?.filename && user.profilePicture.filename !== DEFAULT_PROFILE_PICTURE) {
         await deleteEverywhere(user.profilePicture.filename, user.profilePicture.cloudinaryId);
     }
@@ -34,6 +36,7 @@ module.exports.uploadProfileBanner = async (req, res) => {
     });
     }
 
+    // Delete previous custom banner from local disk and Cloudinary while preserving default asset
     if (user.profileBanner?.filename && user.profileBanner.filename !== DEFAULT_PROFILE_BANNER) {
         await deleteEverywhere(user.profileBanner.filename, user.profileBanner.cloudinaryId);
     }
@@ -56,30 +59,48 @@ module.exports.updateUserProfile = async (req, res) => {
     const user = req.user;
     const updatedUserData = req.body;
 
-    // Check unique constraints for email, rollNo, and prnNo against other users
+    // Check for unique field conflicts across other users in a single database query ($ne current user)
     const conflictConditions = [];
-    if (typeof updatedUserData.email === "string" && updatedUserData.email.trim().toLowerCase() !== user.email) {
-        conflictConditions.push({ email: updatedUserData.email.trim().toLowerCase() });
+    const emailNormalized = typeof updatedUserData.email === "string" ? updatedUserData.email.trim().toLowerCase() : null;
+    const rollNoNormalized = typeof updatedUserData.rollNo === "string" ? updatedUserData.rollNo.trim().toUpperCase() : null;
+    const prnNoNormalized = typeof updatedUserData.prnNo === "string" ? updatedUserData.prnNo.trim().toUpperCase() : null;
+
+    if (emailNormalized && emailNormalized !== user.email) {
+        conflictConditions.push({ field: "email", condition: { email: emailNormalized } });
     }
-    if (typeof updatedUserData.rollNo === "string" && updatedUserData.rollNo.trim().toUpperCase() !== user.rollNo) {
-        conflictConditions.push({ rollNo: updatedUserData.rollNo.trim().toUpperCase() });
+    if (rollNoNormalized && rollNoNormalized !== user.rollNo) {
+        conflictConditions.push({ field: "rollNo", condition: { rollNo: rollNoNormalized } });
     }
-    if (typeof updatedUserData.prnNo === "string" && updatedUserData.prnNo.trim().toUpperCase() !== user.prnNo) {
-        conflictConditions.push({ prnNo: updatedUserData.prnNo.trim().toUpperCase() });
+    if (prnNoNormalized && prnNoNormalized !== user.prnNo) {
+        conflictConditions.push({ field: "prnNo", condition: { prnNo: prnNoNormalized } });
     }
 
     if (conflictConditions.length > 0) {
-        const existingUser = await User.findOne({
+        const existingUsers = await User.find({
             _id: { $ne: user._id },
-            $or: conflictConditions
+            $or: conflictConditions.map(c => c.condition)
         });
 
-        if (existingUser) {
-            return res.status(400).json({ message: "Email, Roll Number, or PRN Number already in use by another user" });
+        const fieldLabels = { email: "Email", rollNo: "Roll Number", prnNo: "PRN Number" };
+        const conflictingFields = new Set();
+
+        for (const existingUser of existingUsers) {
+            for (const { field } of conflictConditions) {
+                if (field === "email" && existingUser.email === emailNormalized) conflictingFields.add(field);
+                if (field === "rollNo" && existingUser.rollNo === rollNoNormalized) conflictingFields.add(field);
+                if (field === "prnNo" && existingUser.prnNo === prnNoNormalized) conflictingFields.add(field);
+            }
+        }
+
+        if (conflictingFields.size > 0) {
+            const labels = [...conflictingFields].map(f => fieldLabels[f]);
+            return res.status(400).json({
+                message: `${labels.join(", ")} already in use by another user`
+            });
         }
     }
 
-    // Allowed profile fields in User schema
+    // Whitelist updatable fields to prevent unauthorized mass-assignment of internal attributes (e.g., role)
     const allowedUpdates = [
         "name",
         "email",
@@ -95,6 +116,8 @@ module.exports.updateUserProfile = async (req, res) => {
     ];
 
     for (const key of Object.keys(updatedUserData)) {
+        if (!allowedUpdates.includes(key)) continue;
+
         if (allowedUpdates.includes(key)) {
             if (key === "email" && typeof updatedUserData[key] === "string") {
                 user[key] = updatedUserData[key].trim().toLowerCase();
@@ -118,12 +141,14 @@ module.exports.updateUserProfile = async (req, res) => {
 module.exports.removeProfilePicture = async (req, res) => {
     const user = req.user;
 
+    // Prevent deletion request if the user is already on the fallback default profile image
     if(!user.profilePicture?.filename || user.profilePicture.filename === DEFAULT_PROFILE_PICTURE){
         return res.status(400).json({message: "No profile picture to remove"});
     }
 
     await deleteEverywhere(user.profilePicture.filename, user.profilePicture.cloudinaryId);
 
+    // Reset reference back to default image asset
     user.profilePicture = { filename: DEFAULT_PROFILE_PICTURE };
     await user.save();
 
@@ -133,12 +158,14 @@ module.exports.removeProfilePicture = async (req, res) => {
 module.exports.removeProfileBanner = async (req, res) => {
     const user = req.user;
 
+    // Prevent deletion request if the user is already on the fallback default banner image
     if(!user.profileBanner?.filename || user.profileBanner.filename === DEFAULT_PROFILE_BANNER){
         return res.status(400).json({message: "No profile banner to remove"});
     }
 
     await deleteEverywhere(user.profileBanner.filename, user.profileBanner.cloudinaryId);
 
+    // Reset reference back to default banner asset
     user.profileBanner = { filename: DEFAULT_PROFILE_BANNER };
     await user.save();
 

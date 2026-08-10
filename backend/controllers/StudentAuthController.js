@@ -2,6 +2,7 @@ const { User } = require("../models/User");
 const ExpressError = require("../utils/ExpressError");
 const bcrypt = require("bcrypt");
 const { signToken } = require("../utils/signToken");
+const { ensureEmailUnique } = require("../utils/ensureEmailUnique");
 
 module.exports.Signup = async(req, res, next) => {
     const { email, password, name } = req.body;
@@ -12,11 +13,10 @@ module.exports.Signup = async(req, res, next) => {
 
     const emailLower = email.trim().toLowerCase();
 
-    const user = await User.findOne({
-        email: emailLower   
-    });
+    // Check email uniqueness across User, Community, and Admin models to avoid cross-role duplicates
+    const isUnique = await ensureEmailUnique(emailLower);
 
-    if(user){
+    if(!isUnique){
         return res.status(400).json({message: "User Already Exists"});
     }
 
@@ -42,6 +42,7 @@ module.exports.Login = async(req, res, next) => {
 
     const emailLower = email.trim().toLowerCase();
 
+    // Explicitly request password field which is hidden by default in the User schema
     const user = await User.findOne({
         email: emailLower
     }).select("+password");
@@ -55,6 +56,7 @@ module.exports.Login = async(req, res, next) => {
         return res.status(400).json({message: "Invalid Credentials"})
     }
   
+    // Issue token with student role for RBAC route authorization
     const token = signToken(user._id, "student");
 
     return res.status(200).json({message: "LoggedIn Successfully", token, role: "student"});

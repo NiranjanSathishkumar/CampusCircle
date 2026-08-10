@@ -8,6 +8,7 @@ require("dotenv").config();
 const { User } = require("./models/User");
 const authRoute = require("./routes/AuthRoute");
 const studentRoute = require("./routes/StudentRoute");
+const organizerRoute = require("./routes/OrganizerRoute");
 const ExpressError = require("./utils/ExpressError");
 
 const dbUrl = process.env.MONGO_URI || process.env.DB_URL || "mongodb://127.0.0.1:27017/campuscircle";
@@ -24,6 +25,7 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use("/", authRoute);
 app.use("/api/profile", studentRoute);
+app.use("/api/organizer", organizerRoute);
 
 // Catch-all route handler for undefined endpoints
 app.use((req, res, next) => {

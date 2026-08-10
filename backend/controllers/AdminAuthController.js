@@ -10,6 +10,7 @@ module.exports.Login = async (req, res) => {
 
     const emailLower = email.trim().toLowerCase();
 
+    // Explicitly include password hash since schema defaults to select: false
     const admin = await Admin.findOne({email: emailLower}).select("+password");
     if(!admin){
         return res.status(404).json({message: "Admin Account Does NOT Exists"});
@@ -20,6 +21,7 @@ module.exports.Login = async (req, res) => {
         return res.status(400).json({message: "Invalid Credentials"});
     }
 
+    // Attach administrative role to token payload for downstream RBAC authorization checks
     const token = signToken(admin._id, "admin");
     return res.status(200).json({message: "LoggedIn Successfully", token, role: "admin"});
 }

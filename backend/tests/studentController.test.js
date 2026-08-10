@@ -3,6 +3,8 @@ const assert = require("node:assert");
 const fs = require("fs");
 const path = require("path");
 const { User, DEFAULT_PROFILE_PICTURE, DEFAULT_PROFILE_BANNER } = require("../models/User");
+const Community = require("../models/Community");
+const Admin = require("../models/Admin");
 const { cloudinary } = require("../cloudConfig");
 const studentController = require("../controllers/StudentController");
 
@@ -24,6 +26,8 @@ function createMockRes() {
 
 describe("StudentController Unit Tests", () => {
     let originalFindOne;
+    let originalCommunityFindOne;
+    let originalAdminFindOne;
     let originalUnlink;
     let originalDestroy;
     let deletedLocalFiles = [];
@@ -31,8 +35,13 @@ describe("StudentController Unit Tests", () => {
 
     beforeEach(() => {
         originalFindOne = User.findOne;
+        originalCommunityFindOne = Community.findOne;
+        originalAdminFindOne = Admin.findOne;
         originalUnlink = fs.unlink;
         originalDestroy = cloudinary.uploader.destroy;
+
+        Community.findOne = async () => null;
+        Admin.findOne = async () => null;
 
         deletedLocalFiles = [];
         deletedCloudIds = [];
@@ -50,6 +59,8 @@ describe("StudentController Unit Tests", () => {
 
     afterEach(() => {
         User.findOne = originalFindOne;
+        Community.findOne = originalCommunityFindOne;
+        Admin.findOne = originalAdminFindOne;
         fs.unlink = originalUnlink;
         cloudinary.uploader.destroy = originalDestroy;
     });
@@ -209,10 +220,10 @@ describe("StudentController Unit Tests", () => {
 
     describe("updateUserProfile", () => {
         it("should return 400 if updated email, rollNo, or prnNo conflicts with another user", async () => {
-            User.findOne = async () => ({ _id: "otherUser" });
+            User.find = async () => [{ _id: "507f1f77bcf86cd799439022", email: "taken@example.com" }];
 
             const user = {
-                _id: "currentUser",
+                _id: "507f1f77bcf86cd799439011",
                 email: "current@example.com",
                 rollNo: "R001",
                 prnNo: "P001"
@@ -226,17 +237,14 @@ describe("StudentController Unit Tests", () => {
             await studentController.updateUserProfile(req, res);
 
             assert.strictEqual(res.statusCode, 400);
-            assert.strictEqual(
-                res.jsonData.message,
-                "Email, Roll Number, or PRN Number already in use by another user"
-            );
+            assert.match(res.jsonData.message, /already in use by another user/);
         });
 
         it("should successfully update allowed fields and format email, rollNo, and prnNo", async () => {
-            User.findOne = async () => null;
+            User.find = async () => [];
 
             const user = {
-                _id: "currentUser",
+                _id: "507f1f77bcf86cd799439011",
                 name: "Old Name",
                 email: "current@example.com",
                 rollNo: "R001",

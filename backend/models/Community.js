@@ -2,13 +2,16 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const { Schema } = mongoose;
+const { User } = require("./User");
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const URL_REGEX = /^https?:\/\/[^\s/$.?#].[^\s]*$/i;
 
-// Default banner, shown until the community uploads its own
+// Default assets
+const DEFAULT_COMMUNITY_LOGO = "https://ui-avatars.com/api/?name=Community&background=random&color=fff&size=512";
 const DEFAULT_COMMUNITY_BANNER = "https://alkuwaiti.com/wp-content/uploads/2020/05/Hero-Banner-Placeholder-Dark-1024x480.png";
 
+module.exports.DEFAULT_COMMUNITY_LOGO = DEFAULT_COMMUNITY_LOGO;
 module.exports.DEFAULT_COMMUNITY_BANNER = DEFAULT_COMMUNITY_BANNER;
 
 const socialLinkSchema = new Schema(
@@ -29,39 +32,24 @@ const socialLinkSchema = new Schema(
   { _id: false },
 );
 
-
 const faqSchema = new Schema(
   {
     question: { type: String, required: true, trim: true, maxlength: 200 },
     answer: { type: String, required: true, trim: true, maxlength: 1000 },
-  },
-  { _id: false },
+  }
 );
 
 const coreTeamMemberSchema = new Schema(
   {
-    name: { type: String, required: true, trim: true, maxlength: 128 },
+    user: { type: Schema.Types.ObjectId, ref: "User", required: true },
     role: { type: String, required: true, trim: true, maxlength: 128 },
-    avatar: { type: String, trim: true, maxlength: 500 },
-    linkedin: {
-      type: String,
-      trim: true,
-      maxlength: 500,
-      match: [URL_REGEX, "Please provide a valid URL"],
-    },
-    github: {
-      type: String,
-      trim: true,
-      maxlength: 500,
-      match: [URL_REGEX, "Please provide a valid URL"],
-    },
   },
   { _id: false },
 );
 
 const communitySchema = new Schema(
   {
-    // ── Profile ───────────────────────────────────────────────
+    // ── Profile ──
     name: {
       type: String,
       required: true,
@@ -74,20 +62,19 @@ const communitySchema = new Schema(
     description: { type: String, trim: true, maxlength: 1000 },
 
     logo: {
-      type: String,
-      trim: true,
-      maxlength: 500,
+      filename: { type: String, trim: true, maxlength: 500, default: DEFAULT_COMMUNITY_LOGO },
+      cloudinaryUrl: { type: String },
+      cloudinaryId: { type: String },
     },
 
     banner: {
-      type: String,
-      trim: true,
-      maxlength: 500,
-      default: DEFAULT_COMMUNITY_BANNER,
-    }, 
+      filename: { type: String, trim: true, maxlength: 500, default: DEFAULT_COMMUNITY_BANNER },
+      cloudinaryUrl: { type: String },
+      cloudinaryId: { type: String },
+    },
 
     role: { type: String, enum: ["organizer"], default: "organizer", immutable: true },
-    
+
     tags: {
       type: [{ type: String, trim: true, lowercase: true, maxlength: 30 }],
       validate: {
@@ -110,29 +97,24 @@ const communitySchema = new Schema(
       },
     },
 
-    // Every community is manually vetted by Admin at creation
     isVerified: { type: Boolean, default: true },
-
-    // Soft-delete flag
     isActive: { type: Boolean, default: true },
-
     createdBy: { type: Schema.Types.ObjectId, ref: "Admin", required: true },
 
-    // Maintained by Follow model hooks — never set directly in controllers
+    // Maintained by Follow model hooks
     followerCount: { type: Number, default: 0, min: 0 },
 
-    // ── Recruiting ────────────────────────────────────────────
+    // ── Recruiting ──
     isRecruiting: { type: Boolean, default: false },
     openRoles: {
-      type: [{ type: String, trim: true, maxlength: 60 }], // e.g. "ML Research Interns"
+      type: [{ type: String, trim: true, maxlength: 60 }],
       validate: {
         validator: (arr) => arr.length <= 10,
         message: "openRoles cannot exceed 10 entries",
       },
     },
 
-    // ── Leadership ────────────────────────────────────────────
-    // Free-text summary shown in the sidebar (e.g. "Dr. Aris Thorne & Team")
+    // ── Leadership ──
     leadOrganizer: { type: String, trim: true, maxlength: 128 },
 
     coreTeam: {
@@ -143,7 +125,7 @@ const communitySchema = new Schema(
       },
     },
 
-    // ── Official Connect Channels ────────────────────────────
+    // ── Social Links ──
     socialLinks: {
       type: [socialLinkSchema],
       validate: {
@@ -152,7 +134,7 @@ const communitySchema = new Schema(
       },
     },
 
-    // ── FAQs ──────────────────────────────────────────────────
+    // ── FAQs ──
     faqs: {
       type: [faqSchema],
       validate: {
@@ -161,7 +143,7 @@ const communitySchema = new Schema(
       },
     },
 
-    // ── Shared organizer login (one login per community, 3–8 people) ──
+    // ── Authentication ──
     email: {
       type: String,
       required: true,
@@ -172,7 +154,6 @@ const communitySchema = new Schema(
       maxlength: 200,
     },
 
-    // Hidden by default; only returned via .select('+password')
     password: {
       type: String,
       required: true,
@@ -181,28 +162,24 @@ const communitySchema = new Schema(
       maxlength: 128,
     },
 
-    // ── Forgot password ─────────────────────────────────────────
-    // Only the hash is stored; the raw token is emailed and never saved
+    // ── Password Reset ──
     passwordResetTokenHash: { type: String, select: false },
     passwordResetExpires: { type: Date, select: false },
   },
   { timestamps: true },
 );
 
-// ── Indexes ────────────────────────────────────────────────────
-// Almost every listing/Discover query filters isActive:true, often
-// combined with a tag match — this compound index covers both the
-// isActive-only case (as a prefix) and the isActive+tags case.
+communitySchema.path("coreTeam").validate(function (arr) {
+  const ids = arr.map((m) => (m.user ? m.user.toString() : m.student ? m.student.toString() : ""));
+  return new Set(ids).size === ids.length;
+}, "A student cannot be added to the core team more than once");
+
+// ── Indexes ──
 communitySchema.index({ isActive: 1, tags: 1 });
-// Filter chips on the Communities listing page
 communitySchema.index({ isActive: 1, category: 1 });
-// Community search bar (CommunityFilters.js)
 communitySchema.index({ name: "text", description: "text" });
-// name and email already get unique indexes automatically from `unique: true`
 
-
-// ── Forgot password ───────────────────────────────────────────────
-// Returns the raw token (send by email); stores only its hash + a 15-min expiry
+// Generate 15-min password reset token
 communitySchema.methods.createPasswordResetToken = function () {
   const rawToken = crypto.randomBytes(32).toString("hex");
   this.passwordResetTokenHash = crypto
