@@ -13,7 +13,9 @@ const {
     getUserProfile,
     updateUserProfile,
     removeProfilePicture,
-    removeProfileBanner
+    removeProfileBanner,
+    uploadCertificate,
+    removeCertificate
 } = require("../controllers/StudentController")
 
 const storage = multer.diskStorage({
@@ -31,6 +33,16 @@ const upload = multer({
     limits: { fileSize: 5 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
         cb(null, /^image\/(jpeg|png|webp)$/.test(file.mimetype));
+    }
+});
+
+// Certificates aren't always images, so this one also allows PDFs and Word docs
+const uploadCertificateFile = multer({
+    storage,
+    limits: { fileSize: 5 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = /^(image\/(jpeg|png|webp)|application\/pdf|application\/msword|application\/vnd\.openxmlformats-officedocument\.wordprocessingml\.document)$/;
+        cb(null, allowedTypes.test(file.mimetype));
     }
 });
 
@@ -54,6 +66,10 @@ router.route("/remove_profile_picture")
 
 router.route("/remove_profile_banner")
     .delete(wrapAsync(removeProfileBanner));
+
+router.route("/achievements/:achievementId/certificate")
+    .put(uploadCertificateFile.single("certificate"), syncToCloudinary("certificates", "auto"), wrapAsync(uploadCertificate))
+    .delete(wrapAsync(removeCertificate));
 
 module.exports = router;
 

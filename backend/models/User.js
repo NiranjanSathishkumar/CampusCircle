@@ -177,6 +177,10 @@ const userSchema = new Schema(
     // Only the hash is stored; the raw token is emailed and never saved
     passwordResetTokenHash: { type: String, select: false },
     passwordResetExpires: { type: Date, select: false },
+
+    // ── Refresh token ─────────────────────────────────────────────
+    // Current valid refresh token; overwritten on login, cleared on logout
+    refreshToken: { type: String, select: false },
   },
   { timestamps: true },
 );

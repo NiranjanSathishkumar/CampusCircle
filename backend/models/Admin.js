@@ -23,6 +23,10 @@ const adminSchema = new Schema(
     // ── Forgot password — identical pattern to User/Community ──
     passwordResetTokenHash: { type: String, select: false },
     passwordResetExpires: { type: Date, select: false },
+
+    // ── Refresh token ──
+    // Current valid refresh token; overwritten on login, cleared on logout
+    refreshToken: { type: String, select: false },
   },
   { timestamps: true },
 

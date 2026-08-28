@@ -165,6 +165,10 @@ const communitySchema = new Schema(
     // ── Password Reset ──
     passwordResetTokenHash: { type: String, select: false },
     passwordResetExpires: { type: Date, select: false },
+
+    // ── Refresh token ──
+    // Current valid refresh token; overwritten on login, cleared on logout
+    refreshToken: { type: String, select: false },
   },
   { timestamps: true },
 );

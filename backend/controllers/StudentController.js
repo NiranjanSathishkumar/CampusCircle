@@ -1,6 +1,67 @@
 const { User, DEFAULT_PROFILE_BANNER, DEFAULT_PROFILE_PICTURE } = require("../models/User");
+const Achievement = require("../models/Achievement");
 const { deleteEverywhere } = require("../utils/fileStorage");
 const { ensureEmailUnique } = require("../utils/ensureEmailUnique");
+
+module.exports.uploadCertificate = async(req, res) => {
+    const user = req.user;
+    const { achievementId } = req.params;
+
+    if(!req.file) {
+        return res.status(400).json({
+            message: "No certificate uploaded"
+        });
+    }
+
+    // Scope to the owning student too, so one student can't attach a file to another's achievement
+    const achievement = await Achievement.findOne({ _id: achievementId, student: user._id });
+
+    if(!achievement) {
+        return res.status(404).json({
+            message: "Achievement not found"
+        });
+    }
+
+    // Delete the old certificate from local disk and Cloudinary before replacing it
+    if(achievement.certificate?.filename) {
+        await deleteEverywhere(achievement.certificate.filename, achievement.certificate.cloudinaryId);
+    }
+
+    achievement.certificate = {
+        filename: req.file.filename,
+        cloudinaryUrl: req.file.cloudinary.url,
+        cloudinaryId: req.file.cloudinary.publicId,
+    };
+
+    await achievement.save();
+    return res.status(200).json({ message: "Certificate Uploaded", achievement });
+}
+
+module.exports.removeCertificate = async(req, res) => {
+    const user = req.user;
+    const { achievementId } = req.params;
+
+    const achievement = await Achievement.findOne({ _id: achievementId, student: user._id });
+
+    if(!achievement) {
+        return res.status(404).json({
+            message: "Achievement not found"
+        });
+    }
+
+    if(!achievement.certificate?.filename) {
+        return res.status(400).json({
+            message: "No certificate to remove"
+        });
+    }
+
+    await deleteEverywhere(achievement.certificate.filename, achievement.certificate.cloudinaryId);
+
+    achievement.certificate = undefined;
+    await achievement.save();
+
+    return res.status(200).json({ message: "Certificate Removed" });
+}
 
 
 module.exports.uploadProfilePicture = async (req, res) => {

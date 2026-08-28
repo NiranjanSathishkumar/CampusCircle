@@ -1,6 +1,7 @@
 const Community = require("../models/Community");
 const bcrypt = require("bcrypt");
-const { signToken } = require("../utils/signToken");
+const { signAccessToken, signRefreshToken } = require("../utils/signToken");
+const { REFRESH_COOKIE_OPTIONS, refreshAccessToken, logout } = require("../utils/refreshAuth");
 
 module.exports.Login = async (req, res) => {
     const { email, password } = req.body;
@@ -23,6 +24,16 @@ module.exports.Login = async (req, res) => {
     }
 
     // Embed organizer role in JWT payload to grant community management privileges via RBAC middleware
-    const token = signToken(community._id, "organizer");
-    return res.status(200).json({message: "LoggedIn Successfully", token, role: "organizer"});
+    const accessToken = signAccessToken(community._id, "organizer");
+    const refreshToken = signRefreshToken(community._id, "organizer");
+
+    community.refreshToken = refreshToken;
+    await community.save();
+
+    res.cookie("refreshToken", refreshToken, REFRESH_COOKIE_OPTIONS);
+
+    return res.status(200).json({message: "LoggedIn Successfully", accessToken, role: "organizer"});
 }
+
+module.exports.RefreshToken = refreshAccessToken("organizer");
+module.exports.Logout = logout("organizer");
