@@ -1,0 +1,69 @@
+/* ── Mobile Responsive Overrides ──────────────────────────── */
+
+@media (max-width: 960px) {
+  .org-sidebar-wrapper {
+    width: 0 !important;
+    display: none;
+  }
+
+  .org-sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 260px !important;
+    z-index: 100;
+    transform: translateX(-100%);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 0 40px rgba(15, 23, 42, 0.25);
+  }
+
+  .org-sidebar--open {
+    transform: translateX(0);
+  }
+
+  .org-sidebar-close {
+    display: inline-flex;
+  }
+
+  .org-sidebar-collapse-btn {
+    display: none;
+  }
+
+  .org-sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background-color: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 90;
+  }
+
+  .org-topbar-menu-btn {
+    display: inline-flex;
+  }
+
+  .org-topbar-search {
+    max-width: 180px;
+  }
+
+  .org-profile-details {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .org-topbar-search {
+    flex: 1;
+    max-width: none;
+    margin: 0 0.25rem;
+  }
+
+  .org-topbar-search-kbd {
+    display: none;
+  }
+
+  .org-topbar-crumb {
+    display: none;
+  }
+}

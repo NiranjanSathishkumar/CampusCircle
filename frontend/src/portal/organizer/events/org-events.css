@@ -1,0 +1,7 @@
+/* Organizer events styles.
+   Split into 5 sections; imported in cascade order. */
+@import './styles/org-events-list.css';
+@import './styles/org-events-scan.css';
+@import './styles/org-events-detail.css';
+@import './styles/org-events-analytics.css';
+@import './styles/org-events-formbuilder.css';

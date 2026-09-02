@@ -1,0 +1,90 @@
+.adm-dashboard-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .adm-dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.adm-dashboard-side {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Activity feed */
+.adm-activity-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.adm-activity-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.adm-activity-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(26, 58, 42, 0.08);
+  color: #1A3A2A;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.adm-activity-icon--flag {
+  background: rgba(153, 27, 27, 0.08);
+  color: #991B1B;
+}
+
+.adm-activity-content p {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.8125rem;
+  color: #0F172A;
+  margin: 0 0 0.125rem;
+  line-height: 1.45;
+}
+
+.adm-activity-content span {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.625rem;
+  color: #6B7280;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Shortcut list */
+.adm-shortcut-list {
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem;
+}
+
+.adm-shortcut-list button {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.625rem 0.75rem;
+  background: none;
+  border: none;
+  border-radius: 5px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.16s ease, color 0.16s ease;
+}
+.adm-shortcut-list button:hover {
+  background: #F0EDE5;
+  color: #0F172A;
+}

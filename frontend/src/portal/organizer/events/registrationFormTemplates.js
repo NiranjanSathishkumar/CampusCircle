@@ -1,0 +1,123 @@
+/**
+ * Prebuilt registration form templates.
+ */
+/* ── Pre-built Form Templates ── */
+export const FORM_TEMPLATES = {
+  workshop: {
+    name: 'Technical Workshop Template',
+    desc: 'Ideal for hands-on coding, tool bootcamps, and dev masterclasses.',
+    fields: [
+      {
+        id: 'f_tpl_1',
+        type: 'select',
+        label: 'Skill Proficiency Level in Topic',
+        placeholder: 'Select your level',
+        helpText: 'Helps mentors pace the session appropriately.',
+        required: true,
+        options: ['Beginner (Zero prior experience)', 'Intermediate (Know basics & syntax)', 'Advanced (Built projects with this stack)'],
+      },
+      {
+        id: 'f_tpl_2',
+        type: 'text',
+        label: 'Laptop OS & Development Environment',
+        placeholder: 'e.g. Windows 11 / macOS M2 / Ubuntu Linux',
+        helpText: 'We will share tailored prerequisite setup guides before the workshop.',
+        required: true,
+        options: [],
+      },
+      {
+        id: 'f_tpl_3',
+        type: 'url',
+        label: 'GitHub / GitLab Profile URL',
+        placeholder: 'https://github.com/your-username',
+        helpText: 'Optional repository or profile link.',
+        required: false,
+        options: [],
+      },
+      {
+        id: 'f_tpl_4',
+        type: 'textarea',
+        label: 'What specific topics or tools do you hope to learn?',
+        placeholder: 'Briefly mention any particular libraries, concepts, or questions...',
+        helpText: 'Speakers will review these questions during Q&A.',
+        required: false,
+        options: [],
+      },
+    ],
+  },
+  hackathon: {
+    name: 'Hackathon & Team Challenge Template',
+    desc: 'Equipped with challenge tracks, team repos, dietary meals, and pitch briefs.',
+    fields: [
+      {
+        id: 'f_tpl_h1',
+        type: 'select',
+        label: 'Challenge Problem Track Selection',
+        placeholder: 'Select your primary track',
+        helpText: 'Choose the theme your hackathon project will be judged under.',
+        required: true,
+        options: ['AI / Machine Learning Innovations', 'Web3 & Decentralized Protocols', 'Smart Campus & IoT Solutions', 'Open Innovation & FinTech'],
+      },
+      {
+        id: 'f_tpl_h2',
+        type: 'url',
+        label: 'Team GitHub / GitLab Repository URL',
+        placeholder: 'https://github.com/team-repo',
+        helpText: 'Commit histories will be evaluated during code review rounds.',
+        required: false,
+        options: [],
+      },
+      {
+        id: 'f_tpl_h3',
+        type: 'radio',
+        label: 'Dietary Preference for Venue Catering',
+        placeholder: '',
+        helpText: 'Complimentary dinner, midnight snacks, and breakfast are catered.',
+        required: true,
+        options: ['Vegetarian', 'Non-Vegetarian', 'Jain Meal'],
+      },
+      {
+        id: 'f_tpl_h4',
+        type: 'textarea',
+        label: 'High-Level Project Concept / Problem Pitch',
+        placeholder: 'Describe the problem statement you are tackling and proposed tech stack...',
+        helpText: 'Helps mentors prepare technical guides and toolkits.',
+        required: false,
+        options: [],
+      },
+    ],
+  },
+  seminar: {
+    name: 'Speaker Night & Seminar Template',
+    desc: 'Streamlined for speaker Q&A collection and interest topics.',
+    fields: [
+      {
+        id: 'f_tpl_s1',
+        type: 'radio',
+        label: 'Current Academic Year & Branch',
+        placeholder: '',
+        helpText: 'Helps the speaker understand audience demographics.',
+        required: true,
+        options: ['First Year (FE)', 'Second Year (SE)', 'Third Year (TE)', 'Final Year (BE)'],
+      },
+      {
+        id: 'f_tpl_s2',
+        type: 'textarea',
+        label: 'Questions for the Keynote Speaker / Panelists',
+        placeholder: 'What question would you like addressed during the fireside discussion?',
+        helpText: 'Top curated questions will be featured during the live Q&A session.',
+        required: true,
+        options: [],
+      },
+      {
+        id: 'f_tpl_s3',
+        type: 'select',
+        label: 'How did you hear about this session?',
+        placeholder: 'Select source',
+        helpText: 'Helps us improve campus outreach.',
+        required: false,
+        options: ['CampusCircle Feed', 'WhatsApp Class Group', 'Instagram @gdsc.siesgst', 'Classroom Announcement / Faculty'],
+      },
+    ],
+  },
+};

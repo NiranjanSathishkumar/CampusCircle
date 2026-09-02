@@ -1,0 +1,574 @@
+/* ============================================================
+   ORGANISER PORTAL — Recruitment Suite Stylesheet
+   CampusCircle Editorial Palette: Parchment · Ink · Crimson · Emerald · Amber
+   ============================================================ */
+
+.org-recruitment-page {
+  padding-bottom: 4rem;
+}
+
+/* ── Hero & Drive Spotlight Header ─────────────────────────── */
+
+.org-recruitment-hero-card {
+  background: #FFFFFF;
+  border: 1.5px solid #E6E1D5;
+  border-radius: 14px;
+  padding: 1.5rem;
+  margin-bottom: 1.75rem;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+}
+
+.org-recruitment-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #991B1B;
+  background: rgba(153, 27, 27, 0.06);
+  border: 1px solid rgba(153, 27, 27, 0.16);
+  padding: 0.2rem 0.6rem;
+  border-radius: 99px;
+  margin-bottom: 0.625rem;
+}
+
+/* ── Metrics Strip & Candidate Funnel ──────────────────────── */
+
+.org-recruitment-metrics-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.875rem;
+  margin-bottom: 1.75rem;
+}
+
+.org-recruitment-metric-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.125rem 1.25rem;
+  background-color: #FFFFFF;
+  border: 1.5px solid #E6E1D5;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.02);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  text-align: left;
+  text-decoration: none;
+  overflow: hidden;
+}
+
+.org-recruitment-metric-item:hover {
+  transform: translateY(-2px);
+  border-color: #D8D2C4;
+  box-shadow: 0 6px 16px -2px rgba(15, 23, 42, 0.06);
+}
+
+.org-recruitment-metric-item.active {
+  background-color: #FAF8F5;
+  border-color: #0F172A;
+  box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.12), 0 4px 12px rgba(15, 23, 42, 0.06);
+}
+
+.org-recruitment-metric-icon {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.org-recruitment-metric-item:hover .org-recruitment-metric-icon {
+  transform: scale(1.06);
+}
+
+.org-recruitment-metric-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.org-recruitment-metric-label {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #64748B;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.org-recruitment-metric-val {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0F172A;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+/* ── Toolbar: Search & Candidate Filter Pills ─────────────── */
+
+.org-recruitment-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+  padding: 0.875rem 1.125rem;
+  background: #FFFFFF;
+  border: 1.5px solid #E6E1D5;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.02);
+}
+
+.org-recruitment-search {
+  position: relative;
+  flex: 1 1 240px;
+  max-width: 320px;
+}
+
+.org-recruitment-filter-pills {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.org-recruitment-filter-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 99px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748B;
+  background-color: #FAF8F5;
+  border: 1px solid #E6E1D5;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.org-recruitment-filter-pill:hover {
+  color: #0F172A;
+  border-color: #CBD5E1;
+  background-color: #F1EFE9;
+}
+
+.org-recruitment-filter-pill.active {
+  background-color: #0F172A;
+  color: #FFFFFF;
+  border-color: #0F172A;
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.15);
+}
+
+.org-recruitment-filter-count {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.05rem 0.35rem;
+  border-radius: 99px;
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.org-recruitment-filter-pill.active .org-recruitment-filter-count {
+  background: rgba(255, 255, 255, 0.2);
+  color: #FFFFFF;
+}
+
+/* ── Drive Cards Grid ──────────────────────────────────────── */
+
+.org-drive-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.org-drive-card {
+  text-align: left;
+  text-decoration: none;
+  background-color: #FFFFFF;
+  border: 1.5px solid #E6E1D5;
+  border-radius: 14px;
+  padding: 1.35rem;
+  cursor: pointer;
+  font: inherit;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  width: 100%;
+}
+
+.org-drive-card:hover {
+  border-color: #991B1B;
+  box-shadow: 0 10px 24px -4px rgba(15, 23, 42, 0.1);
+  transform: translateY(-2px);
+}
+
+.org-drive-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.875rem;
+}
+
+.org-drive-card-deadline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.625rem;
+  color: #6B7280;
+}
+
+.org-drive-card-title {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0 0 0.25rem;
+  line-height: 1.3;
+}
+
+.org-drive-positions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.25rem;
+}
+
+.org-drive-pos-chip {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #374151;
+  background-color: #FAF8F5;
+  border: 1px solid #D8D2C4;
+  padding: 0.25rem 0.55rem;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.org-drive-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.875rem;
+  border-top: 1px solid #E6E1D5;
+  margin-top: auto;
+}
+
+.org-drive-card-action svg {
+  transition: transform 0.15s ease;
+}
+.org-drive-card:hover .org-drive-card-action svg {
+  transform: translateX(2px);
+}
+
+/* ── Modal Specifics ───────────────────────────────────────── */
+
+.org-drive-modal {
+  max-width: 580px;
+  width: 90vw;
+}
+
+/* ── Candidate Application Review Stream ────────────────────── */
+
+.org-application-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.35rem;
+}
+
+.org-application-card {
+  position: relative;
+  background-color: #FFFFFF;
+  border: 1.5px solid #E6E1D5;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+  overflow: hidden;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.org-application-card:hover {
+  box-shadow: 0 10px 24px -4px rgba(15, 23, 42, 0.08);
+  border-color: #D8D2C4;
+}
+
+/* Candidate Card Status Highlight Top Strip */
+.org-application-status-strip {
+  height: 3.5px;
+  width: 100%;
+}
+
+.org-application-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem 1.35rem 1rem;
+  background-color: #FCFBF9;
+  border-bottom: 1px solid #F1EFE9;
+}
+
+.org-applicant-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, rgba(153, 27, 27, 0.1) 0%, rgba(153, 27, 27, 0.04) 100%);
+  color: #991B1B;
+  border: 1.5px solid rgba(153, 27, 27, 0.15);
+  flex-shrink: 0;
+}
+
+.org-applicant-name {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.org-applicant-meta-chips {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-top: 0.35rem;
+}
+
+.org-applicant-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.725rem;
+  font-weight: 600;
+  background-color: #FAF8F5;
+  border: 1px solid #E6E1D5;
+  color: #475569;
+}
+
+/* ── Candidate Q&A Responses Styling ──────────────────────── */
+
+.org-application-body {
+  padding: 1.25rem 1.35rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.org-qa-contact-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding: 0.65rem 0.875rem;
+  background-color: #FAF8F5;
+  border: 1px solid #EBE6DA;
+  border-radius: 10px;
+}
+
+.org-qa-essay-card {
+  background-color: #FAF8F5;
+  border: 1px solid #E6E1D5;
+  border-left: 3.5px solid #991B1B;
+  border-radius: 10px;
+  padding: 0.95rem 1.15rem;
+}
+
+.org-qa-essay-question {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748B;
+  margin-bottom: 0.4rem;
+}
+
+.org-qa-essay-answer {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.85rem;
+  color: #1E293B;
+  line-height: 1.6;
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.org-qa-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.75rem;
+}
+
+.org-qa-grid-item {
+  background-color: #FAF8F5;
+  border: 1px solid #E6E1D5;
+  border-radius: 8px;
+  padding: 0.65rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.org-qa-grid-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748B;
+}
+
+.org-qa-grid-val {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #0F172A;
+}
+
+/* ── Decision Actions ──────────────────────────────────────── */
+
+.org-application-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.35rem;
+  background-color: #FCFBF9;
+  border-top: 1px solid #F1EFE9;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.org-application-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  flex-wrap: wrap;
+}
+
+/* Status decision banners */
+.org-decision-banner {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 8px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.org-decision-banner.selected {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #047857;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.org-decision-banner.rejected {
+  background-color: rgba(239, 68, 68, 0.08);
+  color: #B91C1C;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* ── Toast Notification Banner ─────────────────────────────── */
+
+.org-recruitment-toast {
+  position: fixed;
+  bottom: 1.75rem;
+  right: 1.75rem;
+  background-color: #0F172A;
+  color: #FAF8F5;
+  padding: 0.75rem 1.125rem;
+  border-radius: 12px;
+  box-shadow: 0 12px 36px rgba(15, 23, 42, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  z-index: 1500;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: calc(100vw - 3rem);
+}
+
+.org-toast-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.org-toast-message {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+}
+
+.org-toast-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: #94A3B8;
+  padding: 0.2rem;
+  margin-left: 0.25rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.org-toast-close-btn:hover {
+  color: #FFFFFF;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.org-toast--celebration {
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  box-shadow: 0 12px 36px rgba(15, 23, 42, 0.35), 0 0 20px rgba(245, 158, 11, 0.15);
+}
+
+.org-toast--success {
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  box-shadow: 0 12px 36px rgba(15, 23, 42, 0.35), 0 0 20px rgba(16, 185, 129, 0.15);
+}
+
+.org-toast--danger,
+.org-toast--error {
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  box-shadow: 0 12px 36px rgba(15, 23, 42, 0.35), 0 0 20px rgba(239, 68, 68, 0.15);
+}
+
+.org-toast--info {
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  box-shadow: 0 12px 36px rgba(15, 23, 42, 0.35), 0 0 20px rgba(56, 189, 248, 0.15);
+}

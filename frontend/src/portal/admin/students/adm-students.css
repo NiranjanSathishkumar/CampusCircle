@@ -1,0 +1,9 @@
+.adm-branch-select {
+  max-width: 220px;
+}
+
+.adm-student-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}

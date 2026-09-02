@@ -1,0 +1,12 @@
+/* Events hub styles.
+   Split into 10 sections; imported in cascade order. */
+@import './styles/events-base.css';
+@import './styles/events-header.css';
+@import './styles/events-toolbar.css';
+@import './styles/events-catalog.css';
+@import './styles/events-registration.css';
+@import './styles/events-detail-hero.css';
+@import './styles/events-detail-body.css';
+@import './styles/events-detail-sidebar.css';
+@import './styles/events-detail-faq.css';
+@import './styles/events-detail-support.css';

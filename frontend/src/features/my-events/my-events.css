@@ -1,0 +1,9 @@
+/* My-events (registrations) styles.
+   Split into 6 sections; imported in cascade order. */
+@import './styles/my-events-base.css';
+@import './styles/my-events-summary.css';
+@import './styles/my-events-catalog.css';
+@import './styles/my-events-ticket.css';
+@import './styles/my-events-feedback.css';
+@import './styles/my-events-dialog.css';
+@import './styles/my-events-invites.css';

@@ -1,0 +1,54 @@
+/* ─────────────────────────────────────────────────────────────
+   EMPTY STATES
+   ───────────────────────────────────────────────────────────── */
+.profile-empty-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 3.5rem 1.5rem;
+  gap: 0.875rem;
+}
+
+.profile-empty-icon {
+  width: 3.25rem;
+  height: 3.25rem;
+  background: #D8D2C4;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6B7280;
+}
+
+.profile-empty-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0;
+}
+
+.profile-empty-desc {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.8438rem;
+  color: #6B7280;
+  max-width: 38ch;
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   REDUCED MOTION
+   ───────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .profile-banner-upload-btn,
+  .profile-tab-btn,
+  .cert-card,
+  .club-card.is-link,
+  .btn-danger {
+    transition: none !important;
+    transform: none !important;
+  }
+}

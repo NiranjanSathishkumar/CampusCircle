@@ -1,0 +1,50 @@
+.adm-settings-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .adm-settings-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.adm-settings-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  background: #F5F2EA;
+  border-radius: 6px;
+  padding: 0.75rem 0.875rem;
+  margin-top: 0.25rem;
+}
+.adm-settings-note svg {
+  color: #6B7280;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+.adm-settings-note span {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.75rem;
+  color: #6B7280;
+  line-height: 1.5;
+}
+
+.adm-form-error {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.75rem;
+  color: #991B1B;
+  margin: -0.25rem 0 0.25rem;
+}
+
+.adm-save-confirm {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3125rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #1A3A2A;
+  margin-right: auto;
+}

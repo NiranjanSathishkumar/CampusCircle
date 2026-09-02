@@ -1,0 +1,8 @@
+/* Student profile styles.
+   Split into 6 sections; imported in cascade order. */
+@import './styles/profile-layout.css';
+@import './styles/profile-nav.css';
+@import './styles/profile-details.css';
+@import './styles/profile-achievements.css';
+@import './styles/profile-lists.css';
+@import './styles/profile-states.css';

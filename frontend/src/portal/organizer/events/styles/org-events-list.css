@@ -1,0 +1,287 @@
+/* ============================================================
+   ORGANISER PORTAL — Events Page Stylesheet
+   ============================================================ */
+
+.org-events-page {
+  padding-bottom: 3.5rem;
+}
+
+/* ── Metrics Strip ─────────────────────────────────────────── */
+
+.org-events-metrics-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.75rem;
+  padding: 0.875rem 1.25rem;
+  background-color: #FAF8F5;
+  border: 1px solid #D8D2C4;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.org-events-metric-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  background: transparent;
+  border: none;
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  transition: all 0.15s ease;
+}
+
+button.org-events-metric-item {
+  cursor: pointer;
+}
+
+button.org-events-metric-item:hover {
+  background-color: rgba(230, 225, 213, 0.6);
+}
+
+.org-events-metric-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #6B7280;
+}
+
+.org-events-metric-val {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #0F172A;
+  line-height: 1.1;
+}
+
+/* ── Toolbar: Search, View Switcher & Filters ─────────────── */
+
+.org-events-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.org-events-search {
+  position: relative;
+  flex: 1 1 240px;
+  max-width: 320px;
+}
+
+.org-events-search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6B7280;
+  pointer-events: none;
+}
+
+.org-events-search-input {
+  width: 100%;
+  height: 38px;
+  padding: 0 0.75rem 0 2.25rem;
+  background-color: #FAF8F5;
+  border: 1px solid #D8D2C4;
+  border-radius: 9999px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.8125rem;
+  color: #0F172A;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.org-events-search-input:focus {
+  background-color: #ffffff;
+  border-color: #991B1B;
+  box-shadow: 0 0 0 3px rgba(153, 27, 27, 0.12);
+}
+
+.org-view-mode-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  background-color: rgba(230, 225, 213, 0.5);
+  border: 1px solid #D8D2C4;
+  padding: 0.2rem;
+  border-radius: 6px;
+}
+
+.org-view-mode-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #6B7280;
+  background: transparent;
+  border: none;
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.org-view-mode-btn:hover {
+  color: #0F172A;
+}
+
+.org-view-mode-btn.active {
+  color: #ffffff;
+  background-color: #0F172A;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.2);
+}
+
+/* ── Poster Cards View Grid ────────────────────────────────── */
+
+.org-event-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.org-event-poster-card {
+  background-color: #F0EDE5;
+  border: 1.5px solid #D8D2C4;
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
+  transition: border-color 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease;
+  cursor: pointer;
+}
+
+.org-event-poster-card:hover {
+  border-color: #991B1B;
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px -6px rgba(15, 23, 42, 0.12);
+}
+
+.org-poster-art-banner {
+  position: relative;
+  height: 10rem;
+  width: 100%;
+  background-color: #0F172A;
+  overflow: hidden;
+}
+
+.org-poster-art-banner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.35s ease;
+}
+
+.org-event-poster-card:hover .org-poster-art-banner img {
+  transform: scale(1.04);
+}
+
+.org-poster-body {
+  padding: 1.125rem 1.25rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.org-poster-title-btn {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0F172A;
+  line-height: 1.35;
+  transition: color 0.15s ease;
+}
+
+.org-event-poster-card:hover .org-poster-title-btn {
+  color: #991B1B;
+}
+
+.org-poster-capacity-box {
+  background-color: #FAF8F5;
+  border: 1px solid #D8D2C4;
+  border-radius: 8px;
+  padding: 0.75rem 0.875rem;
+  margin-top: auto;
+}
+
+.org-poster-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.25rem;
+  background-color: #FAF8F5;
+  border-top: 1px solid #D8D2C4;
+}
+
+/* ── Data Table Overrides ──────────────────────────────────── */
+
+.org-table-wrap {
+  overflow-x: auto;
+}
+
+.org-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  text-align: left;
+}
+
+.org-table th {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6B7280;
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid #D8D2C4;
+  background-color: rgba(245, 242, 234, 0.5);
+}
+
+.org-table td {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid #EEE9DE;
+  font-size: 0.8125rem;
+  color: #0F172A;
+  vertical-align: middle;
+}
+
+.org-table tr:hover td {
+  background-color: rgba(245, 242, 234, 0.4);
+}
+
+.org-event-title-link {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: #0F172A;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+  transition: color 0.15s ease;
+}
+
+.org-event-title-link:hover {
+  color: #991B1B;
+}
+
+.org-events-capacity {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.org-events-row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}

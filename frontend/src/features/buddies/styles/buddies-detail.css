@@ -1,0 +1,297 @@
+/* ─────────────────────────────────────────────────────────────
+   STUDENT PROFILE DETAIL PAGE — Scoped to .buddy-detail-page
+   ───────────────────────────────────────────────────────────── */
+
+.buddy-detail-page {
+  min-height: 100dvh;
+  background-color: #F5F2EA;
+}
+
+.buddy-detail-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  padding-bottom: 6rem;
+}
+
+@media (min-width: 1024px) {
+  .buddy-detail-layout {
+    grid-template-columns: 1fr 310px;
+    align-items: start;
+    padding-bottom: 4rem;
+  }
+}
+
+/* ── Hero Card Wrapper ───────────────────────────────────────── */
+.buddy-detail-hero-card {
+  margin-bottom: 1.75rem;
+}
+
+/* ── Banner Frame ────────────────────────────────────────────── */
+.buddy-detail-banner-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 4.75;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #1E293B;
+  box-shadow: var(--bud-shadow-md);
+  border: 1px solid rgba(216, 210, 196, 0.8);
+}
+
+@media (max-width: 640px) {
+  .buddy-detail-banner-frame {
+    aspect-ratio: 16 / 7;
+  }
+}
+
+.buddy-detail-banner-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.buddy-detail-banner-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(15, 23, 42, 0.05) 0%,
+    rgba(15, 23, 42, 0.2) 50%,
+    rgba(15, 23, 42, 0.5) 100%
+  );
+  pointer-events: none;
+}
+
+.buddy-detail-banner-top-badges {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 3;
+}
+
+.buddy-detail-year-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: rgba(245, 242, 234, 0.94);
+  border: 1.5px solid currentColor;
+  border-radius: 99px;
+  padding: 0.35rem 0.75rem;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* ── Profile Head (Avatar + Identity overlapping banner) ──────── */
+.buddy-detail-profile-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  margin-top: -3.5rem;
+  padding: 0 1.25rem 0;
+  position: relative;
+  z-index: 5;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .buddy-detail-profile-head {
+    margin-top: -3rem;
+    padding: 0 0.5rem;
+    gap: 1rem;
+  }
+}
+
+/* ── Detail Avatar Wrap ──────────────────────────────────────── */
+.buddy-detail-avatar-wrap {
+  position: relative;
+  width: 7rem;
+  height: 7rem;
+  border-radius: 50%;
+  border: 3.5px solid var(--ring-color, #991B1B);
+  background: #F5F2EA;
+  box-shadow: 0 0 0 3.5px #F5F2EA, 0 8px 24px rgba(15, 23, 42, 0.22);
+  flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+  .buddy-detail-avatar-wrap {
+    width: 7.75rem;
+    height: 7.75rem;
+    border-width: 4px;
+    box-shadow: 0 0 0 4px #F5F2EA, 0 10px 28px rgba(15, 23, 42, 0.24);
+  }
+}
+
+.buddy-detail-avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.buddy-detail-avatar-wrap .online-dot {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 14px;
+  height: 14px;
+  border: 2.5px solid #F5F2EA;
+}
+
+/* ── Detail Head Main (Info + Actions positioned cleanly below banner) ── */
+.buddy-detail-head-main {
+  flex: 1;
+  min-width: 260px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding-top: 4.25rem; /* Ensures the text sits completely below the banner on parchment */
+}
+
+@media (max-width: 640px) {
+  .buddy-detail-head-main {
+    padding-top: 0.5rem;
+    width: 100%;
+  }
+}
+
+.buddy-detail-head-info {
+  min-width: 0;
+}
+
+.buddy-detail-name-row {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  flex-wrap: wrap;
+}
+
+.buddy-detail-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+@media (min-width: 640px) {
+  .buddy-detail-title {
+    font-size: 2rem;
+  }
+}
+
+.buddy-detail-subtitle {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #1A3A2A;
+  margin: 0.35rem 0 0.5rem;
+  flex-wrap: wrap;
+}
+
+.buddy-detail-sep {
+  color: #9CA3AF;
+  font-size: 0.75rem;
+}
+
+.buddy-detail-status-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.buddy-detail-online-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 99px;
+  padding: 0.2rem 0.6rem;
+}
+.buddy-detail-online-pill.online {
+  background: rgba(22, 163, 74, 0.1);
+  color: #15803D;
+  border: 1px solid rgba(22, 163, 74, 0.2);
+}
+.buddy-detail-online-pill.offline {
+  background: rgba(107, 114, 128, 0.1);
+  color: #6B7280;
+  border: 1px solid rgba(107, 114, 128, 0.18);
+}
+
+.buddy-detail-meta-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #6B7280;
+  background: rgba(216, 210, 196, 0.4);
+  border: 1px solid rgba(216, 210, 196, 0.7);
+  border-radius: 99px;
+  padding: 0.2rem 0.6rem;
+}
+
+/* ── Action Buttons ─────────────────────────────────────────── */
+.buddy-detail-action-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.buddy-detail-action-btn {
+  font-size: 0.8125rem !important;
+  padding: 0.6rem 1.15rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.4rem !important;
+}
+
+.btn-primary.following {
+  background: var(--bud-forest) !important;
+  border-color: var(--bud-forest) !important;
+}
+
+.buddy-detail-share-btn {
+  padding: 0.6rem 0.9rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.35rem !important;
+  flex: unset !important;
+  width: auto !important;
+}
+
+/* ── Bio Block ───────────────────────────────────────────────── */
+.buddy-detail-bio-block {
+  background: var(--bud-parchment-deep);
+  border: 1.5px solid var(--bud-line);
+  border-left: 3.5px solid var(--bud-crimson);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+}

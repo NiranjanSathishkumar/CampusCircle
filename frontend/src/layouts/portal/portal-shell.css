@@ -1,0 +1,8 @@
+/* Admin + organizer portal shell (sidebar, topbar, footer).
+   Split into 6 sections; imported in cascade order. */
+@import './shell/shell-sidebar.css';
+@import './shell/shell-topbar.css';
+@import './shell/shell-bell.css';
+@import './shell/shell-account.css';
+@import './shell/shell-footer.css';
+@import './shell/shell-responsive.css';

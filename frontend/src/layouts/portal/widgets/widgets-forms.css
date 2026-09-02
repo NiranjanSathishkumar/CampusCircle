@@ -1,0 +1,194 @@
+/* ── Form controls ────────────────────────────────────────── */
+
+.org-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin-bottom: 1rem;
+}
+
+.org-form-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #0F172A;
+}
+.org-form-label .required {
+  color: #991B1B;
+}
+
+.org-form-hint {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.75rem;
+  color: #6B7280;
+}
+
+.org-form-input,
+.org-form-textarea,
+.org-form-select {
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid #D8D2C4;
+  border-radius: 4px;
+  background: #fff;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.8125rem;
+  color: #0F172A;
+  transition: all 0.2s ease;
+}
+.org-form-input:focus,
+.org-form-textarea:focus,
+.org-form-select:focus {
+  outline: none;
+  border-color: #991B1B;
+  box-shadow: 0 0 0 3px rgba(153, 27, 27, 0.12);
+}
+
+.org-form-textarea {
+  resize: vertical;
+  min-height: 90px;
+}
+
+.org-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+@media (max-width: 560px) {
+  .org-form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Modal ─────────────────────────────────────────────────── */
+
+.org-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  z-index: 200;
+}
+
+.org-modal {
+  background: #FAF8F5;
+  border: 1px solid #D8D2C4;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 560px;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.25);
+}
+
+.org-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.125rem 1.375rem;
+  border-bottom: 1px solid #D8D2C4;
+  flex-shrink: 0;
+}
+
+.org-modal-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0;
+}
+
+.org-modal-body {
+  padding: 1.375rem;
+  overflow-y: auto;
+}
+
+.org-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.625rem;
+  padding: 1rem 1.375rem;
+  border-top: 1px solid #D8D2C4;
+  flex-shrink: 0;
+}
+
+/* ── Student search results (roster add / achievement award) ── */
+
+.org-roster-search-results {
+  margin-top: 0.5rem;
+  border: 1px solid #D8D2C4;
+  border-radius: 5px;
+  overflow: hidden;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.org-roster-search-result {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: #fff;
+  border: none;
+  border-bottom: 1px solid #EEE9DE;
+  cursor: pointer;
+  text-align: left;
+}
+.org-roster-search-result:last-child {
+  border-bottom: none;
+}
+.org-roster-search-result:hover {
+  background: #F5F2EA;
+}
+.org-roster-search-result strong {
+  display: block;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.8125rem;
+  color: #0F172A;
+}
+.org-roster-search-result span span {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6875rem;
+  color: #6B7280;
+}
+
+/* ── Responsive utility ───────────────────────────────────── */
+
+.org-hide-mobile {
+  display: table-cell;
+}
+@media (max-width: 720px) {
+  .org-hide-mobile {
+    display: none;
+  }
+}
+
+/* ── Keyboard Focus Accessibility Guardrails ─────────────────── */
+
+.org-btn:focus-visible,
+.org-icon-btn:focus-visible,
+.org-tab-btn:focus-visible,
+.org-timeframe-btn:focus-visible,
+.org-view-mode-btn:focus-visible,
+.org-form-input:focus-visible,
+.org-form-select:focus-visible,
+.org-search-input:focus-visible,
+.org-sidebar-link:focus-visible,
+.org-sidebar-brand-link:focus-visible,
+.org-sidebar-collapse-btn:focus-visible,
+.org-sidebar-footer-link:focus-visible,
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid #991B1B !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 4px rgba(153, 27, 27, 0.18) !important;
+}

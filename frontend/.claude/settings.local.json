@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node verify_detail_page.mjs)",
+      "Bash(node verify_title2.mjs)"
+    ]
+  }
+}

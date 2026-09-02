@@ -1,0 +1,119 @@
+/* ── Organizer Profile & Community Dropdown ───────────────── */
+
+.org-profile-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.3rem 0.6rem 0.3rem 0.3rem;
+  background-color: rgba(230, 225, 213, 0.4);
+  border: 1px solid #D8D2C4;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: background-color 0.18s ease, border-color 0.18s ease;
+}
+
+.org-profile-trigger:hover,
+.org-profile-trigger--active {
+  background-color: #FAF8F5;
+  border-color: #0F172A;
+}
+
+.org-profile-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+
+.org-profile-details {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  line-height: 1.15;
+}
+
+.org-profile-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 0.75rem;
+  color: #0F172A;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.org-profile-role {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6875rem;
+  color: #6B7280;
+}
+
+.org-profile-caret {
+  color: #6B7280;
+  margin-left: 0.1rem;
+}
+
+.org-profile-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 240px;
+  background-color: #FAF8F5;
+  border: 1px solid #D8D2C4;
+  border-radius: 10px;
+  box-shadow: 0 16px 30px -5px rgba(15, 23, 42, 0.14);
+  z-index: 60;
+  overflow: hidden;
+  overscroll-behavior: contain;
+}
+
+.org-profile-menu-header {
+  padding: 0.875rem 1rem;
+  background-color: rgba(230, 225, 213, 0.4);
+}
+
+.org-profile-menu-divider {
+  height: 1px;
+  background-color: #D8D2C4;
+}
+
+.org-profile-menu-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5rem 0.75rem;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  text-align: left;
+}
+
+.org-profile-menu-item:hover {
+  background-color: #F0EDE5;
+  color: #0F172A;
+}
+
+.org-profile-menu-item--danger:hover {
+  background-color: rgba(153, 27, 27, 0.08);
+  color: #991B1B;
+}
+
+/* ── Content Area ─────────────────────────────────────────── */
+
+.org-content {
+  flex: 1;
+}

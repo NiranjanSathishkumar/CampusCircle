@@ -1,0 +1,131 @@
+/* ============================================================
+   myevents.css — Scoped styles for My Events (Digital Passbook)
+   CampusCircle · Design: Operate mode · Warm institutional editorial
+   Palette: Parchment #F5F2EA · Ink #0F172A · Crimson #991B1B · Forest #1A3A2A
+
+   This file is deliberately self-contained: MyEventsPage reuses several
+   class names that also appear in events.css / profile.css (toast,
+   search bar, dialog chrome, badges, skeletons, profile-detail grid,
+   btn-danger). Those files are NOT imported here, so every one of those
+   classes is defined locally below — the page must render fully styled
+   even if the user lands on #myevents first, without ever visiting
+   Events or Profile in the same session.
+   DO NOT import this file from index.css — myevents-only scope
+   ============================================================ */
+
+/* ─────────────────────────────────────────────────────────────
+   DESIGN TOKENS
+   ───────────────────────────────────────────────────────────── */
+
+:root {
+  --mev-parchment: #F5F2EA;
+  --mev-parchment-deep: #F0EDE5;
+  --mev-parchment-warm: #FAF8F3;
+  --mev-ink: #0F172A;
+  --mev-crimson: #991B1B;
+  --mev-crimson-deep: #7f1d1d;
+  --mev-forest: #1A3A2A;
+  --mev-amber: #B45309;
+  --mev-line: #D8D2C4;
+
+  --mev-ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --mev-shadow-xs: 0 1px 3px rgba(15, 23, 42, 0.05);
+  --mev-shadow-sm: 0 3px 10px rgba(15, 23, 42, 0.06);
+  --mev-shadow-md: 0 10px 28px rgba(15, 23, 42, 0.09), 0 2px 6px rgba(15, 23, 42, 0.04);
+  --mev-shadow-lg: 0 22px 52px rgba(15, 23, 42, 0.16), 0 6px 16px rgba(15, 23, 42, 0.06);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   PAGE LAYOUT
+   ───────────────────────────────────────────────────────────── */
+.myevents-page {
+  min-height: 100dvh;
+  background-color: var(--mev-parchment);
+  position: relative;
+}
+
+.myevents-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.03 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.myevents-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1.5rem 4rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* Custom selection + focus rings, matched to the editorial palette */
+.myevents-page ::selection {
+  background: rgba(153, 27, 27, 0.18);
+  color: var(--mev-ink);
+}
+
+.myevents-page button:focus-visible,
+.myevents-page a:focus-visible,
+.myevents-page input:focus-visible {
+  outline: 2px solid var(--mev-crimson);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+@media (min-width: 768px) {
+  .myevents-inner {
+    padding: 0 2.5rem 5rem;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   PAGE HEADER / HERO
+   ───────────────────────────────────────────────────────────── */
+.myevents-hub-header {
+  padding: 2rem 0 1.5rem;
+  border-bottom: 1px solid #D8D2C4;
+}
+
+@media (min-width: 768px) {
+  .myevents-hub-header {
+    padding: 2.5rem 0 2rem;
+  }
+}
+
+.myevents-hub-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: #991B1B;
+  margin-bottom: 0.625rem;
+}
+
+.myevents-hub-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-weight: 700;
+  color: #0F172A;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin: 0 0 0.5rem;
+}
+
+.myevents-hub-desc {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.9375rem;
+  color: #6B7280;
+  line-height: 1.6;
+  max-width: 54ch;
+  margin: 0;
+}

@@ -1,0 +1,7 @@
+/* Widgets shared by the admin and organizer portals.
+   Split into 5 sections; imported in cascade order. */
+@import './widgets/widgets-controls.css';
+@import './widgets/widgets-cards.css';
+@import './widgets/widgets-charts.css';
+@import './widgets/widgets-badges.css';
+@import './widgets/widgets-forms.css';

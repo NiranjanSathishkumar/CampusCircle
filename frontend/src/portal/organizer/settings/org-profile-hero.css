@@ -1,0 +1,843 @@
+/* ============================================================
+   ORGANISER PORTAL — Community Profile Hero Stylesheet
+   Modelled after the student profile page design system.
+   Palette: Parchment #F5F2EA · Ink #0F172A · Crimson #991B1B · Forest #1A3A2A
+   ============================================================ */
+
+/* ── Community Hero Card ───────────────────────────────────── */
+
+.org-profile-hero {
+  background: #F0EDE5;
+  border: 1.5px solid #D8D2C4;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 1.75rem;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
+}
+
+/* Banner */
+.org-profile-banner-wrap {
+  position: relative;
+  height: 160px;
+  background: linear-gradient(135deg, #1A3A2A 0%, #0F172A 60%, #991B1B 100%);
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .org-profile-banner-wrap {
+    height: 220px;
+  }
+}
+
+.org-profile-banner-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.org-profile-banner-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(15, 23, 42, 0.45) 0%, transparent 55%);
+}
+
+/* Banner action buttons */
+.org-profile-banner-btns {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.org-profile-banner-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.4375rem 0.75rem;
+  background: rgba(245, 242, 234, 0.9);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(216, 210, 196, 0.8);
+  border-radius: 4px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #0F172A;
+  cursor: pointer;
+  transition: background-color 0.18s ease, transform 0.1s ease;
+  z-index: 10;
+}
+
+.org-profile-banner-btn:hover {
+  background: #F5F2EA;
+  transform: translateY(-1px);
+}
+
+.org-profile-banner-btn input[type='file'] {
+  display: none;
+}
+
+/* Summary body */
+.org-profile-summary-body {
+  position: relative;
+  padding: 0 1.5rem 1.5rem;
+  margin-top: -3.5rem;
+}
+
+@media (min-width: 768px) {
+  .org-profile-summary-body {
+    padding: 0 2rem 1.75rem;
+    margin-top: -4.5rem;
+  }
+}
+
+/* Avatar row */
+.org-profile-avatar-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+/* Logo / Avatar wrap */
+.org-profile-logo-wrap {
+  position: relative;
+  width: 6.5rem;
+  height: 6.5rem;
+  border-radius: 50%;
+  border: 4px solid #F0EDE5;
+  background: #D8D2C4;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.18);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .org-profile-logo-wrap {
+    width: 8rem;
+    height: 8rem;
+  }
+}
+
+.org-profile-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.org-profile-logo-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #ffffff;
+  background: linear-gradient(135deg, #991B1B 0%, #1A3A2A 100%);
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+}
+
+.org-profile-logo-upload-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  gap: 0.25rem;
+}
+
+.org-profile-logo-wrap:hover .org-profile-logo-upload-overlay {
+  opacity: 1;
+}
+
+.org-profile-logo-upload-overlay input[type='file'] {
+  display: none;
+}
+
+.org-profile-logo-remove-btn {
+  position: absolute;
+  bottom: 0.125rem;
+  right: 0.125rem;
+  width: 1.625rem;
+  height: 1.625rem;
+  border-radius: 50%;
+  background: #991B1B;
+  border: 2px solid #F5F2EA;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 5;
+  transition: background-color 0.18s ease, transform 0.1s ease;
+}
+
+.org-profile-logo-remove-btn:hover {
+  background: #7F1D1D;
+  transform: scale(1.06);
+}
+
+.org-profile-logo-remove-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Summary actions */
+.org-profile-summary-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Identity meta */
+.org-profile-identity-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.org-profile-community-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(1.375rem, 3vw, 1.875rem);
+  font-weight: 700;
+  color: #0F172A;
+  letter-spacing: -0.02em;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.org-profile-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.875rem;
+  color: #6B7280;
+}
+
+.org-profile-meta-sep {
+  color: #D8D2C4;
+}
+
+/* Category badge chip */
+.org-profile-category-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 99px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: rgba(26, 58, 42, 0.1);
+  color: #1A3A2A;
+  border: 1px solid rgba(26, 58, 42, 0.2);
+}
+
+.org-profile-recruiting-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 99px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: rgba(59, 130, 246, 0.1);
+  color: #2563EB;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.org-profile-recruiting-chip.closed {
+  background: rgba(107, 114, 128, 0.08);
+  color: #6B7280;
+  border-color: rgba(107, 114, 128, 0.15);
+}
+
+/* Recruiting dot */
+.org-profile-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.org-profile-dot.pulsing::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  background-color: currentColor;
+  opacity: 0.4;
+  animation: org-profile-ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes org-profile-ping {
+  75%, 100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .org-profile-dot.pulsing::after {
+    animation: none !important;
+  }
+}
+
+/* Stats bar */
+.org-profile-stats-bar {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #D8D2C4;
+  flex-wrap: wrap;
+}
+
+.org-profile-stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.org-profile-stat-val {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0F172A;
+  line-height: 1;
+}
+
+.org-profile-stat-lbl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.5625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #6B7280;
+}
+
+/* ── Profile Dashboard Grid ────────────────────────────────── */
+
+.org-profile-dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (min-width: 1024px) {
+  .org-profile-dashboard-grid {
+    grid-template-columns: 240px 1fr;
+  }
+}
+
+/* ── Profile Sidebar ───────────────────────────────────────── */
+
+.org-profile-sidebar {
+  background: #F0EDE5;
+  border: 1.5px solid #D8D2C4;
+  border-radius: 8px;
+  overflow: hidden;
+  position: sticky;
+  top: 80px;
+}
+
+@media (max-width: 1023px) {
+  .org-profile-sidebar {
+    position: static;
+  }
+}
+
+.org-profile-tab-rail {
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem;
+}
+
+@media (max-width: 1023px) {
+  .org-profile-tab-rail {
+    flex-direction: row;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding: 0.375rem;
+  }
+
+  .org-profile-tab-rail::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.org-profile-tab-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.6875rem 0.875rem;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #6B7280;
+  cursor: pointer;
+  transition: background-color 0.18s ease, color 0.18s ease;
+  text-align: left;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.org-profile-tab-btn:hover {
+  background: rgba(15, 23, 42, 0.04);
+  color: #0F172A;
+}
+
+.org-profile-tab-btn.active {
+  background: #991B1B;
+  color: #ffffff;
+}
+
+.org-profile-tab-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Completion widget */
+.org-profile-completion-card {
+  padding: 1rem;
+  border-top: 1px solid #D8D2C4;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: #F5F2EA;
+}
+
+@media (max-width: 1023px) {
+  .org-profile-completion-card {
+    display: none;
+  }
+}
+
+.org-profile-completion-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.org-profile-completion-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0;
+}
+
+.org-profile-completion-pct {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #991B1B;
+}
+
+.org-profile-completion-bar-wrap {
+  height: 6px;
+  background: #D8D2C4;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.org-profile-completion-bar {
+  height: 100%;
+  background: #991B1B;
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+
+.org-profile-completion-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.org-profile-completion-item {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.6875rem;
+  color: #6B7280;
+}
+
+.org-profile-completion-item.done {
+  color: #1A3A2A;
+}
+
+/* ── Profile Content Panel ─────────────────────────────────── */
+
+.org-profile-content-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.org-profile-content-panel .org-card,
+.org-settings-page .org-card {
+  background: #F0EDE5;
+  border: 1.5px solid #D8D2C4;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
+}
+
+
+/* ── Section subheadings within cards ──────────────────────── */
+
+.org-profile-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #D8D2C4;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.org-profile-section-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: #0F172A;
+  letter-spacing: -0.01em;
+  margin: 0 0 0.2rem;
+}
+
+.org-profile-section-desc {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.8125rem;
+  color: #6B7280;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── Logo/Banner upload in sidebar card ────────────────────── */
+
+.org-profile-media-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (max-width: 640px) {
+  .org-profile-media-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.org-profile-logo-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.org-profile-logo-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 3px solid #D8D2C4;
+  background: #F0EDE5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9CA3AF;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+}
+
+.org-profile-logo-circle img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.org-profile-banner-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.org-profile-banner-rect {
+  width: 100%;
+  height: 100px;
+  border-radius: 6px;
+  border: 1.5px solid #D8D2C4;
+  background: linear-gradient(135deg, #1A3A2A 0%, #0F172A 60%, #991B1B 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.4);
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+}
+
+.org-profile-banner-rect img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ── Social links – platform row ───────────────────────────── */
+
+.org-profile-social-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #D8D2C4;
+}
+
+.org-profile-social-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.org-profile-social-icon-wrap {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #FAF8F5;
+  border: 1px solid #D8D2C4;
+  color: #0F172A;
+  flex-shrink: 0;
+}
+
+.org-profile-social-platform-label {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #0F172A;
+  min-width: 72px;
+  flex-shrink: 0;
+}
+
+.org-profile-social-input-wrap {
+  flex: 1;
+  position: relative;
+}
+
+/* ── Tag chips redesign ────────────────────────────────────── */
+
+.org-profile-tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  min-height: 2rem;
+}
+
+.org-profile-tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #991B1B;
+  background: rgba(153, 27, 27, 0.07);
+  border: 1px solid rgba(153, 27, 27, 0.2);
+  border-radius: 99px;
+  padding: 0.25rem 0.5rem 0.25rem 0.75rem;
+  transition: background-color 0.15s ease;
+}
+
+.org-profile-tag-chip:hover {
+  background: rgba(153, 27, 27, 0.12);
+}
+
+.org-profile-tag-chip button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(153, 27, 27, 0.5);
+  border-radius: 50%;
+  padding: 0.15rem;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.org-profile-tag-chip button:hover {
+  color: #991B1B;
+  background: rgba(153, 27, 27, 0.12);
+}
+
+/* ── FAQ redesign ──────────────────────────────────────────── */
+
+.org-profile-faq-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid #D8D2C4;
+}
+
+.org-profile-faq-item:last-of-type {
+  border-bottom: none;
+}
+
+.org-profile-faq-number {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  background: rgba(153, 27, 27, 0.08);
+  color: #991B1B;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.org-profile-faq-content {
+  flex: 1;
+}
+
+.org-profile-faq-question {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0 0 0.25rem;
+}
+
+.org-profile-faq-answer {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.8125rem;
+  color: #6B7280;
+  margin: 0;
+  line-height: 1.55;
+}
+
+.org-profile-faq-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* ── Recruiting toggle ─────────────────────────────────────── */
+
+.org-profile-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.875rem 1rem;
+  background: #FAF8F5;
+  border: 1px solid #D8D2C4;
+  border-radius: 6px;
+}
+
+.org-profile-toggle-text {
+  flex: 1;
+}
+
+.org-profile-toggle-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0 0 0.125rem;
+}
+
+.org-profile-toggle-desc {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.75rem;
+  color: #6B7280;
+  margin: 0;
+}
+
+/* Custom toggle switch */
+.org-profile-toggle-switch {
+  position: relative;
+  width: 42px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.org-profile-toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.org-profile-toggle-slider {
+  position: absolute;
+  inset: 0;
+  background-color: #D8D2C4;
+  border-radius: 99px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.org-profile-toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  left: 3px;
+  top: 3px;
+  transition: transform 0.2s ease;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.2);
+}
+
+.org-profile-toggle-switch input:checked + .org-profile-toggle-slider {
+  background-color: #1A3A2A;
+}
+
+.org-profile-toggle-switch input:checked + .org-profile-toggle-slider::before {
+  transform: translateX(18px);
+}
+
+.org-profile-toggle-switch input:focus-visible + .org-profile-toggle-slider {
+  outline: 2px solid #991B1B;
+  outline-offset: 2px;
+}

@@ -1,0 +1,303 @@
+/* ─────────────────────────────────────────────────────────────
+   DRIVE APPLICATION DIALOG (Community Recruitment)
+   Editorial Design System: Space Grotesk, Plus Jakarta Sans, JetBrains Mono
+   Palette: Parchment #F5F2EA, Crimson #991B1B, Forest #1A3A2A, Gold #B45309
+   ───────────────────────────────────────────────────────────── */
+
+.drv-apply-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem 1rem;
+  overflow-y: auto;
+}
+
+/* Compound selector so this beats the base .events-dialog rule regardless
+   of stylesheet import order (higher specificity, no !important needed). */
+.events-dialog.drv-apply-dialog {
+  max-width: 780px;
+  max-height: 94vh;
+}
+
+.drv-apply-dialog::before {
+  background: linear-gradient(90deg, #991B1B 0%, #B45309 50%, #1A3A2A 100%);
+}
+
+/* ── Header ── */
+.drv-apply-header {
+  padding: 1.375rem 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid #E5DFD3;
+  background: linear-gradient(180deg, #F5F2EA 0%, #F0EDE5 100%);
+  flex-shrink: 0;
+}
+
+.drv-apply-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  min-width: 0;
+}
+
+.drv-apply-icon-badge {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #991B1B 0%, #7F1D1D 100%);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(153, 27, 27, 0.3);
+}
+
+.drv-apply-header-text {
+  min-width: 0;
+}
+
+.drv-apply-eyebrow {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #991B1B;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.1875rem;
+}
+
+.drv-apply-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Body ── */
+.drv-apply-body {
+  padding: 1.5rem 1.75rem;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.375rem;
+}
+
+/* ── Drive hero ── */
+.drv-apply-hero {
+  background: linear-gradient(145deg, #FFFFFF 0%, #F8F6F0 100%);
+  border: 1.5px solid #E5DFD3;
+  border-radius: 14px;
+  padding: 1.25rem 1.375rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03);
+}
+
+.drv-apply-hero::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 180px;
+  height: 100%;
+  background: radial-gradient(circle at right top, rgba(153, 27, 27, 0.05) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.drv-apply-hero-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.625rem;
+  flex-wrap: wrap;
+}
+
+.drv-apply-hero-host {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4375rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #475569;
+}
+
+.drv-apply-hero-host-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 5px;
+  background: rgba(15, 23, 42, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8125rem;
+}
+
+.drv-apply-deadline-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3125rem;
+  padding: 0.25rem 0.625rem;
+  background: rgba(180, 83, 9, 0.08);
+  border: 1px solid rgba(180, 83, 9, 0.22);
+  border-radius: 999px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #B45309;
+  white-space: nowrap;
+}
+
+.drv-apply-hero-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.1875rem;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0 0 0.625rem;
+  line-height: 1.35;
+  letter-spacing: -0.015em;
+}
+
+.drv-apply-hero-desc {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.85rem;
+  color: #475569;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* ── Applicant identity card ── */
+.drv-apply-identity-card {
+  background: #FFFFFF;
+  border: 1.5px solid #E5DFD3;
+  border-radius: 12px;
+  padding: 0.9375rem 1.125rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.875rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.drv-apply-identity-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.drv-apply-avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #1A3A2A 0%, #0F172A 100%);
+  color: #F5F2EA;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 0.9375rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(26, 58, 42, 0.2);
+}
+
+.drv-apply-identity-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.drv-apply-identity-role {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #1A3A2A;
+  letter-spacing: 0.04em;
+}
+
+.drv-apply-identity-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.drv-apply-identity-sub {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.7rem;
+  color: #64748B;
+  margin: 0;
+}
+
+.drv-apply-verified-seal {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5625rem;
+  background: rgba(26, 58, 42, 0.06);
+  border: 1px solid rgba(26, 58, 42, 0.15);
+  border-radius: 999px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #1A3A2A;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Footer ── */
+.drv-apply-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 1.25rem 1.75rem;
+  background: #F5F2EA;
+  border-top: 1px solid #E5DFD3;
+  flex-shrink: 0;
+}
+
+.drv-apply-footer .events-dialog-cancel {
+  padding: 0.75rem 1.25rem;
+}
+
+.drv-apply-footer .events-dialog-confirm {
+  padding: 0.75rem 1.5rem;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 640px) {
+  .events-dialog.drv-apply-dialog {
+    max-height: 92vh;
+  }
+
+  .drv-apply-header,
+  .drv-apply-body,
+  .drv-apply-footer {
+    padding-left: 1.125rem;
+    padding-right: 1.125rem;
+  }
+}

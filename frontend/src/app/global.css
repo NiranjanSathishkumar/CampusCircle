@@ -1,0 +1,1330 @@
+@import "tailwindcss";
+
+@theme {
+  /* Core type scale */
+  --font-display: "Space Grotesk", sans-serif;
+  --font-sans: "Plus Jakarta Sans", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  /* Color tokens */
+  --color-ink: #0F172A;
+  --color-parchment: #F5F2EA;
+  --color-ghost: #F0EDE5;
+  --color-border: #D8D2C4;
+  --color-crimson: #991B1B;
+  --color-crimson-light: #FEF2F2;
+  --color-crimson-mid: #DC2626;
+  --color-forest: #1A3A2A;
+  --color-forest-light: #ECFDF5;
+  --color-gold: #B45309;
+  --color-gold-light: #FFFBEB;
+  --color-muted: #6B7280;
+  --color-subtle: #9CA3AF;
+
+  /* Legacy aliases for backward compat */
+  --color-campus-navy: #0F172A;
+  --color-campus-parchment: #F5F2EA;
+  --color-campus-crimson: #991B1B;
+  --color-campus-emerald: #1A3A2A;
+  --color-campus-amber: #B45309;
+  --color-campus-paper: #F0EDE5;
+  --color-campus-border: #D8D2C4;
+  --color-campus-muted: #6B7280;
+}
+
+/* ============================================================
+   GLOBAL BASE
+   ============================================================ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: #F5F2EA;
+  color: #0F172A;
+  font-family: "Plus Jakarta Sans", sans-serif;
+}
+
+/* Selection */
+::selection {
+  background-color: #991B1B;
+  color: #fff;
+}
+
+/* ============================================================
+   FOCUS STATES (Accessible, Keyboard-visible)
+   ============================================================ */
+
+*:focus-visible {
+  outline: 2px solid #991B1B;
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* ============================================================
+   LAYOUT HELPERS
+   ============================================================ */
+
+.page-container {
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .page-container {
+    padding-left: 2.5rem;
+    padding-right: 2.5rem;
+  }
+}
+
+/* ============================================================
+   LEDGER / GRID BACKGROUNDS
+   ============================================================ */
+
+.ledger-grid {
+  background-size: 32px 32px;
+  background-image:
+    linear-gradient(to right, rgba(15, 23, 42, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(15, 23, 42, 0.04) 1px, transparent 1px);
+}
+
+.ledger-dot {
+  background-image: radial-gradient(circle, rgba(15, 23, 42, 0.08) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.ledger-grid-dark {
+  background-size: 32px 32px;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+}
+
+/* ============================================================
+   HERO SCROLL PARALLAX — now handled by GSAP ScrollTrigger.
+   The .hero-scroll-parallax CSS-driven animation has been
+   removed. GSAP imperatively sets backgroundPositionY via
+   an onUpdate callback, giving precise scrub control and
+   avoiding conflict with CSS animation-timeline.
+   ============================================================ */
+
+/* ScrambleText in-progress glyphs — dim so they read as
+   machine noise rather than final text, matching the stamp
+   aesthetic (teleprinter decode effect on "in one place.") */
+.scramble-glyph {
+  opacity: 0.38;
+  color: #991B1B;
+}
+
+/* ============================================================
+   SEATS REMAINING PULSE — live urgency signal
+   ============================================================ */
+
+@keyframes seatsPulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.55;
+  }
+}
+
+.seats-pulse {
+  animation: seatsPulse 2.4s ease-in-out infinite;
+}
+
+/* ============================================================
+   FORM PANEL HOVER LIFT (for tilt card contexts)
+   ============================================================ */
+
+.form-panel-interactive {
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.form-panel-interactive:hover {
+  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.1);
+}
+
+/* ============================================================
+   NAVBAR — active link indicator dot
+   ============================================================ */
+
+nav a[aria-current="page"]::before {
+  content: "";
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: #991B1B;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+/* ============================================================
+   CTA BUTTON SHIMMER — one-time shimmer on page load
+   for the primary crimson CTA
+   ============================================================ */
+
+@keyframes ctaShimmer {
+  0% {
+    background-position: -200% center;
+  }
+
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.btn-primary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(105deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.18) 50%,
+      transparent 70%);
+  background-size: 200% 100%;
+  animation: ctaShimmer 2.5s ease 1.2s 1 forwards;
+  pointer-events: none;
+}
+
+.btn-primary {
+  position: relative;
+  overflow: hidden;
+}
+
+/* ============================================================
+   REGISTRAR STAMP SYSTEM (Signature Element)
+   ============================================================ */
+
+.stamp-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.375rem 0.75rem;
+  border: 2px dashed #991B1B;
+  color: #991B1B;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  border-radius: 2px;
+  box-shadow: 0 0 0 3px rgba(153, 27, 27, 0.06);
+  user-select: none;
+  pointer-events: none;
+}
+
+.stamp-badge-rotated {
+  transform: rotate(-3deg);
+}
+
+.stamp-badge-rotated-pos {
+  transform: rotate(2deg);
+}
+
+.stamp-verified {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  border: 1.5px solid #1A3A2A;
+  color: #1A3A2A;
+  background-color: rgba(26, 58, 42, 0.05);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  border-radius: 2px;
+}
+
+/* ============================================================
+   TICKET STUB PERFORATION EFFECT
+   ============================================================ */
+
+.ticket-stub {
+  position: relative;
+}
+
+.ticket-stub::before {
+  content: "";
+  position: absolute;
+  left: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  background-color: #F5F2EA;
+  border-radius: 50%;
+  z-index: 1;
+}
+
+.ticket-stub::after {
+  content: "";
+  position: absolute;
+  right: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  background-color: #F5F2EA;
+  border-radius: 50%;
+  z-index: 1;
+}
+
+/* ============================================================
+   FORM PANEL (Punched card / syllabus aesthetic)
+   ============================================================ */
+
+.form-panel {
+  background-color: #F0EDE5;
+  border: 1.5px solid #D8D2C4;
+  border-radius: 4px;
+  position: relative;
+}
+
+.form-panel-ref {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.625rem;
+  color: #9CA3AF;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* ============================================================
+   SECTION DIVIDER SYSTEM
+   (Rule: max 1 eyebrow per 3 sections)
+   ============================================================ */
+
+.section-rule {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 3rem;
+}
+
+.section-rule::before {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background-color: #D8D2C4;
+}
+
+.section-label {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.625rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: #9CA3AF;
+}
+
+.section-rule::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background-color: #D8D2C4;
+}
+
+/* Dark-background section rule variant */
+.section-rule-dark {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.section-rule-dark::before {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background-color: rgba(216, 210, 196, 0.2);
+}
+
+.section-label-dark {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.625rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: rgba(156, 163, 175, 0.6);
+}
+
+.section-rule-dark::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background-color: rgba(216, 210, 196, 0.2);
+}
+
+/* ============================================================
+   ACCORDION (FAQ) — with smooth height animation
+   ============================================================ */
+
+.accordion-item {
+  border-top: 1px solid #D8D2C4;
+}
+
+.accordion-item:last-child {
+  border-bottom: 1px solid #D8D2C4;
+}
+
+.accordion-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #0F172A;
+  text-align: left;
+  transition: color 0.2s ease;
+}
+
+.accordion-trigger:hover {
+  color: #991B1B;
+}
+
+
+
+/* ============================================================
+   COMPARISON RUBRIC
+   ============================================================ */
+
+.rubric-col-cc {
+  background-color: #0F172A;
+  color: #F5F2EA;
+  border-radius: 4px;
+  position: relative;
+}
+
+.rubric-col-cc::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 4px;
+  border: 1.5px solid rgba(153, 27, 27, 0.4);
+}
+
+/* ============================================================
+   CTA BUTTONS
+   — Primary = Crimson (conversion action: "Create Profile")
+   — Secondary = Ink/Navy (exploration: "Explore Events")
+   — Ghost = Outlined on dark backgrounds
+   ============================================================ */
+
+/* Primary CTA — crimson, the conversion action */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background-color: #991B1B;
+  color: #fff;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  border-radius: 3px;
+  text-decoration: none;
+  transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(153, 27, 27, 0.25), 0 4px 16px rgba(153, 27, 27, 0.12);
+}
+
+.btn-primary:hover {
+  background-color: #7f1d1d;
+  box-shadow: 0 2px 6px rgba(153, 27, 27, 0.35), 0 6px 20px rgba(153, 27, 27, 0.18);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(1px) scale(0.99);
+  box-shadow: 0 1px 2px rgba(153, 27, 27, 0.2);
+}
+
+/* Secondary CTA — ink/navy, the exploration action */
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background-color: #0F172A;
+  color: #F5F2EA;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  border-radius: 3px;
+  text-decoration: none;
+  border: 1.5px solid #0F172A;
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-secondary:hover {
+  background-color: #1e293b;
+  border-color: #1e293b;
+  transform: translateY(-1px);
+}
+
+.btn-secondary:active {
+  transform: translateY(1px) scale(0.99);
+}
+
+/* Ghost CTA — outlined, for use on dark sections */
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background-color: transparent;
+  color: #F5F2EA;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  border-radius: 3px;
+  text-decoration: none;
+  border: 1.5px solid rgba(245, 242, 234, 0.3);
+  transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.1s ease;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-ghost:hover {
+  border-color: rgba(245, 242, 234, 0.65);
+  background-color: rgba(245, 242, 234, 0.07);
+  transform: translateY(-1px);
+}
+
+.btn-ghost:active {
+  transform: translateY(1px) scale(0.99);
+}
+
+/* Kept for backward compat — alias for btn-primary */
+.btn-crimson {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background-color: #991B1B;
+  color: #fff;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  border-radius: 3px;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  white-space: nowrap;
+}
+
+.btn-crimson:hover {
+  background-color: #7f1d1d;
+}
+
+.btn-crimson:active {
+  transform: translateY(1px) scale(0.99);
+}
+
+/* ============================================================
+   FEATURE TABS
+   ============================================================ */
+
+.feature-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.125rem;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #6B7280;
+  border-bottom: 2px solid transparent;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  cursor: pointer;
+  transition: color 0.22s ease, border-color 0.22s ease;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+
+.feature-tab:hover {
+  color: #374151;
+}
+
+.feature-tab.active {
+  color: #991B1B;
+  border-bottom-color: #991B1B;
+  font-weight: 600;
+}
+
+/* Mobile tab scroll fade affordance */
+.tab-scroll-container {
+  position: relative;
+}
+
+.tab-scroll-container::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 48px;
+  background: linear-gradient(to right, transparent, #F5F2EA);
+  pointer-events: none;
+}
+
+/* ============================================================
+   PROBLEM CARDS — hover lift and border accent
+   ============================================================ */
+
+.problem-card {
+  padding: 2rem 0;
+  border-top: 1px solid #D8D2C4;
+  transition: background-color 0.2s ease;
+}
+
+.problem-card:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+@media (min-width: 768px) {
+  .problem-card {
+    padding: 0 2rem;
+    border-top: none;
+    border-left: 1px solid #D8D2C4;
+  }
+
+  .problem-card:first-child {
+    padding-left: 0;
+    border-left: none;
+  }
+}
+
+/* Card-level hover: subtle bg shift on the numbered problem tiles */
+.problem-tile-hover {
+  transition: background-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.problem-tile-hover:hover {
+  background-color: #EDE9DF;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+  z-index: 1;
+}
+
+/* form-panel hover (feature mockup) */
+.form-panel:hover {
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08);
+  transition: box-shadow 0.3s ease;
+}
+
+/* Stat pill hover */
+.stat-pill {
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.stat-pill:hover {
+  background-color: #EDE9DF;
+  transform: translateY(-1px);
+}
+
+/* ============================================================
+   DISCOVER FEED — Post card interactions
+   ============================================================ */
+
+/* Hide scrollbar on club filter strip */
+.club-filter-strip::-webkit-scrollbar {
+  display: none;
+}
+
+/* Post card hover depth */
+.post-card {
+  transition: box-shadow 0.25s ease, transform 0.2s ease;
+}
+
+.post-card:hover {
+  box-shadow: 0 4px 24px rgba(15, 23, 42, 0.08);
+  transform: translateY(-1px);
+}
+
+/* Liked heart animation */
+@keyframes heartBeat {
+  0% {
+    transform: scale(1);
+  }
+
+  30% {
+    transform: scale(1.28);
+  }
+
+  60% {
+    transform: scale(0.93);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+.heart-pop {
+  animation: heartBeat 0.36s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+/* Saved bookmark animation */
+@keyframes bookmarkSnap {
+  0% {
+    transform: translateY(0);
+  }
+
+  40% {
+    transform: translateY(-4px);
+  }
+
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.bookmark-snap {
+  animation: bookmarkSnap 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Comment input focus ring override */
+.discover-comment-input:focus {
+  outline: none;
+  border-color: #991B1B !important;
+}
+
+/* Sidebar sticky at top */
+.sidebar-sticky {
+  position: sticky;
+  top: 80px;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #D8D2C4 transparent;
+}
+
+/* Lightbox thumbnail strip */
+.lightbox-thumb {
+  width: 48px;
+  height: 36px;
+  object-fit: cover;
+  border-radius: 2px;
+  opacity: 0.6;
+  cursor: pointer;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.lightbox-thumb.active,
+.lightbox-thumb:hover {
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+/* Feed timeline label */
+.feed-timeline-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.feed-timeline-label::before,
+.feed-timeline-label::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background-color: #D8D2C4;
+}
+
+/* Post type badge variations */
+.badge-event {
+  background: #EFF6FF;
+  color: #1D4ED8;
+}
+
+.badge-workshop {
+  background: #ECFDF5;
+  color: #065F46;
+}
+
+.badge-update {
+  background: #FFFBEB;
+  color: #D97706;
+}
+
+.badge-announcement {
+  background: #F5F3FF;
+  color: #7C3AED;
+}
+
+/* ============================================================
+   FOOTER UTILITIES & ANIMATIONS
+   ============================================================ */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .accordion-content-wrap {
+    transition: none !important;
+  }
+}
+
+/* ============================================================
+   SHARED PAGE HUB HEADER — PageHubHeader component
+   Used uniformly across: Discover, Events, Communities,
+   Buddies, My Events pages.
+   ============================================================ */
+
+.page-hub-header {
+  padding: 1.625rem 0 1.25rem;
+  border-bottom: 1px solid #D8D2C4;
+  margin-bottom: 0;
+  position: relative;
+}
+
+@media (min-width: 768px) {
+  .page-hub-header {
+    padding: 2rem 0 1.625rem;
+  }
+}
+
+.page-hub-header-inner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.page-hub-header-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.page-hub-header-right {
+  flex-shrink: 0;
+  align-self: flex-start;
+}
+
+/* Eyebrow pill badge */
+.page-hub-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4375rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: #991B1B;
+  background: rgba(153, 27, 27, 0.06);
+  border: 1px solid rgba(153, 27, 27, 0.16);
+  padding: 0.25rem 0.625rem;
+  border-radius: 99px;
+  margin-bottom: 0.875rem;
+}
+
+/* Pulsing dot inside pill */
+.page-hub-pulse-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #991B1B;
+  box-shadow: 0 0 0 0 rgba(153, 27, 27, 0.5);
+  animation: pageHubPulseDot 2s infinite;
+  flex-shrink: 0;
+}
+
+@keyframes pageHubPulseDot {
+  0%   { box-shadow: 0 0 0 0   rgba(153, 27, 27, 0.5); }
+  70%  { box-shadow: 0 0 0 6px rgba(153, 27, 27, 0);   }
+  100% { box-shadow: 0 0 0 0   rgba(153, 27, 27, 0);   }
+}
+
+/* Title */
+.page-hub-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(1.875rem, 4vw, 2.75rem);
+  font-weight: 700;
+  color: #0F172A;
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+  margin: 0 0 0.625rem;
+}
+
+/* Description */
+.page-hub-desc {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.9375rem;
+  color: #374151;
+  line-height: 1.65;
+  max-width: 52ch;
+  margin: 0;
+}
+
+/* Stats pill (right slot) */
+.page-hub-stats-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  background: #F0EDE5;
+  border: 1.5px solid #D8D2C4;
+  border-radius: 6px;
+  padding: 0.5625rem 0.9375rem;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #1F2937;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+/* ============================================================
+   SHARED VIEW TOGGLE — Editorial Grid Cards vs Compact Ledger List
+   Used uniformly across: Discover, Events, Communities,
+   Buddies, My Events pages.
+   ============================================================ */
+
+.view-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: #F0EDE5;
+  border: 1.5px solid #D8D2C4;
+  border-radius: 6px;
+  padding: 2px;
+  flex-shrink: 0;
+}
+
+.view-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.625rem;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: #6B7280;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.view-toggle-btn:hover {
+  color: #0F172A;
+}
+
+.view-toggle-btn.active {
+  background: #0F172A;
+  color: #F5F2EA;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.18);
+}
+
+.view-toggle-label {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .view-toggle-label {
+    display: inline;
+  }
+}
+
+/* ============================================================
+   SHARED COMPACT LEDGER LIST VIEW
+   Generic register-style row layout, reused by the same five
+   pages above whenever their view toggle is set to "List".
+   ============================================================ */
+
+.cc-ledger {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid #D8D2C4;
+}
+
+.cc-ledger-row {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.75rem 0.25rem;
+  border-bottom: 1px solid #D8D2C4;
+  cursor: pointer;
+  background: transparent;
+  transition: background-color 0.18s ease;
+  text-align: left;
+  width: 100%;
+}
+
+.cc-ledger-row:hover {
+  background: rgba(153, 27, 27, 0.045);
+}
+
+.cc-ledger-index {
+  flex-shrink: 0;
+  width: 1.75rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.625rem;
+  font-weight: 700;
+  color: #B0A996;
+  text-align: right;
+}
+
+.cc-ledger-thumb {
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  color: #fff;
+  background: #1A3A2A;
+}
+
+.cc-ledger-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cc-ledger-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.cc-ledger-title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.cc-ledger-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: #0F172A;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.cc-ledger-row:hover .cc-ledger-title {
+  color: #991B1B;
+}
+
+.cc-ledger-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+  margin-top: 0.25rem;
+}
+
+.cc-ledger-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.6875rem;
+  color: #6B7280;
+  white-space: nowrap;
+}
+
+.cc-ledger-badge {
+  flex-shrink: 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.55rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.1875rem 0.5rem;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+.cc-ledger-actions {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+@media (max-width: 639px) {
+  .cc-ledger-index {
+    display: none;
+  }
+  .cc-ledger-meta-item.cc-ledger-meta-hide-mobile {
+    display: none;
+  }
+}
+
+/* ============================================================
+   GLOBAL DIALOG & MODAL SYSTEM (Image Cropper, Confirm Dialog, etc.)
+   ============================================================ */
+
+.events-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.events-dialog {
+  background: #F5F2EA;
+  border: 1.5px solid #D8D2C4;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 450px;
+  box-shadow: 0 28px 72px rgba(15, 23, 42, 0.32), 0 4px 16px rgba(15, 23, 42, 0.1);
+  position: relative;
+  outline: none;
+  overflow: hidden;
+}
+
+.events-dialog::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(to right, #991B1B, #B45309);
+}
+
+.events-dialog-header {
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid #D8D2C4;
+  background: #F0EDE5;
+}
+
+.events-dialog-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0;
+  letter-spacing: -0.015em;
+}
+
+.events-dialog-close {
+  width: 2rem;
+  height: 2rem;
+  background: none;
+  border: 1px solid #D8D2C4;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #4B5563;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.events-dialog-close:hover {
+  color: #0F172A;
+  border-color: #9CA3AF;
+  background: rgba(15, 23, 42, 0.05);
+}
+
+.events-dialog-body {
+  padding: 1.25rem 1.5rem;
+}
+
+.events-conflict-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  background: rgba(153, 27, 27, 0.08);
+  border: 1px solid rgba(153, 27, 27, 0.25);
+  border-radius: 6px;
+}
+
+.events-conflict-text {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.8125rem;
+  color: #991B1B;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.events-dialog-footer {
+  padding: 1.125rem 1.5rem;
+  background: #F0EDE5;
+  border-top: 1px solid #D8D2C4;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.events-dialog-cancel {
+  padding: 0.625rem 1.125rem;
+  background: transparent;
+  border: 1.5px solid #D8D2C4;
+  border-radius: 4px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.events-dialog-cancel:hover {
+  border-color: #9CA3AF;
+  color: #0F172A;
+  background: rgba(15, 23, 42, 0.04);
+}
+
+.events-dialog-cancel:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.events-dialog-confirm {
+  padding: 0.625rem 1.25rem;
+  background: #991B1B;
+  border: 1.5px solid #991B1B;
+  border-radius: 4px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.events-dialog-confirm:hover {
+  background: #7f1d1d;
+  border-color: #7f1d1d;
+  box-shadow: 0 4px 14px rgba(153, 27, 27, 0.3);
+}
+
+.events-dialog-confirm:disabled {
+  background: #D8D2C4;
+  border-color: #D8D2C4;
+  color: #9CA3AF;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.btn-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  background: #991B1B;
+  color: #fff;
+  border: 1.5px solid #991B1B;
+  border-radius: 4px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #7f1d1d;
+  border-color: #7f1d1d;
+  box-shadow: 0 4px 14px rgba(153, 27, 27, 0.25);
+  transform: translateY(-1px);
+}
+
+.btn-danger:disabled {
+  background: #D8D2C4;
+  border-color: #D8D2C4;
+  color: #9CA3AF;
+  cursor: not-allowed;
+}

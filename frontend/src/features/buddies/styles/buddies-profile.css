@@ -1,0 +1,729 @@
+/* ─────────────────────────────────────────────────────────────
+   buddies-profile.css — Student detail page component styles
+   ───────────────────────────────────────────────────────────── */
+
+/* ── Verified Stamp ───────────────────────────────────────────── */
+.stamp-verified {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3125rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--bud-forest);
+  background: rgba(26, 58, 42, 0.08);
+  border: 1px solid rgba(26, 58, 42, 0.22);
+  padding: 0.25rem 0.5625rem;
+  border-radius: 99px;
+  flex-shrink: 0;
+}
+
+/* ── Online Dot ───────────────────────────────────────────────── */
+.online-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 1.5px solid #F5F2EA;
+  flex-shrink: 0;
+}
+.online-dot.online  { background: #22C55E; }
+.online-dot.offline { background: #9CA3AF; }
+
+/* ── Metrics Strip ────────────────────────────────────────────── */
+.buddy-metrics-strip {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.75rem;
+}
+
+@media (min-width: 500px) {
+  .buddy-metrics-strip {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.buddy-metric-cell {
+  background: var(--bud-parchment-deep);
+  border: 1.5px solid var(--bud-line);
+  border-radius: 10px;
+  padding: 1rem 0.875rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  cursor: default;
+  transition: transform 0.22s var(--bud-ease), box-shadow 0.22s ease;
+  border-top: 3px solid var(--accent, #991B1B);
+}
+
+.buddy-metric-cell:hover {
+  box-shadow: var(--bud-shadow-sm);
+}
+
+.buddy-metric-icon {
+  line-height: 1;
+}
+
+.buddy-metric-value {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.375rem;
+  font-weight: 800;
+  color: var(--bud-ink);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.buddy-metric-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #9CA3AF;
+}
+
+/* ── Section Blocks ───────────────────────────────────────────── */
+.buddy-section-block {
+  margin-bottom: 1.75rem;
+}
+
+.buddy-section-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--bud-ink);
+  letter-spacing: -0.01em;
+  margin: 0 0 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ── Interest Chips ───────────────────────────────────────────── */
+.buddy-interest-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #B45309;
+  background: rgba(180, 83, 9, 0.08);
+  border: 1.5px solid rgba(180, 83, 9, 0.2);
+  border-radius: 99px;
+  padding: 0.3rem 0.65rem;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  cursor: default;
+}
+
+.buddy-interest-chip:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(180,83,9,0.12);
+}
+
+/* ── Skill Chips ──────────────────────────────────────────────── */
+.buddy-skill-chip {
+  display: inline-flex;
+  align-items: center;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.775rem;
+  font-weight: 600;
+  border-radius: 5px;
+  padding: 0.3rem 0.625rem;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  cursor: default;
+}
+
+.buddy-skill-chip:hover {
+  box-shadow: 0 3px 10px rgba(15,23,42,0.1);
+}
+
+/* ── Tab Bar ──────────────────────────────────────────────────── */
+.buddy-tab-bar {
+  display: flex;
+  gap: 0.25rem;
+  border-bottom: 2px solid var(--bud-line);
+  margin-bottom: 1.5rem;
+}
+
+.buddy-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #6B7280;
+  background: transparent;
+  border: none;
+  border-bottom: 2.5px solid transparent;
+  padding: 0.625rem 0.875rem;
+  margin-bottom: -2px;
+  cursor: pointer;
+  transition: color 0.18s ease, border-color 0.18s ease;
+  letter-spacing: -0.01em;
+  border-radius: 4px 4px 0 0;
+}
+
+.buddy-tab-btn:hover {
+  color: var(--bud-ink);
+  background: rgba(15,23,42,0.04);
+}
+
+.buddy-tab-btn.active {
+  color: var(--bud-crimson);
+  border-bottom-color: var(--bud-crimson);
+}
+
+/* ── Social Links Row ─────────────────────────────────────────── */
+.buddy-social-row {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.buddy-social-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 6px;
+  padding: 0.6rem 1rem;
+  transition: all 0.18s ease;
+  border: 1.5px solid var(--bud-line);
+  color: var(--bud-ink);
+  background: var(--bud-parchment-deep);
+}
+
+.buddy-social-link:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--bud-shadow-sm);
+}
+
+.buddy-social-link.github:hover { border-color: #0F172A; }
+.buddy-social-link.linkedin:hover { border-color: #0A66C2; color: #0A66C2; }
+.buddy-social-link.instagram:hover { border-color: #E4405F; color: #E4405F; }
+
+.buddy-social-ext {
+  opacity: 0.5;
+  margin-left: 2px;
+}
+
+/* ── Timeline (Education) ─────────────────────────────────────── */
+.buddy-timeline {
+  position: relative;
+  padding-left: 1.5rem;
+}
+
+.buddy-timeline::before {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 8px;
+  bottom: 8px;
+  width: 1.5px;
+  background: linear-gradient(to bottom, var(--bud-crimson), rgba(153,27,27,0.15));
+  border-radius: 2px;
+}
+
+.buddy-timeline-item {
+  position: relative;
+  padding-bottom: 1.25rem;
+  display: flex;
+  gap: 0.875rem;
+}
+
+.buddy-timeline-item:last-child {
+  padding-bottom: 0;
+}
+
+.buddy-timeline-dot {
+  position: absolute;
+  left: -1.25rem;
+  top: 0.3rem;
+  width: 10px;
+  height: 10px;
+  background: var(--bud-crimson);
+  border-radius: 50%;
+  border: 2px solid #F5F2EA;
+  box-shadow: 0 0 0 2px rgba(153,27,27,0.2);
+  flex-shrink: 0;
+}
+
+.buddy-timeline-content {
+  flex: 1;
+}
+
+.buddy-timeline-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--bud-ink);
+  margin: 0 0 2px;
+}
+
+.buddy-timeline-sub {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.8125rem;
+  color: #6B7280;
+  margin: 0 0 4px;
+}
+
+.buddy-timeline-year {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #9CA3AF;
+}
+
+/* ── Club Cards Grid ──────────────────────────────────────────── */
+.buddy-clubs-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.buddy-club-card {
+  background: var(--bud-parchment-deep);
+  border: 1.5px solid var(--bud-line);
+  border-radius: 10px;
+  padding: 0.875rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  cursor: default;
+}
+
+.buddy-club-card:hover {
+  box-shadow: var(--bud-shadow-sm);
+}
+
+.buddy-club-logo {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 8px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.buddy-club-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.buddy-club-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--bud-ink);
+  margin: 0 0 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.buddy-club-cat {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.75rem;
+  color: #6B7280;
+  margin: 0;
+}
+
+.buddy-club-role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.275rem 0.625rem;
+  border-radius: 4px;
+  background: rgba(245, 242, 234, 0.94);
+  color: #1F2937;
+  border: 1px solid rgba(216, 210, 196, 0.9);
+  flex-shrink: 0;
+}
+
+/* ── Award Cards ──────────────────────────────────────────────── */
+.buddy-award-card {
+  background: var(--bud-parchment-deep);
+  border: 1.5px solid var(--bud-line);
+  border-radius: 10px;
+  padding: 1rem 1.125rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  cursor: default;
+  border-left: 3px solid rgba(180, 83, 9, 0.45);
+}
+
+.buddy-award-card:hover {
+  box-shadow: var(--bud-shadow-sm);
+}
+
+.buddy-award-icon-wrap {
+  width: 2.5rem;
+  height: 2.5rem;
+  background: rgba(180, 83, 9, 0.08);
+  border: 1.5px solid rgba(180, 83, 9, 0.18);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.buddy-award-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.buddy-award-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--bud-ink);
+  margin: 0 0 3px;
+}
+
+.buddy-award-issuer {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--bud-crimson);
+  margin: 0;
+}
+
+.buddy-award-desc {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.75rem;
+  color: #6B7280;
+  margin: 4px 0 0;
+  line-height: 1.5;
+}
+
+.buddy-award-year {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #9CA3AF;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+/* ── Empty State ──────────────────────────────────────────────── */
+.buddy-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 3rem 1.5rem;
+  background: var(--bud-parchment-deep);
+  border: 1.5px dashed var(--bud-line);
+  border-radius: 10px;
+  gap: 0.625rem;
+}
+
+.buddy-empty-state p {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #9CA3AF;
+  margin: 0;
+}
+
+.buddy-empty-state span {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.8125rem;
+  color: #C4BDB0;
+  margin: 0;
+}
+
+/* ── Sidebar Card ─────────────────────────────────────────────── */
+.buddy-sidebar-card {
+  background: var(--bud-parchment-deep);
+  border: 1.5px solid var(--bud-line);
+  border-top: 3px solid var(--bud-crimson);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: var(--bud-shadow-md);
+  transition: box-shadow 0.3s ease;
+}
+
+.buddy-sidebar-card:hover {
+  box-shadow: var(--bud-shadow-lg);
+}
+
+@media (min-width: 1024px) {
+  .buddy-sidebar-card {
+    position: sticky;
+    top: 84px;
+  }
+}
+
+.buddy-sidebar-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--bud-line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.buddy-sidebar-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--bud-ink);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.buddy-sidebar-body {
+  padding: 0.875rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.buddy-sidebar-row {
+  /* spacer */
+}
+
+.profile-detail-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.5625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #9CA3AF;
+  margin-bottom: 0.25rem;
+  display: block;
+}
+
+.profile-detail-value {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--bud-ink);
+  margin: 0;
+  word-break: break-word;
+}
+
+/* Status badge (sidebar) */
+.buddy-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  margin: 0;
+}
+.buddy-status-badge.online  { color: #15803D; }
+.buddy-status-badge.offline { color: #6B7280; }
+
+/* Sidebar social icon buttons */
+.buddy-sidebar-social-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 6px;
+  background: rgba(15,23,42,0.05);
+  border: 1.5px solid var(--bud-line);
+  color: var(--bud-ink);
+  text-decoration: none;
+  transition: all 0.18s ease;
+}
+
+.buddy-sidebar-social-icon:hover {
+  background: rgba(15,23,42,0.1);
+  border-color: #9CA3AF;
+  transform: translateY(-1px);
+}
+
+/* Sidebar CTA section */
+.buddy-sidebar-cta {
+  padding: 0.875rem 1.25rem;
+  border-top: 1px solid var(--bud-line);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Follow CTA button */
+.events-sticky-reg-btn {
+  width: 100%;
+  padding: 0.8rem;
+  background: var(--bud-crimson);
+  border: none;
+  border-radius: 6px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.events-sticky-reg-btn:hover:not(:disabled) {
+  background: var(--bud-crimson-deep);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(153, 27, 27, 0.32);
+}
+
+.events-sticky-reg-btn:active:not(:disabled) {
+  transform: translateY(0) scale(0.99);
+}
+
+.events-sticky-reg-btn.registered {
+  background: var(--bud-forest);
+}
+
+.events-sticky-reg-btn.registered:hover {
+  background: #0F2A1A;
+}
+
+/* Sidebar skills quick-peek */
+.buddy-sidebar-skills {
+  background: var(--bud-parchment-deep);
+  border: 1.5px solid var(--bud-line);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  margin-top: 1rem;
+  box-shadow: var(--bud-shadow-xs);
+}
+
+.buddy-sidebar-section-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #9CA3AF;
+  margin: 0 0 0.625rem;
+}
+
+/* ── Misc Shared ──────────────────────────────────────────────── */
+.events-detail-section-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--bud-ink);
+  letter-spacing: -0.01em;
+  margin: 0 0 1.25rem;
+  border-left: 3px solid var(--bud-crimson);
+  padding-left: 0.75rem;
+}
+
+.events-about-section { margin-bottom: 2rem; }
+
+.events-about-text {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.9375rem;
+  color: #374151;
+  line-height: 1.75;
+  white-space: pre-line;
+  margin: 0;
+}
+
+.profile-tags-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.event-category-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5625rem;
+  border-radius: 3px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  background: rgba(245, 242, 234, 0.94);
+  color: #1F2937;
+  border: 1px solid rgba(216, 210, 196, 0.9);
+}
+
+/* ── Share Icon Button ────────────────────────────────────────── */
+.events-sticky-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.55rem 0.8rem;
+  background: transparent;
+  border: 1.5px solid var(--bud-line);
+  border-radius: 6px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.775rem;
+  font-weight: 700;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.events-sticky-icon-btn:hover {
+  border-color: #9CA3AF;
+  color: var(--bud-ink);
+  background: rgba(15, 23, 42, 0.04);
+}
+
+.events-sticky-icon-btn.copied {
+  color: var(--bud-forest);
+  border-color: rgba(26, 58, 42, 0.3);
+  background: rgba(26, 58, 42, 0.06);
+}
+
+/* ── Reduced Motion ───────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .buddy-card,
+  .buddy-btn-follow,
+  .buddies-page-btn,
+  .buddy-metric-cell,
+  .buddy-club-card,
+  .buddy-award-card,
+  .buddy-interest-chip,
+  .buddy-skill-chip {
+    transition: none !important;
+    transform: none !important;
+  }
+
+  .skeleton-block,
+  .profile-empty-icon,
+  .events-toast::after {
+    animation: none !important;
+    opacity: 0.85;
+  }
+}

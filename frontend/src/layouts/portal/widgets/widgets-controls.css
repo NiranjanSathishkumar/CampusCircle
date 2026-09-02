@@ -1,0 +1,302 @@
+/* ============================================================
+   OPERATOR PORTAL SHARED PRIMITIVES
+   Shared design system for the Organiser and Admin portals —
+   restrained, data-clarity-first variant of the CampusCircle
+   editorial system. Same tokens as the student app (parchment,
+   ink, crimson, forest, gold) but with tighter density and the
+   crimson accent reserved for emphasis rather than decoration.
+   Class prefix stays "org-" (operator/organiser) across both
+   portals so components are drop-in interchangeable.
+   ============================================================ */
+
+.org-page {
+  padding: 1.75rem 2rem 3rem;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+@media (max-width: 900px) {
+  .org-page {
+    padding: 1.5rem 1.25rem 2.5rem;
+  }
+}
+
+/* ── Back Navigation Link ──────────────────────────────────── */
+
+.org-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #6B7280;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem 0;
+  margin-bottom: 1rem;
+  transition: color 0.16s ease, transform 0.16s ease;
+  text-decoration: none;
+}
+
+.org-back-link:hover {
+  color: #991B1B;
+  transform: translateX(-2px);
+}
+
+/* ── Page header ───────────────────────────────────────────── */
+
+.org-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.75rem;
+}
+
+.org-page-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #991B1B;
+  margin-bottom: 0.5rem;
+}
+
+.org-page-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #0F172A;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.375rem;
+}
+
+.org-page-desc {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.875rem;
+  color: #6B7280;
+  max-width: 56ch;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.org-page-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  flex-shrink: 0;
+}
+
+/* ── Buttons ───────────────────────────────────────────────── */
+
+.org-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4375rem;
+  padding: 0.5625rem 1rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.1s ease, color 0.18s ease;
+  text-decoration: none;
+}
+
+.org-btn:active {
+  transform: translateY(1px);
+}
+
+.org-btn-primary {
+  background: #991B1B;
+  color: #fff;
+  box-shadow: 0 1px 3px rgba(153, 27, 27, 0.25);
+}
+.org-btn-primary:hover {
+  background: #7F1D1D;
+}
+
+.org-btn-secondary {
+  background: #0F172A;
+  color: #F5F2EA;
+}
+.org-btn-secondary:hover {
+  background: #1E293B;
+}
+
+.org-btn-ghost {
+  background: #fff;
+  color: #0F172A;
+  border-color: #D8D2C4;
+}
+.org-btn-ghost:hover {
+  background: #F5F2EA;
+}
+
+/* Destructive actions get their own red, distinct from the brand crimson
+   (#991B1B) used for primary/active UI — so "delete" never looks like the
+   same color family as "create" or "select". */
+.org-btn-danger {
+  background: #fff;
+  color: #DC2626;
+  border-color: rgba(220, 38, 38, 0.35);
+}
+.org-btn-danger:hover {
+  background: rgba(220, 38, 38, 0.06);
+}
+
+.org-btn-danger-solid {
+  background: #DC2626;
+  color: #ffffff;
+  border-color: #DC2626;
+  box-shadow: 0 1px 3px rgba(220, 38, 38, 0.25);
+}
+.org-btn-danger-solid:hover {
+  background: #B91C1C;
+  border-color: #B91C1C;
+}
+
+.org-btn-sm {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+}
+
+.org-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.org-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 0.25rem;
+  border-radius: 6px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: #fff;
+  color: #4B5563;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  flex-shrink: 0;
+}
+.org-icon-btn:hover {
+  background: #F1F5F9;
+  color: #0F172A;
+  border-color: rgba(15, 23, 42, 0.22);
+}
+
+/* Used for delete/remove icon buttons (roster, posts, events, recruitment,
+   achievements). Previously only had a hover rule defined in one page's
+   stylesheet, so every other page rendered these as plain neutral buttons
+   with zero visual warning before an irreversible action. */
+.org-icon-btn--danger {
+  color: #DC2626;
+  border-color: rgba(220, 38, 38, 0.22);
+}
+.org-icon-btn--danger:hover {
+  color: #DC2626;
+  background-color: rgba(220, 38, 38, 0.08);
+  border-color: rgba(220, 38, 38, 0.4);
+}
+
+/* ── Toolbar ───────────────────────────────────────────────── */
+
+.org-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+}
+
+.org-search-wrap {
+  position: relative;
+  flex: 1 1 240px;
+  max-width: 320px;
+}
+
+.org-search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6B7280;
+  pointer-events: none;
+}
+
+.org-search-input {
+  width: 100%;
+  padding: 0.5625rem 0.75rem 0.5625rem 2.125rem;
+  border: 1px solid #D8D2C4;
+  border-radius: 4px;
+  background: #fff;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.8125rem;
+  color: #0F172A;
+  transition: all 0.2s ease;
+}
+.org-search-input:focus {
+  outline: none;
+  border-color: #991B1B;
+  box-shadow: 0 0 0 3px rgba(153, 27, 27, 0.12);
+}
+
+/* ── Tabs ──────────────────────────────────────────────────── */
+
+.org-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-bottom: 1px solid #D8D2C4;
+  margin-bottom: 1.25rem;
+  overflow-x: auto;
+}
+
+.org-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.625rem 0.875rem;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #6B7280;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.18s ease, border-color 0.18s ease;
+}
+.org-tab-btn:hover {
+  color: #0F172A;
+}
+.org-tab-btn.active {
+  color: #991B1B;
+  border-bottom-color: #991B1B;
+}
+
+.org-tab-count {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #6B7280;
+  background: #F0EDE5;
+  border-radius: 99px;
+  padding: 0.0625rem 0.4375rem;
+}
+.org-tab-btn.active .org-tab-count {
+  color: #991B1B;
+  background: rgba(153, 27, 27, 0.1);
+}

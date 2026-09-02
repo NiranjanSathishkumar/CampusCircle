@@ -1,0 +1,310 @@
+/* ==========================================================================
+   CampusCircle — Navbar Account: User Shortcut, Profile Dropdown, Auth Buttons
+   ========================================================================== */
+
+/* ── User Account Pill (logged-in trigger) ── */
+.cc-user-shortcut {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.2rem 0.625rem 0.2rem 0.25rem;
+  background: rgba(15, 23, 42, 0.04);
+  border: 1px solid #D8D2C4;
+  border-radius: 9999px;
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+  position: relative;
+}
+
+.cc-user-shortcut:hover {
+  background-color: rgba(15, 23, 42, 0.07);
+  border-color: rgba(15, 23, 42, 0.3);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+}
+
+.cc-user-shortcut:focus-visible {
+  outline: 2px solid #991B1B;
+  outline-offset: 2px;
+}
+
+.cc-user-shortcut--open {
+  background-color: rgba(15, 23, 42, 0.08);
+  border-color: rgba(15, 23, 42, 0.35);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.1);
+}
+
+/* Avatar image / initials */
+.cc-avatar {
+  width: 1.875rem;
+  height: 1.875rem;
+  border-radius: 9999px;
+  object-fit: cover;
+  border: 1.5px solid rgba(15, 23, 42, 0.2);
+  background: linear-gradient(135deg, #1A3A2A 0%, #0F172A 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 0.6875rem;
+  overflow: hidden;
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
+}
+
+.cc-user-name {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: #0F172A;
+  white-space: nowrap;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: -0.01em;
+}
+
+/* Dropdown caret */
+.cc-user-caret {
+  color: #9CA3AF;
+  flex-shrink: 0;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
+}
+
+.cc-user-caret--open {
+  transform: rotate(180deg);
+  color: #0F172A;
+}
+
+/* ── Profile Dropdown Panel ── */
+.cc-profile-dropdown {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 256px;
+  background-color: #FFFFFF;
+  border: 1px solid #E5E1D8;
+  border-radius: 14px;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.8) inset,
+    0 2px 4px rgba(15, 23, 42, 0.04),
+    0 8px 16px -4px rgba(15, 23, 42, 0.1),
+    0 24px 40px -8px rgba(15, 23, 42, 0.14);
+  z-index: 60;
+  overflow: hidden;
+}
+
+/* ── Identity header ── */
+.cc-profile-dd-identity {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1rem 0.875rem;
+  background: linear-gradient(160deg, #F5F2EA 0%, #EDE9E0 100%);
+  border-bottom: 1px solid #E5E1D8;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Decorative accent bar at top */
+.cc-profile-dd-identity::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2.5px;
+  background: linear-gradient(90deg, #991B1B 0%, #DC2626 50%, #B45309 100%);
+}
+
+.cc-profile-dd-avatar {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 9999px;
+  object-fit: cover;
+  border: 2px solid rgba(255,255,255,0.9);
+  background: linear-gradient(135deg, #1A3A2A 0%, #0F172A 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 0.9375rem;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow:
+    0 0 0 2.5px rgba(153, 27, 27, 0.2),
+    0 3px 8px rgba(15, 23, 42, 0.2);
+  letter-spacing: 0.02em;
+}
+
+.cc-profile-dd-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 0.3rem;
+}
+
+.cc-profile-dd-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: #0F172A;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+}
+
+.cc-profile-dd-role {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.55rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #1A3A2A;
+  background: rgba(26, 58, 42, 0.1);
+  border: 1px solid rgba(26, 58, 42, 0.2);
+  padding: 0.175rem 0.5rem;
+  border-radius: 4px;
+  width: fit-content;
+}
+
+/* ── Menu items section ── */
+.cc-profile-dd-menu {
+  padding: 0.375rem;
+}
+
+/* Menu item */
+.cc-profile-dd-item {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.8375rem;
+  font-weight: 600;
+  color: #374151;
+  background: none;
+  border: none;
+  border-radius: 9px;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.13s ease, color 0.13s ease;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+
+.cc-profile-dd-item:hover {
+  background-color: #F5F2EA;
+  color: #0F172A;
+}
+
+/* Icon wrapper inside menu item */
+.cc-profile-dd-item-icon {
+  width: 1.625rem;
+  height: 1.625rem;
+  border-radius: 7px;
+  background-color: rgba(15, 23, 42, 0.06);
+  border: 1px solid rgba(15, 23, 42, 0.07);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #6B7280;
+  transition: background-color 0.13s ease, color 0.13s ease;
+}
+
+.cc-profile-dd-item:hover .cc-profile-dd-item-icon {
+  background-color: rgba(15, 23, 42, 0.1);
+  color: #374151;
+}
+
+/* Danger (logout) */
+.cc-profile-dd-item--danger {
+  color: #991B1B;
+}
+
+.cc-profile-dd-item--danger .cc-profile-dd-item-icon {
+  background-color: rgba(153, 27, 27, 0.07);
+  border-color: rgba(153, 27, 27, 0.12);
+  color: #991B1B;
+}
+
+.cc-profile-dd-item--danger:hover {
+  background-color: rgba(153, 27, 27, 0.06);
+  color: #7F1D1D;
+}
+
+.cc-profile-dd-item--danger:hover .cc-profile-dd-item-icon {
+  background-color: rgba(153, 27, 27, 0.12);
+  color: #7F1D1D;
+}
+
+/* ── Divider ── */
+.cc-profile-dd-divider {
+  height: 1px;
+  background: #EDE9E0;
+  margin: 0.25rem 0;
+}
+
+/* ── Auth Buttons (Logged-Out) ── */
+.cc-auth-login-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.425rem 0.875rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #0F172A;
+  text-decoration: none;
+  border: 1px solid #D8D2C4;
+  background-color: #F5F2EA;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+}
+
+.cc-auth-login-link:hover {
+  background-color: #0F172A;
+  color: #F5F2EA;
+  border-color: #0F172A;
+}
+
+.cc-auth-signup-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.425rem 1rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-decoration: none;
+  background: linear-gradient(135deg, #B91C1C 0%, #991B1B 100%);
+  border: 1px solid #991B1B;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(153, 27, 27, 0.3), 0 0 0 1px rgba(185, 28, 28, 0.1) inset;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+}
+
+.cc-auth-signup-link:hover {
+  background: linear-gradient(135deg, #991B1B 0%, #7F1D1D 100%);
+  border-color: #7F1D1D;
+  box-shadow: 0 3px 8px rgba(153, 27, 27, 0.35);
+  transform: translateY(-1px);
+}

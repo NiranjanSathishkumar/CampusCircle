@@ -1,0 +1,79 @@
+/* ─────────────────────────────────────────────────────────────
+   DIGITAL PASSBOOK TICKET MODAL
+   ───────────────────────────────────────────────────────────── */
+.ticket-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(4px);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.ticket-pass-card {
+  background: var(--mev-parchment);
+  border: 2px solid var(--mev-ink);
+  border-radius: 10px;
+  max-width: 520px;
+  width: 100%;
+  overflow: hidden;
+  box-shadow: 0 28px 72px rgba(15, 23, 42, 0.42), 0 4px 16px rgba(15, 23, 42, 0.12);
+  position: relative;
+  outline: none;
+}
+
+.ticket-pass-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(to right, var(--mev-crimson), var(--mev-amber), var(--mev-crimson));
+  z-index: 1;
+}
+
+/* Ticket Header Stamp */
+.ticket-pass-header {
+  background: var(--mev-ink);
+  color: var(--mev-parchment);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px dashed #D8D2C4;
+}
+
+.ticket-pass-body {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.ticket-id-banner {
+  background: var(--mev-ink);
+  color: #4ADE80;
+  border-radius: 6px;
+  padding: 0.625rem 1rem;
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-shadow: 0 0 12px rgba(74, 222, 128, 0.45);
+  box-shadow: inset 0 0 0 1px rgba(74, 222, 128, 0.15);
+}
+
+.ticket-qr-visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.875rem;
+  background: #FFFFFF;
+  border: 1px solid #D8D2C4;
+  border-radius: 8px;
+}

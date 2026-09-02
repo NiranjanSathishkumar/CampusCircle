@@ -1,0 +1,142 @@
+/* Accordion FAQs */
+/* ─────────────────────────────────────────────────────────────
+   ORGANIZER SUPPORT SECTION
+   ───────────────────────────────────────────────────────────── */
+
+.events-contact-section {
+  margin-bottom: 2.25rem;
+}
+
+.events-contact-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .events-contact-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.events-contact-card {
+  background: var(--ev-parchment-deep);
+  border: 1.5px solid var(--ev-line);
+  border-radius: 8px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s var(--ev-ease);
+}
+
+.events-contact-card:hover {
+  border-color: #B5AD9E;
+  box-shadow: var(--ev-shadow-sm);
+  transform: translateY(-2px);
+}
+
+.events-contact-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.625rem;
+  border-bottom: 1px solid #D8D2C4;
+}
+
+.events-contact-card-header-icon {
+  color: #991B1B;
+  flex-shrink: 0;
+}
+
+.events-contact-card-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #6B7280;
+  margin: 0;
+}
+
+.events-contact-person-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1875rem;
+}
+
+.events-contact-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.975rem;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0;
+}
+
+.events-contact-role {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.775rem;
+  color: #6B7280;
+  margin: 0;
+}
+
+.events-contact-channels-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.events-contact-detail-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.events-contact-icon {
+  color: #991B1B;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.events-contact-detail-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.events-contact-detail-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #6B7280;
+}
+
+.events-contact-detail-val {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.8125rem;
+  color: #374151;
+  line-height: 1.45;
+}
+
+.events-contact-link {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #991B1B;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.events-contact-link:hover {
+  color: #7f1d1d;
+  text-decoration: underline;
+}
+
+.events-contact-sla {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  color: #6B7280;
+}

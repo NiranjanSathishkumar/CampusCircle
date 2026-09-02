@@ -1,0 +1,6 @@
+/* Public site header.
+   Split into 4 sections; imported in cascade order. */
+@import './styles/navbar-brand.css';
+@import './styles/navbar-notifications.css';
+@import './styles/navbar-account.css';
+@import './styles/navbar-mobile.css';

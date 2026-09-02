@@ -1,0 +1,219 @@
+/* ─────────────────────────────────────────────────────────────
+   DASHBOARD NAVIGATION TABS
+   ───────────────────────────────────────────────────────────── */
+.profile-dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .profile-dashboard-grid {
+    grid-template-columns: 260px 1fr;
+    align-items: start;
+  }
+}
+
+.profile-tab-sidebar {
+  background: #F0EDE5;
+  border: 1.5px solid #D8D2C4;
+  border-radius: 6px;
+  overflow: hidden;
+  position: sticky;
+  top: 80px;
+}
+
+.profile-tab-rail {
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem;
+}
+
+@media (max-width: 1023px) {
+  .profile-tab-sidebar {
+    position: static;
+  }
+
+  .profile-tab-rail {
+    flex-direction: row;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding: 0.375rem;
+  }
+
+  .profile-tab-rail::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.profile-tab-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.6875rem 0.875rem;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #6B7280;
+  cursor: pointer;
+  transition: background-color 0.18s ease, color 0.18s ease;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.profile-tab-btn:hover {
+  background: rgba(15, 23, 42, 0.04);
+  color: #0F172A;
+}
+
+.profile-tab-btn.active {
+  background: #991B1B;
+  color: #ffffff;
+}
+
+.profile-tab-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.profile-tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 0.3125rem;
+  border-radius: 99px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  background: rgba(15, 23, 42, 0.08);
+  color: #374151;
+}
+
+.profile-tab-btn.active .profile-tab-badge {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+/* Completion card widget */
+.profile-completion-card {
+  padding: 1rem;
+  border-top: 1px solid #D8D2C4;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: #F5F2EA;
+}
+
+@media (max-width: 1023px) {
+  .profile-completion-card {
+    display: none;
+  }
+}
+
+.profile-completion-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.profile-completion-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0;
+}
+
+.profile-completion-pct {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #991B1B;
+}
+
+.profile-completion-bar-wrap {
+  height: 6px;
+  background: #D8D2C4;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.profile-completion-bar {
+  height: 100%;
+  background: #991B1B;
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+
+.profile-completion-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.profile-completion-item {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.7188rem;
+  color: #6B7280;
+}
+
+.profile-completion-item.done {
+  color: #1A3A2A;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SECTION CONTENT PANEL
+   ───────────────────────────────────────────────────────────── */
+.profile-content-panel {
+  background: #F0EDE5;
+  border: 1.5px solid #D8D2C4;
+  border-radius: 6px;
+  padding: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .profile-content-panel {
+    padding: 2rem;
+  }
+}
+
+.profile-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid #D8D2C4;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.profile-section-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0F172A;
+  letter-spacing: -0.01em;
+  margin: 0 0 0.25rem;
+}
+
+.profile-section-desc {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.8125rem;
+  color: #6B7280;
+  margin: 0;
+  line-height: 1.5;
+}

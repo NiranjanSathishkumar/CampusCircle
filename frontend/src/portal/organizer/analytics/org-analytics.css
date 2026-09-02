@@ -1,0 +1,295 @@
+/* ============================================================
+   ORGANISER PORTAL — Analytics Suite Stylesheet
+   ============================================================ */
+
+.org-analytics-page {
+  padding-bottom: 3.5rem;
+}
+
+
+
+/* ── Timeframe control (presets + custom date range) ───────── */
+
+.org-timeframe-control {
+  position: relative;
+}
+
+.org-timeframe-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5625rem 0.875rem;
+  background: #FAF8F5;
+  border: 1px solid #D8D2C4;
+  border-radius: 6px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #0F172A;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.16s ease, background-color 0.16s ease;
+}
+
+.org-timeframe-trigger:hover,
+.org-timeframe-trigger.is-open {
+  border-color: #991B1B;
+  background-color: #FAF8F5;
+}
+
+.org-timeframe-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 260px;
+  background-color: #FAF8F5;
+  border: 1px solid #D8D2C4;
+  border-radius: 10px;
+  box-shadow: 0 16px 30px -5px rgba(15, 23, 42, 0.16);
+  z-index: 60;
+  padding: 0.375rem;
+  overscroll-behavior: contain;
+}
+
+.org-timeframe-preset-row {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  width: 100%;
+  padding: 0.5rem 0.625rem;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.15s ease;
+}
+
+.org-timeframe-preset-row:hover {
+  background-color: #F0EDE5;
+}
+
+.org-timeframe-preset-row.is-active {
+  color: #991B1B;
+}
+
+.org-timeframe-preset-check {
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #991B1B;
+  flex-shrink: 0;
+}
+
+.org-timeframe-divider {
+  height: 1px;
+  background-color: #D8D2C4;
+  margin: 0.375rem 0.25rem;
+}
+
+.org-timeframe-custom {
+  padding: 0.375rem 0.625rem 0.5rem;
+}
+
+.org-timeframe-custom-label {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6B7280;
+  margin-bottom: 0.5rem;
+}
+
+.org-timeframe-custom-inputs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.org-timeframe-custom-inputs .org-form-input {
+  padding: 0.4375rem 0.5rem;
+  font-size: 0.75rem;
+}
+
+.org-timeframe-custom-sep {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6875rem;
+  color: #9CA3AF;
+  flex-shrink: 0;
+}
+
+/* ── Analytics tabs (Community Overview / By Event) ────────── */
+
+.org-analytics-view-tabs {
+  display: flex;
+  gap: 0.375rem;
+  margin-bottom: 1.25rem;
+}
+
+.org-analytics-view-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4375rem;
+  padding: 0.5rem 0.875rem;
+  background: #FAF8F5;
+  border: 1px solid #D8D2C4;
+  border-radius: 999px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #6B7280;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.org-analytics-view-tab:hover {
+  color: #0F172A;
+  border-color: #0F172A;
+}
+
+.org-analytics-view-tab.is-active {
+  background-color: #0F172A;
+  color: #fff;
+  border-color: #0F172A;
+}
+
+.org-analytics-event-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.org-analytics-event-picker .org-form-select {
+  max-width: 340px;
+}
+
+/* ── Analytics Visualizations Grid ─────────────────────────── */
+
+.org-analytics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+@media (max-width: 900px) {
+  .org-analytics-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.org-analytics-span-2 {
+  grid-column: span 2;
+}
+
+@media (max-width: 900px) {
+  .org-analytics-span-2 {
+    grid-column: span 1;
+  }
+}
+
+/* ── Animated Bar List Component Styling ───────────────────── */
+
+.org-bar-row-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.org-bar-rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  background-color: rgba(15, 23, 42, 0.05);
+}
+
+.org-bar-track {
+  width: 100%;
+  height: 8px;
+  background-color: #E6E1D5;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.org-bar-fill {
+  height: 100%;
+  border-radius: 9999px;
+}
+
+.org-bar-list-empty {
+  padding: 2rem 1rem;
+  text-align: center;
+  background-color: rgba(245, 242, 234, 0.4);
+  border: 1px dashed #D8D2C4;
+  border-radius: 6px;
+}
+
+/* ── Top Events Leaderboard List ───────────────────────────── */
+
+.org-top-events-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.org-top-events-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.75rem 0.875rem;
+  background-color: #FAF8F5;
+  border: 1px solid #D8D2C4;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.84375rem;
+  color: #0F172A;
+  text-align: left;
+  transition: all 0.16s ease;
+}
+
+.org-top-events-row:hover {
+  background-color: #F0EDE5;
+  border-color: #0F172A;
+}
+
+.org-rank-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #991B1B;
+  background-color: rgba(153, 27, 27, 0.08);
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.org-top-event-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: #0F172A;
+}
+
+.org-top-events-count {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #0D9488;
+}

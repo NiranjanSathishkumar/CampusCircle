@@ -1,0 +1,134 @@
+/* ─────────────────────────────────────────────────────────────
+   ENROLLMENT SUMMARY METRICS GRID
+   ───────────────────────────────────────────────────────────── */
+.myevents-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  padding: 1.5rem 0;
+}
+
+@media (min-width: 768px) {
+  .myevents-stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+    padding: 1.75rem 0;
+  }
+}
+
+.myevents-stat-card {
+  background: var(--mev-parchment-deep);
+  border: 1.5px solid var(--mev-line);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  transition: border-color 0.25s ease, transform 0.25s var(--mev-ease), box-shadow 0.25s ease;
+}
+
+.myevents-stat-card:hover {
+  border-color: var(--mev-ink);
+  transform: translateY(-2px);
+  box-shadow: var(--mev-shadow-sm);
+}
+
+.myevents-stat-card:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.myevents-stat-val {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.625rem;
+  font-weight: 700;
+  color: #0F172A;
+  line-height: 1;
+}
+
+.myevents-stat-lbl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #6B7280;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   STATUS TABS RAIL & TOOLBAR
+   ───────────────────────────────────────────────────────────── */
+.myevents-tabs-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #D8D2C4;
+  flex-wrap: wrap;
+}
+
+.myevents-tab-rail {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.myevents-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.875rem;
+  background: var(--mev-parchment-deep);
+  border: 1.5px solid var(--mev-line);
+  border-radius: 4px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #6B7280;
+  cursor: pointer;
+  transition: color 0.18s ease, border-color 0.18s ease, background-color 0.18s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.myevents-tab-btn:hover {
+  border-color: #0F172A;
+  color: #0F172A;
+}
+
+.myevents-tab-btn.active {
+  border-color: var(--mev-crimson);
+  color: #ffffff;
+}
+
+/* Sliding "magic pill" behind the active tab */
+.myevents-tab-pill {
+  position: absolute;
+  inset: 0;
+  background: var(--mev-crimson);
+  z-index: 0;
+}
+
+.myevents-tab-btn > *:not(.myevents-tab-pill) {
+  position: relative;
+  z-index: 1;
+}
+
+.myevents-tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.125rem;
+  height: 1.125rem;
+  padding: 0 0.25rem;
+  border-radius: 99px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  background: rgba(15, 23, 42, 0.08);
+  color: #374151;
+}
+
+.myevents-tab-btn.active .myevents-tab-badge {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}

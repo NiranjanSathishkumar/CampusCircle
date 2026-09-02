@@ -1,0 +1,190 @@
+/* ─────────────────────────────────────────────────────────────
+   FAQ ACCORDION CARDS SECTION
+   ───────────────────────────────────────────────────────────── */
+
+.events-faq-section {
+  margin-bottom: 2.25rem;
+}
+
+.events-faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.events-faq-card {
+  background: #F0EDE5;
+  border: 1.5px solid #D8D2C4;
+  border-radius: 6px;
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.events-faq-card:hover {
+  border-color: #B5AD9E;
+}
+
+.events-faq-card.open {
+  border-color: #991B1B;
+  background: var(--ev-parchment-warm);
+  box-shadow: var(--ev-shadow-sm);
+}
+
+.events-faq-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  outline: none;
+}
+
+.events-faq-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.625rem;
+  font-weight: 700;
+  color: #991B1B;
+  background: rgba(153, 27, 27, 0.08);
+  border: 1px solid rgba(153, 27, 27, 0.18);
+  padding: 0.2rem 0.5rem;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.events-faq-question-text {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #0F172A;
+  flex: 1;
+  min-width: 0;
+  line-height: 1.35;
+  transition: color 0.15s ease;
+}
+
+.events-faq-card.open .events-faq-question-text {
+  color: #991B1B;
+}
+
+.events-faq-chevron {
+  color: #6B7280;
+  flex-shrink: 0;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), color 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.events-faq-answer-wrap {
+  overflow: hidden;
+}
+
+.events-faq-answer-inner {
+  min-height: 0;
+  overflow: hidden;
+  padding: 0 1.25rem 0 1.25rem;
+  border-top: none;
+}
+
+.events-faq-answer-wrap.open .events-faq-answer-inner {
+  padding: 0.875rem 1.25rem 1.125rem 1.25rem;
+  border-top: 1px solid rgba(216, 210, 196, 0.8);
+}
+
+.events-faq-answer-text {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.84rem;
+  color: #374151;
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   TAGS & DETAIL SIDEBAR REFINEMENTS
+   ───────────────────────────────────────────────────────────── */
+
+.events-detail-tags {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  gap: 0.5rem !important;
+  margin: 0.75rem 0 1.5rem !important;
+  align-items: center !important;
+}
+
+.events-detail-tag {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.375rem !important;
+  padding: 0.3125rem 0.6875rem !important;
+  background: #EBE7DC !important;
+  border: 1.5px solid #D8D2C4 !important;
+  border-radius: 4px !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 0.6875rem !important;
+  font-weight: 700 !important;
+  color: #4B5563 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  transition: all 0.18s ease !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+
+.events-detail-tag:hover {
+  background: rgba(153, 27, 27, 0.08) !important;
+  border-color: rgba(153, 27, 27, 0.25) !important;
+  color: #991B1B !important;
+}
+
+.events-detail-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .events-detail-sidebar {
+    position: sticky;
+    top: 84px;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .event-card,
+  .event-card-img,
+  .event-card-bookmark,
+  .events-sticky-reg-btn,
+  .events-filter-toggle,
+  .events-community-btn,
+  .events-organizer-card,
+  .events-fact-card,
+  .events-contact-card,
+  .accordion-content-wrap {
+    transition: none !important;
+    transform: none !important;
+  }
+
+  .event-card:hover {
+    transform: none !important;
+  }
+
+  .event-card::after {
+    display: none !important;
+  }
+
+  .skeleton-pulse,
+  .skeleton-block,
+  .events-hub-pulse-dot,
+  .events-spotlight-banner::before,
+  .events-toast::after,
+  .events-empty-icon {
+    animation: none !important;
+    opacity: 0.85;
+  }
+}

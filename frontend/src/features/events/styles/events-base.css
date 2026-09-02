@@ -1,0 +1,121 @@
+/* ============================================================
+   events.css — Scoped styles for the Events page
+   CampusCircle · Design: Operate mode · Warm institutional editorial
+   Palette: Parchment #F5F2EA · Ink #0F172A · Crimson #991B1B · Forest #1A3A2A · Amber #B45309
+
+   Signature system: film-grain parchment texture, ticket-stub
+   perforations, cursor-reactive card spotlight, sliding pill
+   navigation, spring-tuned micro-interactions throughout.
+   ============================================================ */
+
+/* ─────────────────────────────────────────────────────────────
+   DESIGN TOKENS
+   ───────────────────────────────────────────────────────────── */
+
+:root {
+  --ev-parchment: #F5F2EA;
+  --ev-parchment-deep: #F0EDE5;
+  --ev-parchment-warm: #FAF8F3;
+  --ev-parchment-hover: #EBE7DC;
+  --ev-ink: #0F172A;
+  --ev-crimson: #991B1B;
+  --ev-crimson-deep: #7f1d1d;
+  --ev-forest: #1A3A2A;
+  --ev-amber: #B45309;
+  --ev-line: #D8D2C4;
+
+  --ev-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --ev-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ev-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --ev-shadow-xs: 0 1px 3px rgba(15, 23, 42, 0.05);
+  --ev-shadow-sm: 0 3px 10px rgba(15, 23, 42, 0.06);
+  --ev-shadow-md: 0 10px 28px rgba(15, 23, 42, 0.09), 0 2px 6px rgba(15, 23, 42, 0.04);
+  --ev-shadow-lg: 0 22px 52px rgba(15, 23, 42, 0.16), 0 6px 16px rgba(15, 23, 42, 0.06);
+  --ev-shadow-crimson: 0 16px 36px rgba(153, 27, 27, 0.18), 0 3px 10px rgba(153, 27, 27, 0.08);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   GLOBAL & LAYOUT SCOPE
+   ───────────────────────────────────────────────────────────── */
+
+.events-page {
+  min-height: 100dvh;
+  background-color: var(--ev-parchment);
+  color: var(--ev-ink);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  position: relative;
+}
+
+/* Subtle film-grain texture — gives the parchment surface a tactile,
+   printed-editorial quality instead of a flat digital fill. */
+.events-page::before,
+.events-detail-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.03 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.events-page-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1.25rem;
+  position: relative;
+  z-index: 1;
+}
+
+@media (min-width: 768px) {
+  .events-page-inner {
+    padding: 0 2.25rem;
+  }
+}
+
+/* Focus styles for keyboard accessibility */
+.events-page button:focus-visible,
+.events-page a:focus-visible,
+.events-page input:focus-visible,
+.events-page select:focus-visible,
+.events-detail-page button:focus-visible,
+.events-detail-page a:focus-visible,
+.events-detail-page input:focus-visible {
+  outline: 2px solid var(--ev-crimson);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+/* Custom selection color, matched to the editorial palette */
+.events-page ::selection,
+.events-detail-page ::selection {
+  background: rgba(153, 27, 27, 0.18);
+  color: var(--ev-ink);
+}
+
+/* Custom scrollbars for scrollable panels within the page */
+.events-filter-panel,
+.events-filter-sheet,
+.events-community-rail {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ev-line) transparent;
+}
+
+.events-filter-panel::-webkit-scrollbar,
+.events-filter-sheet::-webkit-scrollbar {
+  width: 6px;
+}
+
+.events-filter-panel::-webkit-scrollbar-thumb,
+.events-filter-sheet::-webkit-scrollbar-thumb {
+  background: var(--ev-line);
+  border-radius: 99px;
+}
+
+.events-filter-panel::-webkit-scrollbar-thumb:hover,
+.events-filter-sheet::-webkit-scrollbar-thumb:hover {
+  background: #B5AD9E;
+}

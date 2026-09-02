@@ -1,0 +1,8 @@
+/* Buddies directory styles.
+   Split into 6 sections; imported in cascade order. */
+@import './styles/buddies-base.css';
+@import './styles/buddies-toolbar.css';
+@import './styles/buddies-catalog.css';
+@import './styles/buddies-detail.css';
+@import './styles/buddies-feedback.css';
+@import './styles/buddies-profile.css';

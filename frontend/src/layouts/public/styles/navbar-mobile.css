@@ -1,0 +1,269 @@
+/* ==========================================================================
+   CampusCircle — Navbar Mobile Drawer
+   ========================================================================== */
+
+/* ── Mobile Hamburger Toggle ── */
+.cc-mobile-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.375rem;
+  height: 2.375rem;
+  padding: 0;
+  background: rgba(15, 23, 42, 0.04);
+  border: 1px solid #D8D2C4;
+  border-radius: 8px;
+  color: #0F172A;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+@media (min-width: 768px) {
+  .cc-mobile-toggle {
+    display: none;
+  }
+}
+
+.cc-mobile-toggle:hover {
+  background-color: rgba(15, 23, 42, 0.08);
+  border-color: rgba(15, 23, 42, 0.3);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+}
+
+.cc-mobile-toggle:focus-visible {
+  outline: 2px solid #991B1B;
+  outline-offset: 2px;
+}
+
+/* ── Backdrop ── */
+.cc-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 90;
+}
+
+/* ── Drawer Panel ── */
+.cc-mobile-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 300px;
+  max-width: 88vw;
+  background-color: #F8F5EE;
+  border-left: 1px solid #D8D2C4;
+  box-shadow: -12px 0 40px rgba(15, 23, 42, 0.18);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+/* ── Drawer Header ── */
+.cc-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.125rem;
+  border-bottom: 1px solid #EDE9E0;
+  background-color: #F5F2EA;
+}
+
+.cc-drawer-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  background: transparent;
+  border: 1px solid #D8D2C4;
+  border-radius: 7px;
+  color: #6B7280;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.cc-drawer-close-btn:hover {
+  background-color: #0F172A;
+  color: #ffffff;
+  border-color: #0F172A;
+}
+
+/* ── User Identity Card ── */
+.cc-drawer-user-card {
+  padding: 1.125rem;
+  background: linear-gradient(135deg, #ffffff 0%, #F8F5EE 100%);
+  border-bottom: 1px solid #EDE9E0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.cc-drawer-avatar-lg {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 9999px;
+  object-fit: cover;
+  border: 2px solid rgba(15, 23, 42, 0.15);
+  background: linear-gradient(135deg, #1A3A2A 0%, #0F172A 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 3px rgba(26, 58, 42, 0.12), 0 2px 6px rgba(15, 23, 42, 0.15);
+}
+
+.cc-drawer-user-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.cc-drawer-user-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 0.9375rem;
+  color: #0F172A;
+  line-height: 1.2;
+  margin-bottom: 0.3rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: -0.02em;
+}
+
+.cc-drawer-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.55rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #1A3A2A;
+  background: rgba(26, 58, 42, 0.08);
+  border: 1px solid rgba(26, 58, 42, 0.18);
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+}
+
+/* ── Drawer Body & Nav Groups ── */
+.cc-drawer-body {
+  padding: 1.125rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.375rem;
+}
+
+.cc-drawer-group-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: #9CA3AF;
+  margin-bottom: 0.5rem;
+  padding-left: 0.5rem;
+}
+
+.cc-drawer-nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+/* Nav link row */
+.cc-drawer-nav-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0.75rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #374151;
+  text-decoration: none;
+  border-radius: 9px;
+  background-color: transparent;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  letter-spacing: -0.01em;
+}
+
+.cc-drawer-nav-link:hover {
+  background-color: rgba(15, 23, 42, 0.055);
+  color: #0F172A;
+}
+
+.cc-drawer-nav-link--active {
+  background-color: rgba(15, 23, 42, 0.07);
+  color: #0F172A;
+  font-weight: 700;
+}
+
+/* Inner flex (icon + label) */
+.cc-drawer-nav-link-inner {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+/* Icon chip */
+.cc-drawer-nav-icon-wrap {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 7px;
+  background-color: rgba(15, 23, 42, 0.06);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #6B7280;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.cc-drawer-nav-icon-wrap--active {
+  background-color: rgba(153, 27, 27, 0.1);
+  border-color: rgba(153, 27, 27, 0.2);
+  color: #991B1B;
+}
+
+.cc-drawer-nav-link:hover .cc-drawer-nav-icon-wrap {
+  background-color: rgba(15, 23, 42, 0.09);
+  color: #374151;
+}
+
+/* Trailing caret */
+.cc-drawer-nav-caret {
+  color: #C4BFBA;
+  flex-shrink: 0;
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.cc-drawer-nav-link:hover .cc-drawer-nav-caret {
+  color: #9CA3AF;
+  transform: translateX(2px);
+}
+
+.cc-drawer-nav-link--active .cc-drawer-nav-caret {
+  color: #9CA3AF;
+}
+
+/* ── Drawer Footer ── */
+.cc-drawer-footer {
+  padding: 1rem 1.125rem;
+  border-top: 1px solid #EDE9E0;
+  background-color: rgba(235, 231, 222, 0.4);
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
