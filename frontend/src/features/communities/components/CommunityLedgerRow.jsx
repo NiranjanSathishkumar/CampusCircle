@@ -37,7 +37,7 @@ export default function CommunityLedgerRow({
       <span className="cc-ledger-index">{String(index + 1).padStart(2, '0')}</span>
 
       <span className="cc-ledger-thumb" style={{ background: community.coverGradient || 'linear-gradient(135deg, #1A3A2A, #0F172A)' }}>
-        {typeof community.icon === 'string' && community.icon.startsWith('http') ? (
+        {typeof community.icon === 'string' && (community.icon.startsWith('http') || community.icon.startsWith('/')) ? (
           <img src={community.icon} alt="" />
         ) : (
           community.icon

@@ -24,6 +24,7 @@ import {
   Users,
 } from '@phosphor-icons/react';
 import { motion } from 'motion/react';
+import { useOrganizerAuth } from '@/shared/auth/OrganizerAuthContext';
 import FaqAccordionItem from '@/portal/organizer/events/components/OrganizerFaqAccordionItem';
 import StatusPill from '@/layouts/portal/components/StatusPill';
 
@@ -42,6 +43,8 @@ export default function EventShowcaseTab({
   tags,
 }) {
   const navigate = useNavigate();
+  const { community } = useOrganizerAuth();
+  const communityLogo = community?.logo?.cloudinaryUrl || community?.logo?.filename || event?.community?.logo?.cloudinaryUrl || event?.community?.logo?.filename;
 
   return (
     <div id="panel-showcase" role="tabpanel" className="org-showcase-preview-frame">
@@ -153,10 +156,14 @@ export default function EventShowcaseTab({
             {/* Host Organizer Card */}
             <div className="events-organizer-card mb-6">
               <div
-                className="events-organizer-avatar"
+                className="events-organizer-avatar overflow-hidden"
                 style={{ background: 'rgba(26, 58, 42, 0.15)' }}
               >
-                ⚡
+                {communityLogo ? (
+                  <img src={communityLogo} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  '⚡'
+                )}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p className="events-organizer-name">{communityName}</p>

@@ -20,8 +20,8 @@ const COMMUNITIES_DATA = [
     tags: ["coding", "hackathons", "webdev", "ai-ml", "workshops", "opensource"],
     isRecruiting: true,
     openRoles: ["Technical Lead", "Event Coordinator", "Content Writer", "Design Lead"],
-    logo: { filename: "https://images.unsplash.com/photo-1518770660439-4636190af475" },
-    banner: { filename: "https://images.unsplash.com/photo-1531482615713-2afd69097998" },
+    logo: { filename: "/media/CSI.jpg" },
+    banner: { filename: "/media/Tech Banner - 1.jpg" },
     socialLinks: [
       { platform: "linkedin", url: "https://linkedin.com/company/csi-siesgst" },
       { platform: "instagram", url: "https://instagram.com/csi.siesgst" },
@@ -49,8 +49,8 @@ const COMMUNITIES_DATA = [
     tags: ["electronics", "engineering", "seminars", "research", "networking"],
     isRecruiting: true,
     openRoles: ["Branch Secretary", "Technical Coordinator", "Publicity Head"],
-    logo: { filename: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b" },
-    banner: { filename: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158" },
+    logo: { filename: "/media/ieee_gst_logo.jpg" },
+    banner: { filename: "/media/Tech Banner - 2.jpg" },
     socialLinks: [
       { platform: "linkedin", url: "https://linkedin.com/company/ieee-siesgst" },
       { platform: "instagram", url: "https://instagram.com/ieee.siesgst" }
@@ -72,8 +72,8 @@ const COMMUNITIES_DATA = [
     tags: ["telecom", "electronics", "quizzes", "exhibitions", "workshops"],
     isRecruiting: true,
     openRoles: ["Event Manager", "Social Media Lead"],
-    logo: { filename: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4" },
-    banner: { filename: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d" },
+    logo: { filename: "/media/IETE.jpg" },
+    banner: { filename: "/media/Tech Banner - 3.jpg" },
     socialLinks: [
       { platform: "instagram", url: "https://instagram.com/iete.siesgst" },
       { platform: "linkedin", url: "https://linkedin.com/company/iete-siesgst" }
@@ -94,8 +94,8 @@ const COMMUNITIES_DATA = [
     tags: ["startups", "entrepreneurship", "pitching", "business", "mentorship"],
     isRecruiting: true,
     openRoles: ["Operations Head", "Finance Lead", "Outreach Coordinator", "Content Lead"],
-    logo: { filename: "https://images.unsplash.com/photo-1519389950473-47ba0277781c" },
-    banner: { filename: "https://images.unsplash.com/photo-1552664730-d307ca884978" },
+    logo: { filename: "/media/ECell.png" },
+    banner: { filename: "/media/Tech Banner - 4.jpg" },
     socialLinks: [
       { platform: "linkedin", url: "https://linkedin.com/company/ecell-siesgst" },
       { platform: "instagram", url: "https://instagram.com/ecell.siesgst" }
@@ -117,8 +117,8 @@ const COMMUNITIES_DATA = [
     tags: ["android", "cloud", "webdev", "studyjams", "leadership"],
     isRecruiting: true,
     openRoles: ["Android Lead", "Web Lead", "Design Lead", "Community Manager"],
-    logo: { filename: "https://images.unsplash.com/photo-1573164713988-8665fc963095" },
-    banner: { filename: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97" },
+    logo: { filename: "/media/GDSC.jpg" },
+    banner: { filename: "/media/Tech Banner - 1.jpg" },
     socialLinks: [
       { platform: "instagram", url: "https://instagram.com/gdsc.siesgst" },
       { platform: "linkedin", url: "https://linkedin.com/company/gdsc-siesgst" },
@@ -140,8 +140,8 @@ const COMMUNITIES_DATA = [
     tags: ["cybersecurity", "ctf", "ethical-hacking", "appsec", "workshops"],
     isRecruiting: true,
     openRoles: ["Chapter Co-Lead", "CTF Coordinator", "Workshop Lead"],
-    logo: { filename: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5" },
-    banner: { filename: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b" },
+    logo: { filename: "/media/OSWAP.png" },
+    banner: { filename: "/media/Tech Banner - 2.jpg" },
     socialLinks: [
       { platform: "linkedin", url: "https://linkedin.com/company/owasp-siesgst" },
       { platform: "discord", url: "https://discord.gg/owaspsiesgst" }
@@ -162,8 +162,8 @@ const COMMUNITIES_DATA = [
     tags: ["hvac", "mechanical", "sustainability", "research", "plant-visits"],
     isRecruiting: false,
     openRoles: [],
-    logo: { filename: "https://images.unsplash.com/photo-1581092160607-ee22621dd758" },
-    banner: { filename: "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789" },
+    logo: { filename: "/media/Logo.png" },
+    banner: { filename: "/media/Tech Banner - 4.jpg" },
     socialLinks: [
       { platform: "linkedin", url: "https://linkedin.com/company/ishrae-siesgst" }
     ],
@@ -183,8 +183,8 @@ const COMMUNITIES_DATA = [
     tags: ["automotive", "manufacturing", "prototyping", "baja", "mechanical"],
     isRecruiting: true,
     openRoles: ["Design Head", "Manufacturing Lead"],
-    logo: { filename: "https://images.unsplash.com/photo-1487754180451-c456f719a1fc" },
-    banner: { filename: "https://images.unsplash.com/photo-1493238792000-8113da705763" },
+    logo: { filename: "/media/SAE.png" },
+    banner: { filename: "/media/Tech Banner - 3.jpg" },
     socialLinks: [
       { platform: "instagram", url: "https://instagram.com/sae.siesgst" },
       { platform: "linkedin", url: "https://linkedin.com/company/sae-siesgst" }
@@ -205,8 +205,8 @@ const COMMUNITIES_DATA = [
     tags: ["writing", "debate", "poetry", "publishing", "public-speaking"],
     isRecruiting: true,
     openRoles: ["Editor-in-Chief", "Content Writer", "Design Coordinator"],
-    logo: { filename: "https://images.unsplash.com/photo-1512820790803-83ca734da794" },
-    banner: { filename: "https://images.unsplash.com/photo-1519791883288-dc8bd696e667" },
+    logo: { filename: "/media/Literary Club.jpg" },
+    banner: { filename: "/media/LC banner.jpg" },
     socialLinks: [
       { platform: "instagram", url: "https://instagram.com/literaryclub.siesgst" }
     ],
@@ -227,8 +227,8 @@ const COMMUNITIES_DATA = [
     tags: ["theatre", "drama", "acting", "direction", "performance"],
     isRecruiting: true,
     openRoles: ["Director", "Stage Manager", "Scriptwriter"],
-    logo: { filename: "https://images.unsplash.com/photo-1503095396549-807759245b35" },
-    banner: { filename: "https://images.unsplash.com/photo-1503095396549-807759245b35" },
+    logo: { filename: "/media/aarambh.jpg" },
+    banner: { filename: "/media/Theater Banner.jpg" },
     socialLinks: [
       { platform: "instagram", url: "https://instagram.com/aarambh.siesgst" }
     ],
@@ -248,8 +248,8 @@ const COMMUNITIES_DATA = [
     tags: ["folk-dance", "choreography", "performance", "culture", "competitions"],
     isRecruiting: true,
     openRoles: ["Choreographer", "Team Coordinator"],
-    logo: { filename: "https://images.unsplash.com/photo-1524594152303-9fd13543fe6e" },
-    banner: { filename: "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad" },
+    logo: { filename: "/media/Aagmi.jpg" },
+    banner: { filename: "/media/Dance Banner - 1.jpg" },
     socialLinks: [
       { platform: "instagram", url: "https://instagram.com/aagmi.siesgst" }
     ],
@@ -269,8 +269,8 @@ const COMMUNITIES_DATA = [
     tags: ["dance", "choreography", "competitions", "performance", "teamwork"],
     isRecruiting: true,
     openRoles: ["Choreographer", "Team Captain"],
-    logo: { filename: "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad" },
-    banner: { filename: "https://images.unsplash.com/photo-1547153760-18fc86324498" },
+    logo: { filename: "/media/Moksh.jpg" },
+    banner: { filename: "/media/Dance Banner - 2.jpg" },
     socialLinks: [
       { platform: "instagram", url: "https://instagram.com/moksh.siesgst" }
     ],
@@ -290,8 +290,8 @@ const COMMUNITIES_DATA = [
     tags: ["music", "singing", "instruments", "open-mic", "performance"],
     isRecruiting: true,
     openRoles: ["Band Coordinator", "Event Lead"],
-    logo: { filename: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f" },
-    banner: { filename: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745" },
+    logo: { filename: "/media/music club.jpg" },
+    banner: { filename: "/media/Music Banner.jpg" },
     socialLinks: [
       { platform: "instagram", url: "https://instagram.com/musicclub.siesgst" }
     ],

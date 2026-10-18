@@ -59,15 +59,26 @@ export default function CommunityCard({
 
         {/* Club name & category on the cover */}
         <div className="comm-card-cover-identity">
-          <div className="flex items-start gap-1.5">
-            <h3 className="comm-card-cover-name flex-1">
-              {community.name}
-            </h3>
-            {community.isVerified && (
-              <span className="comm-card-verified-mark mt-0.5">
-                <ShieldCheck size={14} weight="fill" />
-              </span>
+          <div className="flex items-center gap-2.5 mb-1.5">
+            {typeof community.icon === 'string' && (community.icon.startsWith('http') || community.icon.startsWith('/')) && (
+              <img
+                src={community.icon}
+                alt=""
+                className="w-9 h-9 rounded-full border border-white/80 object-cover shadow-md flex-shrink-0 bg-white"
+              />
             )}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start gap-1.5">
+                <h3 className="comm-card-cover-name flex-1">
+                  {community.name}
+                </h3>
+                {community.isVerified && (
+                  <span className="comm-card-verified-mark mt-0.5">
+                    <ShieldCheck size={14} weight="fill" />
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
           <span className="comm-card-cover-cat">
             {community.categoryLabel}

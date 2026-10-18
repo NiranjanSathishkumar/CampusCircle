@@ -407,7 +407,7 @@ export default function CommunityDetailPanel({
             className="cdp-hero__icon"
             style={{ '--accent': accentColor, borderColor: accentColor }}
           >
-            {typeof community.icon === 'string' && community.icon.startsWith('http') ? (
+            {typeof community.icon === 'string' && (community.icon.startsWith('http') || community.icon.startsWith('/')) ? (
               <img src={community.icon} alt={community.name} className="w-full h-full object-cover" />
             ) : (
               <span className="cdp-hero__icon-emoji">{community.icon || '🏛️'}</span>

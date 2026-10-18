@@ -353,7 +353,11 @@ export default function EventDetailPanel({
                   style={{ background: event.hostColor + '22' }}
                   aria-hidden="true"
                 >
-                  {event.hostIcon}
+                  {event.communityLogoUrl ? (
+                    <img src={event.communityLogoUrl} alt={event.hostName} className="w-full h-full object-cover" />
+                  ) : (
+                    event.hostIcon
+                  )}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p className="events-organizer-name">{event.hostName}</p>

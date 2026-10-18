@@ -237,6 +237,7 @@ export default function OrganizerLayout() {
 
   const communityName = community?.name || 'Organiser Community';
   const communityInitials = getInitials(communityName);
+  const communityLogo = community?.logo?.cloudinaryUrl || community?.logo?.filename;
 
   return (
     <div className={`org-shell ${shellCollapsed ? 'org-shell--collapsed' : ''}`}>
@@ -448,7 +449,11 @@ export default function OrganizerLayout() {
               whileHover={{ scale: 1.08 }}
               transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             >
-              {community?.icon || communityInitials}
+              {communityLogo ? (
+                <img src={communityLogo} alt="" className="w-full h-full object-cover rounded-full" />
+              ) : (
+                community?.icon || communityInitials
+              )}
             </motion.span>
             <AnimatePresence initial={false}>
               {!effectiveCollapsed && (
@@ -951,7 +956,11 @@ export default function OrganizerLayout() {
                     color: community?.color || '#991B1B',
                   }}
                 >
-                  {community?.icon || communityInitials}
+                  {communityLogo ? (
+                    <img src={communityLogo} alt="" className="w-full h-full object-cover rounded-full" />
+                  ) : (
+                    community?.icon || communityInitials
+                  )}
                 </div>
                 <div className="org-profile-details">
                   <span className="org-profile-name">{communityName}</span>

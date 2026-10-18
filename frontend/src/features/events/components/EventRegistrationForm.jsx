@@ -200,7 +200,13 @@ export default function EventRegistrationForm({
         <div className="events-dialog-hero-card">
           <div className="events-dialog-hero-top">
             <div className="events-dialog-hero-host">
-              <span className="events-dialog-hero-host-icon">{event.hostIcon || '🏛️'}</span>
+              <span className="events-dialog-hero-host-icon overflow-hidden">
+                {event.communityLogoUrl ? (
+                  <img src={event.communityLogoUrl} alt="" className="w-full h-full object-cover rounded-full" />
+                ) : (
+                  event.hostIcon || '🏛️'
+                )}
+              </span>
               <span>{event.hostName}</span>
             </div>
             <span className={`events-dialog-fee-badge ${event.payment === 'Free' ? 'free' : ''}`}>

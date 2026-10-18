@@ -73,6 +73,13 @@ export default function CommunityQuickPreviewModal({
           {/* Identity Header */}
           <div className="flex items-start justify-between gap-3 flex-wrap">
             <div className="flex items-center gap-3 flex-1 min-w-0">
+              {typeof community.icon === 'string' && (community.icon.startsWith('http') || community.icon.startsWith('/')) && (
+                <img
+                  src={community.icon}
+                  alt={community.name}
+                  className="w-12 h-12 rounded-full border border-gray-200 object-cover shadow-sm flex-shrink-0 bg-white"
+                />
+              )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
                   <h2 id="quick-preview-title" className="font-display font-bold text-[#0F172A] text-xl leading-tight m-0">

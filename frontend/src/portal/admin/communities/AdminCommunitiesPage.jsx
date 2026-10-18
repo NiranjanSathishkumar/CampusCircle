@@ -34,6 +34,7 @@ function toRow(c) {
     id: c._id,
     name: c.name,
     category: c.category,
+    logoUrl: c.logo?.cloudinaryUrl || c.logo?.filename,
     ...(CATEGORY_STYLE[c.category] || DEFAULT_STYLE),
     verified: c.isVerified,
     isActive: c.isActive,
@@ -201,7 +202,13 @@ export default function AdminCommunitiesPage() {
                   <tr key={c.id}>
                     <td>
                       <div className="adm-community-cell">
-                        <span className="adm-community-icon" style={{ background: `${c.color}18`, color: c.color }}>{c.icon}</span>
+                        <span className="adm-community-icon overflow-hidden" style={{ background: `${c.color}18`, color: c.color }}>
+                          {c.logoUrl ? (
+                            <img src={c.logoUrl} alt="" className="w-full h-full object-cover rounded-full" />
+                          ) : (
+                            c.icon
+                          )}
+                        </span>
                         <div>
                           <div className="adm-community-name">
                             {c.name}

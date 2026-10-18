@@ -25,7 +25,13 @@ export default function PostLedgerRow({ index, post, onLike, onView, onCommunity
       <span className="cc-ledger-index">{String(index + 1).padStart(2, '0')}</span>
 
       <span className="cc-ledger-thumb" style={{ background: post.communityColor }}>
-        {post.images?.[0] ? <img src={post.images[0]} alt="" /> : post.communityIcon}
+        {post.images?.[0] ? (
+          <img src={post.images[0]} alt="" />
+        ) : post.authorAvatar ? (
+          <img src={post.authorAvatar} alt="" />
+        ) : (
+          post.communityIcon
+        )}
       </span>
 
       <span className="cc-ledger-main">

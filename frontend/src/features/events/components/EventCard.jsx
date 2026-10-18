@@ -130,7 +130,11 @@ export default function EventCard({ event, isRegistered, isSaved, isWaitlisted, 
             style={{ background: event.hostColor + '22' }}
             aria-hidden="true"
           >
-            {event.hostIcon}
+            {event.communityLogoUrl ? (
+              <img src={event.communityLogoUrl} alt="" className="w-full h-full object-cover" />
+            ) : (
+              event.hostIcon
+            )}
           </div>
           <span className="event-card-host-name">{event.hostName}</span>
           {event.isVerified && (
