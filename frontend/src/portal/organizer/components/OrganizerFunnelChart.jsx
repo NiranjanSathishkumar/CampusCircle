@@ -20,13 +20,16 @@ export default function OrganizerFunnelChart({ data, emptyLabel = 'No funnel dat
 
   const rows = useMemo(() => {
     if (!data || data.length === 0) return [];
-    const first = data[0].value || 1;
+    const maxVal = Math.max(...data.map((d) => d.value || 0), 1);
+    const first = data[0].value || maxVal;
     return data.map((d, i) => {
       const prev = i > 0 ? data[i - 1].value : d.value;
-      const dropPct = i > 0 && prev > 0 ? Math.round(((prev - d.value) / prev) * 100) : null;
-      const widthPct = Math.max((d.value / first) * 100, 6);
+      const hasDrop = i > 0 && prev > d.value && prev > 0;
+      const dropPct = hasDrop ? Math.round(((prev - d.value) / prev) * 100) : null;
+      const widthPct = Math.min(Math.max(((d.value || 0) / maxVal) * 100, 6), 100);
       const color = ORDINAL_RAMP[Math.min(i, ORDINAL_RAMP.length - 1)];
-      return { ...d, widthPct, dropPct, color, shareOfFirst: first > 0 ? Math.round((d.value / first) * 100) : 0 };
+      const shareOfFirst = first > 0 ? Math.min(Math.round(((d.value || 0) / first) * 100), 100) : 0;
+      return { ...d, widthPct, dropPct, color, shareOfFirst };
     });
   }, [data]);
 
@@ -42,7 +45,7 @@ export default function OrganizerFunnelChart({ data, emptyLabel = 'No funnel dat
     <div className="org-funnel-chart">
       {rows.map((row, i) => (
         <div key={row.label}>
-          {i > 0 && row.dropPct != null && (
+          {i > 0 && row.dropPct != null && row.dropPct > 0 && (
             <div className="org-funnel-drop" aria-hidden="true">
               <CaretDown size={11} weight="bold" />
               <span>{row.dropPct}% drop-off</span>
@@ -78,7 +81,7 @@ export default function OrganizerFunnelChart({ data, emptyLabel = 'No funnel dat
               <div className="org-funnel-tooltip">
                 <strong>{row.value.toLocaleString()}</strong> {row.label} · {row.shareOfFirst}% of{' '}
                 {data[0].label.toLowerCase()}
-                {row.dropPct != null && <span> · {row.dropPct}% dropped from previous stage</span>}
+                {row.dropPct != null && row.dropPct > 0 && <span> · {row.dropPct}% dropped from previous stage</span>}
               </div>
             )}
           </div>

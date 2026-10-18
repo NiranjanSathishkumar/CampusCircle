@@ -290,7 +290,7 @@ export default function OrganizerAnalyticsPage() {
             />
             <StatCard
               label="Event Registrants"
-              value={formatCount(eventRegistrants?.value ?? 0)}
+              value={formatCount(overview.totalRegistrations ?? eventRegistrants?.value ?? 0)}
               icon={Ticket}
               accent="#0D9488"
               subtitle="Confirmed event RSVPs, all-time"

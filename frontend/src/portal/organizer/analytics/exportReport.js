@@ -378,8 +378,8 @@ export async function exportAnalyticsReportXlsx({
     const first = engagementFunnel[0]?.value || 1;
     const rows = engagementFunnel.map((d, i) => {
       const prev = i > 0 ? engagementFunnel[i - 1].value : d.value;
-      const dropPct = i > 0 && prev > 0 ? (prev - d.value) / prev : null;
-      return [d.label, d.value, (d.value || 0) / first, dropPct];
+      const dropPct = i > 0 && prev > d.value && prev > 0 ? (prev - d.value) / prev : null;
+      return [d.label, d.value, Math.min((d.value || 0) / first, 1), dropPct];
     });
     const { headerRow1 } = writeTable(ws, r, {
       accent: NAVY,
