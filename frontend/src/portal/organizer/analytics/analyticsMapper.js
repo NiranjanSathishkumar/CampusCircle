@@ -81,6 +81,7 @@ function buildBranchBreakdown(registrations) {
 export function buildEventAnalytics(rawEvent, rawRegistrations) {
   const registrations = rawRegistrations || [];
   const confirmed = registrations.filter((r) => r.status === 'confirmed');
+  const waitlistCount = registrations.filter((r) => r.status === 'waitlisted').length;
   const completedCount = rawEvent.confirmedRegistrationIds?.length || confirmed.length;
   const checkedInCount = Math.min(confirmed.filter((r) => r.checkedIn).length, completedCount);
   const startedCount = Math.max(

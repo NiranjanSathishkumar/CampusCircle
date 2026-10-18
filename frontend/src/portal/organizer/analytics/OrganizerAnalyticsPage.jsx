@@ -174,7 +174,8 @@ export default function OrganizerAnalyticsPage() {
         setEventDetail(mapEventForAnalytics(eventRes.event));
         setEventAnalytics(buildEventAnalytics(eventRes.event, regRes.registrations));
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('Error loading event analytics:', err);
         setEventDetail(null);
         setEventAnalytics(null);
       })
@@ -431,8 +432,10 @@ export default function OrganizerAnalyticsPage() {
 
           {events.length === 0 ? (
             <p className="text-sm text-gray-500">Create an event to see its analytics here.</p>
-          ) : eventDetailLoading || !selectedEvent ? (
+          ) : eventDetailLoading ? (
             <EmptyState icon={CircleNotch} title="Loading event analytics…" />
+          ) : !selectedEvent ? (
+            <EmptyState icon={Warning} title="Failed to load event analytics" desc="Please select an event from the dropdown above." />
           ) : (
             <OrganizerEventAnalyticsPanel
               event={selectedEvent}
