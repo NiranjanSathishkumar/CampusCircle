@@ -25,6 +25,36 @@ export const PRESET_ROLES = [
   'Volunteer',
 ];
 
+/** Predefined domain wings. Also used for the inline wing selector. */
+export const WING_OPTIONS = [
+  'Technical',
+  'Design & Creative',
+  'Operations & Events',
+  'Finance & Sponsorship',
+  'PR & Outreach',
+  'Content & Media',
+  'Volunteer',
+];
+
+/** Formats a date as a compact relative string: "2 months ago", "Today", etc. */
+export function formatRelativeDate(dateStr) {
+  if (!dateStr) return null;
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return null;
+  const diffMs = Date.now() - date.getTime();
+  const diffDays = Math.floor(diffMs / 86_400_000);
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return 'Yesterday';
+  if (diffDays < 7) return `${diffDays}d ago`;
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`;
+  if (diffDays < 365) {
+    const m = Math.floor(diffDays / 30);
+    return `${m} month${m > 1 ? 's' : ''} ago`;
+  }
+  const y = Math.floor(diffDays / 365);
+  return `${y} year${y > 1 ? 's' : ''} ago`;
+}
+
 /**
  * Classifies a role string into a semantic tier/category for visual styling & hierarchy grouping
  */

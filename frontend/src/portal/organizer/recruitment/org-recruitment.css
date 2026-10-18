@@ -281,8 +281,16 @@
 /* ── Modal Specifics ───────────────────────────────────────── */
 
 .org-drive-modal {
-  max-width: 580px;
-  width: 90vw;
+  width: 80vw !important;
+  max-width: 82vw !important;
+  max-height: 90vh;
+}
+
+@media (max-width: 768px) {
+  .org-drive-modal {
+    width: 94vw !important;
+    max-width: 94vw !important;
+  }
 }
 
 /* ── Candidate Application Review Stream ────────────────────── */

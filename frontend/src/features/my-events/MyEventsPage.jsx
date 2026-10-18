@@ -37,6 +37,7 @@ import MyEventsLedgerRow from '@/features/my-events/components/MyEventsLedgerRow
 import RegisteredEventCard from '@/features/my-events/components/RegisteredEventCard';
 import SkeletonCard from '@/features/my-events/components/MyEventsSkeletonCard';
 import TeamInvitesPanel from '@/features/my-events/components/TeamInvitesPanel';
+import StudentPaymentModal from '@/features/my-events/components/StudentPaymentModal';
 import { ToastContainer, useToasts } from '@/features/my-events/components/MyEventsToasts';
 import { buildRegisteredEvents } from '@/features/my-events/myEventsBuilder';
 
@@ -64,7 +65,9 @@ export default function MyEventsPage() {
     }
   }, [isLoggedIn]);
 
-  useEffect(() => { loadEvents(); }, [loadEvents]);
+  // Waits for AuthContext's silent-refresh-on-mount: firing before it
+  // resolved guaranteed a 401-then-retry on every full page load.
+  useEffect(() => { if (!initializing) loadEvents(); }, [initializing, loadEvents]);
 
   /* ── Tab state ── */
   const [activeTab, setActiveTab] = useState('all'); // 'all' | 'upcoming' | 'completed'
@@ -77,6 +80,7 @@ export default function MyEventsPage() {
 
   /* ── Modal states ── */
   const [ticketEvent, setTicketEvent] = useState(null);
+  const [paymentEvent, setPaymentEvent] = useState(null);
   const [cancelEvent, setCancelEvent] = useState(null);
   const [cancelling, setCancelling] = useState(false);
   const [manageTeamEvent, setManageTeamEvent] = useState(null);
@@ -355,6 +359,7 @@ export default function MyEventsPage() {
                     event={event}
                     hasTimeConflict={conflictSet.has(event.id)}
                     onViewTicket={setTicketEvent}
+                    onPayOrViewProof={setPaymentEvent}
                     onCancel={setCancelEvent}
                     onManageTeam={setManageTeamEvent}
                   />
@@ -370,6 +375,7 @@ export default function MyEventsPage() {
                     event={event}
                     hasTimeConflict={conflictSet.has(event.id)}
                     onViewTicket={setTicketEvent}
+                    onPayOrViewProof={setPaymentEvent}
                     onCancel={setCancelEvent}
                     onManageTeam={setManageTeamEvent}
                   />
@@ -414,6 +420,17 @@ export default function MyEventsPage() {
             currentUserId={user?._id}
             onClose={() => setManageTeamEvent(null)}
             onChanged={loadEvents}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* ── Modal 4: Student Payment & Proof Upload Modal ── */}
+      <AnimatePresence>
+        {paymentEvent && (
+          <StudentPaymentModal
+            event={paymentEvent}
+            onClose={() => setPaymentEvent(null)}
+            onUpdated={loadEvents}
           />
         )}
       </AnimatePresence>

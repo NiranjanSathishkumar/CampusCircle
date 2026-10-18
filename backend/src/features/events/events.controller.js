@@ -168,10 +168,66 @@ module.exports.removeBanner = async (req, res) => {
     return res.status(200).json({ message: "Event banner removed", event });
 };
 
+module.exports.uploadPaymentQr = async (req, res) => {
+    const community = req.user;
+    const { eventId } = req.params;
+
+    if (!req.file) return res.status(400).json({ message: "No image uploaded" });
+
+    const event = await Event.findOne({ _id: eventId, community: community._id });
+    if (!event) {
+        await deleteEverywhere(req.file.filename, req.file.cloudinary?.publicId);
+        return res.status(404).json({ message: "Event not found" });
+    }
+
+    const previousQr = event.paymentQrCode?.cloudinaryId
+        ? { filename: event.paymentQrCode.filename, cloudinaryId: event.paymentQrCode.cloudinaryId }
+        : null;
+
+    event.paymentQrCode = {
+        url: req.file.cloudinary?.url || `/uploads/${req.file.filename}`,
+        cloudinaryId: req.file.cloudinary?.publicId,
+        filename: req.file.filename,
+    };
+
+    try {
+        await event.save();
+    } catch (err) {
+        await deleteEverywhere(req.file.filename, req.file.cloudinary?.publicId);
+        if (sendSaveError(err, res)) return;
+        throw err;
+    }
+
+    if (previousQr) {
+        await deleteEverywhere(previousQr.filename, previousQr.cloudinaryId);
+    }
+
+    return res.status(200).json({ message: "Payment QR code updated", event });
+};
+
+module.exports.removePaymentQr = async (req, res) => {
+    const community = req.user;
+    const { eventId } = req.params;
+
+    const event = await Event.findOne({ _id: eventId, community: community._id });
+    if (!event) return res.status(404).json({ message: "Event not found" });
+
+    if (!event.paymentQrCode?.url) return res.status(400).json({ message: "No payment QR code to remove" });
+
+    const previousQr = { filename: event.paymentQrCode.filename, cloudinaryId: event.paymentQrCode.cloudinaryId };
+
+    event.paymentQrCode = undefined;
+    await event.save();
+
+    await deleteEverywhere(previousQr.filename, previousQr.cloudinaryId);
+
+    return res.status(200).json({ message: "Payment QR code removed", event });
+};
+
 module.exports.getEvent = async (req, res) => {
     const { eventId } = req.params;
 
-    const event = await Event.findById(eventId).populate("community", "name logo");
+    const event = await Event.findById(eventId).populate("community", "name logo").lean();
     if (!event) return res.status(404).json({ message: "Event not found" });
 
     const isOwner = req.role === "organizer" && event.community?._id?.equals(req.user._id);
@@ -203,7 +259,7 @@ module.exports.listEvents = async (req, res) => {
 
     const skip = (page - 1) * limit;
     const [events, total] = await Promise.all([
-        Event.find(filter).sort({ eventDate: 1 }).skip(skip).limit(limit).populate("community", "name logo"),
+        Event.find(filter).sort({ eventDate: 1 }).skip(skip).limit(limit).populate("community", "name logo").lean(),
         Event.countDocuments(filter),
     ]);
 
@@ -228,7 +284,7 @@ module.exports.listCommunityEvents = async (req, res) => {
 
     const skip = (page - 1) * limit;
     const [events, total] = await Promise.all([
-        Event.find(filter).sort({ eventDate: -1 }).skip(skip).limit(limit),
+        Event.find(filter).sort({ eventDate: -1 }).skip(skip).limit(limit).lean(),
         Event.countDocuments(filter),
     ]);
 

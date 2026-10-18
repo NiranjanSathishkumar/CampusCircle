@@ -250,6 +250,11 @@ export default function CommunityDetailPanel({
       onNavigateToLogin?.();
       return;
     }
+    const isDeadlinePassed = drive.deadline ? new Date() > new Date(drive.deadline) : false;
+    if (isDeadlinePassed || !drive.isOpen) {
+      onShowToast('This recruitment drive is closed and no longer accepting applications.');
+      return;
+    }
     if (busyDriveId || appliedDrives.has(drive._id)) return;
     setBusyDriveId(drive._id);
     try {
@@ -266,6 +271,11 @@ export default function CommunityDetailPanel({
   const handleOpenFullApplication = (drive) => {
     if (!isLoggedIn) {
       onNavigateToLogin?.();
+      return;
+    }
+    const isDeadlinePassed = drive.deadline ? new Date() > new Date(drive.deadline) : false;
+    if (isDeadlinePassed || !drive.isOpen) {
+      onShowToast('This recruitment drive is closed and no longer accepting applications.');
       return;
     }
     if (appliedDrives.has(drive._id)) return;
@@ -320,7 +330,14 @@ export default function CommunityDetailPanel({
     ];
   }, [community.faqs, community.location]);
 
-  const activeDrivesCount = drives?.length ?? 0;
+  const activeDrives = useMemo(() => {
+    if (!drives) return null;
+    const now = new Date();
+    return drives.filter((d) => d.isOpen && d.isActive !== false && (!d.deadline || new Date(d.deadline) >= now));
+  }, [drives]);
+
+  const isRecruitingActive = activeDrives !== null ? activeDrives.length > 0 : Boolean(community.recruiting);
+  const activeDrivesCount = activeDrives?.length ?? 0;
   const upcomingEventsCount = community.upcomingEvents?.length ?? 0;
   const coreLeadsCount = community.leads?.length ?? 0;
 
@@ -365,7 +382,7 @@ export default function CommunityDetailPanel({
           </nav>
 
           <div className="cdp-hero__topbar-actions">
-            {community.recruiting || activeDrivesCount > 0 ? (
+            {isRecruitingActive ? (
               <button
                 type="button"
                 className="cdp-hero__badge cdp-hero__badge--recruiting"
@@ -852,6 +869,8 @@ export default function CommunityDetailPanel({
                         {drives.map((drive, idx) => {
                           const applicationStatus = appliedDrives.get(drive._id);
                           const applied = Boolean(applicationStatus);
+                          const isDeadlinePassed = drive.deadline ? new Date() > new Date(drive.deadline) : false;
+                          const isDriveClosed = !drive.isOpen || isDeadlinePassed;
                           const simple = isSimpleDrive(drive);
                           const deadline = formatDeadline(drive.deadline);
                           const statusLabel =
@@ -861,6 +880,8 @@ export default function CommunityDetailPanel({
                               ? 'Not Selected'
                               : applicationStatus === 'pending'
                               ? 'Applied'
+                              : isDeadlinePassed
+                              ? 'Deadline Passed'
                               : null;
                           const buttonLabel =
                             applicationStatus === 'selected'
@@ -869,6 +890,8 @@ export default function CommunityDetailPanel({
                               ? 'Not Selected'
                               : applicationStatus === 'pending'
                               ? 'Application Sent'
+                              : isDriveClosed
+                              ? 'Closed'
                               : simple
                               ? 'Quick Apply'
                               : 'Apply Now';
@@ -886,19 +909,24 @@ export default function CommunityDetailPanel({
                                   {statusLabel && (
                                     <span
                                       className={`cdp-status-pill ${
-                                        applicationStatus === 'rejected'
+                                        applicationStatus === 'rejected' || isDeadlinePassed
                                           ? 'cdp-status-pill--muted'
                                           : 'cdp-status-pill--success'
                                       }`}
                                     >
-                                      <Check size={11} weight="bold" /> {statusLabel}
+                                      {isDeadlinePassed && !applied ? (
+                                        <Clock size={11} weight="bold" />
+                                      ) : (
+                                        <Check size={11} weight="bold" />
+                                      )}
+                                      {statusLabel}
                                     </span>
                                   )}
                                 </div>
                                 <p className="cdp-drive-card__desc">{drive.description}</p>
                                 {deadline && (
-                                  <span className="cdp-drive-card__deadline">
-                                    <Clock size={12} weight="bold" /> Apply by {deadline}
+                                  <span className={`cdp-drive-card__deadline ${isDeadlinePassed ? '!text-red-700 font-semibold' : ''}`}>
+                                    <Clock size={12} weight="bold" /> {isDeadlinePassed ? `Closed on ${deadline}` : `Apply by ${deadline}`}
                                   </span>
                                 )}
                               </div>
@@ -906,7 +934,7 @@ export default function CommunityDetailPanel({
                                 {simple ? (
                                   <button
                                     type="button"
-                                    disabled={busyDriveId === drive._id || applied}
+                                    disabled={busyDriveId === drive._id || applied || isDriveClosed}
                                     onClick={() => handleApplyToDrive(drive)}
                                     className={`cdp-apply-btn${applied ? ' cdp-apply-btn--applied' : ''}`}
                                   >
@@ -914,6 +942,8 @@ export default function CommunityDetailPanel({
                                       <CircleNotch size={14} className="cdp-spinner" />
                                     ) : applied ? (
                                       <Check size={14} weight="bold" />
+                                    ) : isDriveClosed ? (
+                                      <Clock size={14} weight="bold" />
                                     ) : (
                                       <PaperPlaneTilt size={14} weight="fill" />
                                     )}
@@ -922,11 +952,17 @@ export default function CommunityDetailPanel({
                                 ) : (
                                   <button
                                     type="button"
-                                    disabled={applied}
+                                    disabled={applied || isDriveClosed}
                                     onClick={() => handleOpenFullApplication(drive)}
                                     className={`cdp-apply-btn${applied ? ' cdp-apply-btn--applied' : ''}`}
                                   >
-                                    {applied ? <Check size={14} weight="bold" /> : <PaperPlaneTilt size={14} weight="fill" />}
+                                    {applied ? (
+                                      <Check size={14} weight="bold" />
+                                    ) : isDriveClosed ? (
+                                      <Clock size={14} weight="bold" />
+                                    ) : (
+                                      <PaperPlaneTilt size={14} weight="fill" />
+                                    )}
                                     <span>{buttonLabel}</span>
                                   </button>
                                 )}

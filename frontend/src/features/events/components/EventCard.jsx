@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { useRef, useState } from 'react';
-import { BellRinging, CheckCircle, Calendar, MapPin, ShieldCheck, Users } from '@phosphor-icons/react';
+import { BellRinging, CheckCircle, Calendar, Clock, MapPin, ShieldCheck, Users } from '@phosphor-icons/react';
 import { formatDateBadge, getProgressColor } from '@/features/events/eventsFilters';
 import { GSAPDigitRoll, GSAPProgressBar, GSAPStatusBadge, MorphBookmark } from '@/features/events/components/EventMotion';
 
@@ -17,7 +17,8 @@ export default function EventCard({ event, isRegistered, isSaved, isWaitlisted, 
   const pct = Math.min(liveRegistered / event.capacity, 1);
   const barColor = getProgressColor(pct);
   const dateBadge = formatDateBadge(event.date);
-  const isPast = event.isPast || event.registrationClosed;
+  const isPast = event.isPast;
+  const isRegistrationClosed = event.registrationClosed;
   const isSoldOut = liveRegistered >= event.capacity;
   // Sold out with no waitlist is the only state that actually blocks
   // registering — everything else (including a sold-out-but-waitlisted
@@ -27,6 +28,8 @@ export default function EventCard({ event, isRegistered, isSaved, isWaitlisted, 
 
   const regBtnLabel = isPast
     ? 'Concluded'
+    : isRegistrationClosed
+    ? 'Closed'
     : isRegistered
     ? (isWaitlisted ? 'Waitlisted' : 'Registered')
     : blockedSoldOut
@@ -35,7 +38,7 @@ export default function EventCard({ event, isRegistered, isSaved, isWaitlisted, 
     ? 'Join Waitlist'
     : 'Register';
 
-  const regDisabled = isPast || isRegistered || blockedSoldOut;
+  const regDisabled = isPast || isRegistrationClosed || isRegistered || blockedSoldOut;
 
   const handleRegClick = (e) => {
     e.stopPropagation();
@@ -157,6 +160,12 @@ export default function EventCard({ event, isRegistered, isSaved, isWaitlisted, 
             <Users size={13} className="event-card-meta-icon" aria-hidden="true" />
             <span>{event.teamFormat || 'Solo'}</span>
           </div>
+          {event.registrationDeadlineFormatted && !isPast && (
+            <div className="event-card-meta-row" style={{ color: isRegistrationClosed ? '#991B1B' : undefined }}>
+              <Clock size={13} className="event-card-meta-icon" aria-hidden="true" />
+              <span>{isRegistrationClosed ? 'Registration closed' : `Register by: ${event.registrationDeadlineFormatted}`}</span>
+            </div>
+          )}
         </div>
 
         {/* Tags */}

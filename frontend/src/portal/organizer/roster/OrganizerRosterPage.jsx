@@ -34,9 +34,13 @@ import {
   CurrencyInr,
   Broadcast,
   Handshake,
+  Clock,
+  CaretDown,
+  Network,
+  ListChecks,
 } from '@phosphor-icons/react';
 import { useOrganizerAuth } from '@/shared/auth/useOrganizerAuth';
-import { addCoreTeamMember, updateCoreTeamMemberRole, removeCoreTeamMember, lookupStudent } from '@/portal/organizer/roster/roster.api';
+import { addCoreTeamMember, updateCoreTeamMemberRole, removeCoreTeamMember, lookupStudent, bulkRemoveCoreTeamMembers } from '@/portal/organizer/roster/roster.api';
 import { ApiError } from '@/shared/api/httpClient';
 import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
 import { formatCount } from '@/shared/utils/formatters';
@@ -49,6 +53,8 @@ import {
   getRoleTheme,
   PRESET_ROLES,
   HIERARCHY_GROUPS,
+  WING_OPTIONS,
+  formatRelativeDate,
 } from '@/portal/organizer/roster/rosterConstants';
 import AddMemberModal from '@/portal/organizer/roster/components/AddMemberModal';
 import AuditAccessModal from '@/portal/organizer/roster/components/AuditAccessModal';
@@ -135,8 +141,13 @@ export default function OrganizerRosterPage() {
           email: profile && profile !== 'error' ? profile.email : null,
           branch: profile && profile !== 'error' ? profile.branch : null,
           yearOfJoining: profile && profile !== 'error' ? profile.yearOfJoining : null,
+          photo: profile && profile !== 'error' ? (profile.profilePicture?.cloudinaryUrl || null) : null,
           loading: profile === null,
           notFound: profile === 'error',
+          // Roster metadata — set when member was added (may be undefined for pre-existing records)
+          joinedAt: m.joinedAt || null,
+          wing: m.wing || null,
+          roleHistory: Array.isArray(m.roleHistory) ? m.roleHistory : [],
         };
       }),
     [coreTeam, profiles]
@@ -144,6 +155,7 @@ export default function OrganizerRosterPage() {
 
   const [sortBy, setSortBy] = useState('hierarchy'); // 'hierarchy' | 'name' | 'branch'
   const [selectedBranch, setSelectedBranch] = useState('all');
+  const [selectedWing, setSelectedWing] = useState('all');
 
   const [toastMessage, setToastMessage] = useState(null);
   const toastTimerRef = useRef(null);
@@ -152,8 +164,12 @@ export default function OrganizerRosterPage() {
   const [showAuditModal, setShowAuditModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [editLabel, setEditLabel] = useState('');
+  const [editWing, setEditWing] = useState('');
+  const [expandedHistoryId, setExpandedHistoryId] = useState(null);
   const [memberToRemove, setMemberToRemove] = useState(null);
   const [busyIds, setBusyIds] = useState(() => new Set());
+  const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const [isBulkRemoving, setIsBulkRemoving] = useState(false);
   const removeModalRef = useRef(null);
   useFocusTrap(removeModalRef, Boolean(memberToRemove), () => setMemberToRemove(null));
 
@@ -194,12 +210,17 @@ export default function OrganizerRosterPage() {
     };
   }, []);
 
-  // Distinct branches list for dropdown
+  // Distinct branches for dropdown
   const uniqueBranches = useMemo(() => {
     const set = new Set();
-    members.forEach((m) => {
-      if (m.branch) set.add(m.branch);
-    });
+    members.forEach((m) => { if (m.branch) set.add(m.branch); });
+    return Array.from(set).sort();
+  }, [members]);
+
+  // Distinct assigned wings for dropdown
+  const uniqueWings = useMemo(() => {
+    const set = new Set();
+    members.forEach((m) => { if (m.wing) set.add(m.wing); });
     return Array.from(set).sort();
   }, [members]);
 
@@ -219,28 +240,23 @@ export default function OrganizerRosterPage() {
 
   const filteredMembers = useMemo(() => {
     const list = members.filter((m) => {
-      if (roleFilter === 'leads' && getRoleCategory(m.role) !== 'leadership') {
-        return false;
-      }
+      if (roleFilter === 'leads' && getRoleCategory(m.role) !== 'leadership') return false;
       if (
         roleFilter === 'coordinators' &&
         !['technical', 'design', 'events', 'finance', 'outreach'].includes(getRoleCategory(m.role))
-      ) {
-        return false;
-      }
-      if (roleFilter === 'volunteers' && getRoleCategory(m.role) !== 'volunteer') {
-        return false;
-      }
-      if (selectedBranch !== 'all' && m.branch !== selectedBranch) {
-        return false;
-      }
+      ) return false;
+      if (roleFilter === 'volunteers' && getRoleCategory(m.role) !== 'volunteer') return false;
+      if (selectedBranch !== 'all' && m.branch !== selectedBranch) return false;
+      if (selectedWing !== 'all' && m.wing !== selectedWing) return false;
       if (search.trim()) {
         const q = search.toLowerCase();
-        const nameMatch = m.name?.toLowerCase().includes(q);
-        const emailMatch = m.email?.toLowerCase().includes(q);
-        const branchMatch = m.branch?.toLowerCase().includes(q);
-        const roleMatch = m.role?.toLowerCase().includes(q);
-        if (!nameMatch && !emailMatch && !branchMatch && !roleMatch) return false;
+        if (
+          !m.name?.toLowerCase().includes(q) &&
+          !m.email?.toLowerCase().includes(q) &&
+          !m.branch?.toLowerCase().includes(q) &&
+          !m.role?.toLowerCase().includes(q) &&
+          !m.wing?.toLowerCase().includes(q)
+        ) return false;
       }
       return true;
     });
@@ -248,10 +264,9 @@ export default function OrganizerRosterPage() {
     return list.sort((a, b) => {
       if (sortBy === 'name') return (a.name || '').localeCompare(b.name || '');
       if (sortBy === 'branch') return (a.branch || '').localeCompare(b.branch || '');
-      // default: hierarchy rank
       return a.theme.tierRank - b.theme.tierRank;
     });
-  }, [members, roleFilter, selectedBranch, search, sortBy]);
+  }, [members, roleFilter, selectedBranch, selectedWing, search, sortBy]);
 
   const withBusy = (fn) => async (id, ...args) => {
     setBusyIds((prev) => new Set(prev).add(id));
@@ -296,13 +311,16 @@ export default function OrganizerRosterPage() {
   const startEditLabel = (m) => {
     setEditingId(m.id);
     setEditLabel(m.role);
+    setEditWing(m.wing || '');
+    setExpandedHistoryId(null);
   };
 
   const saveEditLabel = async (id) => {
     const role = editLabel.trim() || 'Volunteer';
+    const wing = editWing || null;
     setBusyIds((prev) => new Set(prev).add(id));
     try {
-      const { coreTeam: updatedTeam } = await updateCoreTeamMemberRole(id, role);
+      const { coreTeam: updatedTeam } = await updateCoreTeamMemberRole(id, role, wing);
       updateCommunity({ ...community, coreTeam: updatedTeam });
       setEditingId(null);
       triggerToast(`✓ Updated role to "${role}".`);
@@ -337,9 +355,9 @@ export default function OrganizerRosterPage() {
   };
 
   const handleExportRoster = () => {
-    const headers = 'Name,Email,Branch,Joined (Admission Year),Role,Category\n';
+    const headers = 'Name,Email,Branch,Joined (Admission Year),Role,Wing,Category,Joined Team\n';
     const rows = filteredMembers
-      .map((m) => `"${m.name}","${m.email || ''}","${m.branch || ''}","${m.yearOfJoining || ''}","${m.role}","${m.theme.label}"`)
+      .map((m) => `"${m.name}","${m.email || ''}","${m.branch || ''}","${m.yearOfJoining || ''}","${m.role}","${m.wing || ''}","${m.theme.label}","${m.joinedAt ? new Date(m.joinedAt).toLocaleDateString() : ''}"`)
       .join('\n');
     const blob = new Blob([headers + rows], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -351,196 +369,327 @@ export default function OrganizerRosterPage() {
     triggerToast('📥 Committee Roster exported as CSV.');
   };
 
+  // ── Bulk Selection Helpers ──────────────────────────────────
+  const toggleSelect = (id) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const handleSelectAll = () => {
+    const allIds = filteredMembers.map((m) => m.id);
+    setSelectedIds((prev) => {
+      const allSelected = allIds.every((id) => prev.has(id));
+      if (allSelected) return new Set();
+      return new Set(allIds);
+    });
+  };
+
+  const handleBulkRemove = async () => {
+    if (selectedIds.size === 0) return;
+    setIsBulkRemoving(true);
+    try {
+      const ids = Array.from(selectedIds);
+      const { coreTeam: updatedTeam, removedCount } = await bulkRemoveCoreTeamMembers(ids);
+      updateCommunity({ ...community, coreTeam: updatedTeam });
+      setSelectedIds(new Set());
+      triggerToast(`🗑 Removed ${removedCount} committee member${removedCount !== 1 ? 's' : ''}.`);
+    } catch (err) {
+      triggerToast(err instanceof ApiError ? err.message : 'Bulk remove failed.');
+    } finally {
+      setIsBulkRemoving(false);
+    }
+  };
+
   // Render a Member Card
-  const renderMemberCard = (m) => (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      transition={{ duration: 0.2 }}
-      className="org-member-card group"
-      key={m.id}
-      style={{
-        borderColor: editingId === m.id ? m.theme.accentColor : undefined,
-      }}
-    >
-      <div
-        className="org-member-card-accent-bar"
-        style={{ backgroundColor: m.theme.accentColor }}
-      />
+  const renderMemberCard = (m) => {
+    const isSelected = selectedIds.has(m.id);
+    const anySelected = selectedIds.size > 0;
+    const joinedLabel = formatRelativeDate(m.joinedAt);
+    const showHistory = m.roleHistory.length > 1;
+    const historyExpanded = expandedHistoryId === m.id;
 
-      <div className="org-member-card-head">
-        <div className="org-member-avatar-wrap">
-          <div
-            className="org-member-avatar"
-            style={{ background: m.theme.avatarBg, color: m.theme.avatarColor }}
-          >
-            {m.loading ? (
-              <CircleNotch size={18} className="animate-spin" />
-            ) : (
-              getInitials(m.name)
-            )}
-          </div>
-          {!m.loading && !m.notFound && (
-            <span
-              className="org-member-verified-dot"
-              title="Verified Student Account"
-            />
-          )}
-        </div>
+    return (
+      <motion.div
+        layout
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        transition={{ duration: 0.2 }}
+        className={`org-member-card group ${isSelected ? 'org-member-card--selected' : ''}`}
+        key={m.id}
+        style={{
+          borderColor: isSelected ? m.theme.accentColor : editingId === m.id ? m.theme.accentColor : undefined,
+        }}
+      >
+        {/* Checkbox — appears on hover or when any are selected */}
+        <label
+          className={`org-member-select-check ${isSelected || anySelected ? 'visible' : ''}`}
+          title={isSelected ? 'Deselect member' : 'Select member'}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={() => toggleSelect(m.id)}
+            disabled={busyIds.has(m.id)}
+            aria-label={`Select ${m.name || 'member'}`}
+          />
+          <span className="org-member-select-check-visual">
+            {isSelected && <Check size={11} weight="bold" />}
+          </span>
+        </label>
 
-        <div className="flex-1 min-w-0">
-          <div className="org-member-name-row">
-            <h3 className="org-member-name truncate">
-              {m.loading ? 'Loading profile…' : m.name}
-            </h3>
+        <div
+          className="org-member-card-accent-bar"
+          style={{ backgroundColor: m.theme.accentColor }}
+        />
+
+        <div className="org-member-card-head">
+          <div className="org-member-avatar-wrap">
+            <div
+              className="org-member-avatar"
+              style={{ background: m.photo ? 'transparent' : m.theme.avatarBg, color: m.theme.avatarColor }}
+            >
+              {m.loading ? (
+                <CircleNotch size={18} className="animate-spin" />
+              ) : m.photo ? (
+                <img src={m.photo} alt={m.name} className="org-member-avatar-photo" />
+              ) : (
+                getInitials(m.name)
+              )}
+            </div>
             {!m.loading && !m.notFound && (
-              <ShieldCheck
-                size={14}
-                weight="fill"
-                className="text-[#0D9488] flex-shrink-0"
-                title="Verified Student"
+              <span
+                className="org-member-verified-dot"
+                title="Verified Student Account"
               />
             )}
           </div>
 
-          {/* Role Badge with click-to-edit */}
+          <div className="flex-1 min-w-0">
+            <div className="org-member-name-row">
+              <h3 className="org-member-name truncate">
+                {m.loading ? 'Loading profile…' : m.name}
+              </h3>
+              {!m.loading && !m.notFound && (
+                <ShieldCheck
+                  size={14}
+                  weight="fill"
+                  className="text-[#0D9488] flex-shrink-0"
+                  title="Verified Student"
+                />
+              )}
+            </div>
+
+            {/* Role Badge with click-to-edit */}
+            <button
+              type="button"
+              className="org-member-role-badge"
+              style={{
+                backgroundColor: m.theme.badgeBg,
+                color: m.theme.badgeColor,
+                borderColor: m.theme.badgeBorder,
+              }}
+              onClick={() => startEditLabel(m)}
+              title="Click to edit role designation"
+            >
+              <RoleCategoryIcon category={m.category} size={13} />
+              <span className="truncate">{m.role}</span>
+              <PencilSimple size={11} className="opacity-60 ml-0.5" />
+            </button>
+
+            {/* Wing badge */}
+            {m.wing && (
+              <span
+                className="org-member-wing-badge"
+                title={`Domain Wing: ${m.wing}`}
+              >
+                <Network size={11} />
+                {m.wing}
+              </span>
+            )}
+          </div>
+
           <button
             type="button"
-            className="org-member-role-badge"
-            style={{
-              backgroundColor: m.theme.badgeBg,
-              color: m.theme.badgeColor,
-              borderColor: m.theme.badgeBorder,
-            }}
-            onClick={() => startEditLabel(m)}
-            title="Click to edit role designation"
+            className="org-icon-btn org-icon-btn--danger opacity-50 group-hover:opacity-100 transition-opacity"
+            onClick={() => setMemberToRemove(m)}
+            title={`Remove ${m.name || 'member'}`}
+            aria-label={`Remove ${m.name || 'member'}`}
+            disabled={busyIds.has(m.id)}
           >
-            <RoleCategoryIcon category={m.category} size={13} />
-            <span className="truncate">{m.role}</span>
-            <PencilSimple size={11} className="opacity-60 ml-0.5" />
+            <Trash size={14} />
           </button>
         </div>
 
-        <button
-          type="button"
-          className="org-icon-btn org-icon-btn--danger opacity-50 group-hover:opacity-100 transition-opacity"
-          onClick={() => setMemberToRemove(m)}
-          title={`Remove ${m.name || 'member'}`}
-          aria-label={`Remove ${m.name || 'member'}`}
-          disabled={busyIds.has(m.id)}
-        >
-          <Trash size={14} />
-        </button>
-      </div>
+        <div className="org-member-card-body">
+          {/* Meta row: Branch / Year / Join Date */}
+          <div className="org-member-meta-row">
+            {m.branch ? (
+              <span className="org-member-chip" title="Academic Department">
+                <GraduationCap size={12} className="text-[#0D9488]" />
+                <span>{m.branch}</span>
+              </span>
+            ) : m.notFound ? (
+              <span className="org-member-chip text-red-600 bg-red-50 border-red-200">
+                Account Unlinked
+              </span>
+            ) : (
+              <span className="org-member-chip text-gray-400">Department —</span>
+            )}
 
-      <div className="org-member-card-body">
-        {/* Branch & Year Tags */}
-        <div className="org-member-meta-row">
-          {m.branch ? (
-            <span className="org-member-chip" title="Academic Department">
-              <GraduationCap size={12} className="text-[#0D9488]" />
-              <span>{m.branch}</span>
-            </span>
-          ) : m.notFound ? (
-            <span className="org-member-chip text-red-600 bg-red-50 border-red-200">
-              Account Unlinked
-            </span>
-          ) : (
-            <span className="org-member-chip text-gray-400">Department —</span>
-          )}
+            {m.yearOfJoining && (
+              <span className="org-member-chip" title="Year of Joining">
+                <span>Batch {m.yearOfJoining}</span>
+              </span>
+            )}
 
-          {m.yearOfJoining && (
-            <span className="org-member-chip" title="Year of Joining">
-              <span>Batch {m.yearOfJoining}</span>
-            </span>
-          )}
-        </div>
-
-        {/* Email Row with 1-click Copy */}
-        {m.email && (
-          <div className="org-member-email-row">
-            <span className="org-member-email-text" title={m.email}>
-              <EnvelopeSimple size={12} className="inline mr-1 text-gray-400" />
-              {m.email}
-            </span>
-            <button
-              type="button"
-              className="org-member-email-copy-btn"
-              onClick={() => handleCopyEmail(m.email)}
-              title="Copy email to clipboard"
-            >
-              <Copy size={13} />
-            </button>
+            {joinedLabel && (
+              <span className="org-member-chip org-member-join-chip" title={`Joined committee: ${new Date(m.joinedAt).toLocaleDateString()}`}>
+                <Clock size={11} className="text-indigo-400" />
+                <span>{joinedLabel}</span>
+              </span>
+            )}
           </div>
-        )}
 
-        {/* Inline Role Editor */}
-        {editingId === m.id && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="org-inline-role-editor"
-          >
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[11px] font-bold text-[#0F172A] font-['Space_Grotesk'] uppercase tracking-wider">
-                Edit Committee Designation
+          {/* Email Row */}
+          {m.email && (
+            <div className="org-member-email-row">
+              <span className="org-member-email-text" title={m.email}>
+                <EnvelopeSimple size={12} className="inline mr-1 text-gray-400" />
+                {m.email}
               </span>
               <button
                 type="button"
-                className="text-gray-400 hover:text-gray-600"
-                onClick={() => setEditingId(null)}
+                className="org-member-email-copy-btn"
+                onClick={() => handleCopyEmail(m.email)}
+                title="Copy email to clipboard"
               >
-                <X size={13} />
+                <Copy size={13} />
               </button>
             </div>
+          )}
 
-            <div className="flex items-center gap-1.5">
-              <input
-                className="org-form-input !text-xs !py-1 !px-2.5 !h-[32px]"
-                value={editLabel}
-                onChange={(e) => setEditLabel(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') saveEditLabel(m.id);
-                  if (e.key === 'Escape') setEditingId(null);
-                }}
-                placeholder="e.g. Technical Lead"
-                autoFocus
-              />
+          {/* Role History Toggle */}
+          {showHistory && (
+            <div className="org-role-history">
               <button
                 type="button"
-                className="org-btn org-btn-primary org-btn-sm !py-1 !px-2.5 !h-[32px]"
-                onClick={() => saveEditLabel(m.id)}
-                disabled={busyIds.has(m.id)}
-                title="Save designation"
+                className="org-role-history-toggle"
+                onClick={() => setExpandedHistoryId(historyExpanded ? null : m.id)}
               >
-                {busyIds.has(m.id) ? (
-                  <CircleNotch size={13} className="animate-spin" />
-                ) : (
-                  <Check size={14} weight="bold" />
-                )}
+                <Clock size={11} />
+                <span>{m.roleHistory.length} role{m.roleHistory.length !== 1 ? 's' : ''} in history</span>
+                <CaretDown
+                  size={11}
+                  style={{ transform: historyExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}
+                />
               </button>
+              <AnimatePresence>
+                {historyExpanded && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="org-role-history-list"
+                  >
+                    {[...m.roleHistory].reverse().map((h, i) => (
+                      <div key={i} className="org-role-history-item">
+                        <span className="org-role-history-role">{h.role}</span>
+                        <span className="org-role-history-date">{formatRelativeDate(h.changedAt) || '—'}</span>
+                      </div>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
+          )}
 
-            <div className="org-preset-chips-grid">
-              {PRESET_ROLES.slice(0, 6).map((p) => (
+          {/* Inline Role + Wing Editor */}
+          {editingId === m.id && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="org-inline-role-editor"
+            >
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[11px] font-bold text-[#0F172A] font-['Space_Grotesk'] uppercase tracking-wider">
+                  Edit Designation
+                </span>
                 <button
-                  key={p}
                   type="button"
-                  onClick={() => setEditLabel(p)}
-                  className={`org-preset-chip ${editLabel === p ? 'active' : ''}`}
+                  className="text-gray-400 hover:text-gray-600"
+                  onClick={() => setEditingId(null)}
                 >
-                  {p}
+                  <X size={13} />
                 </button>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </div>
-    </motion.div>
-  );
+              </div>
+
+              {/* Role Input */}
+              <div className="flex items-center gap-1.5 mb-2">
+                <input
+                  className="org-form-input !text-xs !py-1 !px-2.5 !h-[32px]"
+                  value={editLabel}
+                  onChange={(e) => setEditLabel(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') saveEditLabel(m.id);
+                    if (e.key === 'Escape') setEditingId(null);
+                  }}
+                  placeholder="e.g. Technical Lead"
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  className="org-btn org-btn-primary org-btn-sm !py-1 !px-2.5 !h-[32px]"
+                  onClick={() => saveEditLabel(m.id)}
+                  disabled={busyIds.has(m.id)}
+                  title="Save"
+                >
+                  {busyIds.has(m.id) ? (
+                    <CircleNotch size={13} className="animate-spin" />
+                  ) : (
+                    <Check size={14} weight="bold" />
+                  )}
+                </button>
+              </div>
+
+              {/* Wing Selector */}
+              <div className="mb-2">
+                <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Domain Wing</label>
+                <select
+                  className="org-roster-select !w-full !h-[30px] !text-[11px]"
+                  value={editWing}
+                  onChange={(e) => setEditWing(e.target.value)}
+                >
+                  <option value="">— No Wing Assigned —</option>
+                  {WING_OPTIONS.map((w) => (
+                    <option key={w} value={w}>{w}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="org-preset-chips-grid">
+                {PRESET_ROLES.slice(0, 6).map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setEditLabel(p)}
+                    className={`org-preset-chip ${editLabel === p ? 'active' : ''}`}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </div>
+      </motion.div>
+    );
+  };
 
   return (
     <div className="org-page org-roster-page">
@@ -657,12 +806,12 @@ export default function OrganizerRosterPage() {
 
         <div className="org-roster-metric-item">
           <div className="org-roster-metric-icon" style={{ background: 'rgba(79, 70, 229, 0.08)' }}>
-            <GraduationCap size={20} weight="bold" style={{ color: '#4F46E5' }} />
+            <Network size={20} weight="bold" style={{ color: '#4F46E5' }} />
           </div>
           <div className="org-roster-metric-text">
-            <span className="org-roster-metric-label">Departments</span>
+            <span className="org-roster-metric-label">Wings Assigned</span>
             <span className="org-roster-metric-val" style={{ color: '#4F46E5' }}>
-              {counts.branchesCount} Branches
+              {uniqueWings.length > 0 ? `${uniqueWings.length} Wings` : 'None yet'}
             </span>
           </div>
         </div>
@@ -675,7 +824,7 @@ export default function OrganizerRosterPage() {
           <MagnifyingGlass size={15} className="org-search-icon" />
           <input
             className="org-search-input"
-            placeholder="Search by name, role, email, branch…"
+            placeholder="Search by name, role, email, branch, wing…"
             aria-label="Search committee members"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -728,7 +877,7 @@ export default function OrganizerRosterPage() {
           </button>
         </div>
 
-        {/* Branch / Department Dropdown Filter */}
+        {/* Branch Dropdown */}
         {uniqueBranches.length > 1 && (
           <select
             className="org-roster-select"
@@ -738,9 +887,22 @@ export default function OrganizerRosterPage() {
           >
             <option value="all">All Departments</option>
             {uniqueBranches.map((b) => (
-              <option key={b} value={b}>
-                {b}
-              </option>
+              <option key={b} value={b}>{b}</option>
+            ))}
+          </select>
+        )}
+
+        {/* Wing Dropdown */}
+        {uniqueWings.length > 0 && (
+          <select
+            className="org-roster-select"
+            value={selectedWing}
+            onChange={(e) => setSelectedWing(e.target.value)}
+            aria-label="Filter by domain wing"
+          >
+            <option value="all">All Wings</option>
+            {uniqueWings.map((w) => (
+              <option key={w} value={w}>{w}</option>
             ))}
           </select>
         )}
@@ -803,6 +965,7 @@ export default function OrganizerRosterPage() {
                   setSearch('');
                   setRoleFilter('all');
                   setSelectedBranch('all');
+                  setSelectedWing('all');
                 }}
               >
                 Clear Filters
@@ -881,23 +1044,49 @@ export default function OrganizerRosterPage() {
           <table className="org-roster-table" aria-label="Committee Members Directory">
             <thead>
               <tr>
+                <th scope="col" style={{ width: 40 }}>
+                  <label className="org-table-select-all" title="Select all visible members">
+                    <input
+                      type="checkbox"
+                      checked={filteredMembers.length > 0 && filteredMembers.every((m) => selectedIds.has(m.id))}
+                      onChange={handleSelectAll}
+                    />
+                  </label>
+                </th>
                 <th scope="col">Member Profile</th>
                 <th scope="col">Department &amp; Batch</th>
-                <th scope="col">Role Designation</th>
+                <th scope="col">Role &amp; Wing</th>
+                <th scope="col">Joined</th>
                 <th scope="col">Contact</th>
                 <th scope="col" className="text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredMembers.map((m) => (
-                <tr key={m.id}>
+                <tr key={m.id} className={selectedIds.has(m.id) ? 'org-table-row--selected' : ''}>
+                  <td>
+                    <label className="org-table-select-all">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(m.id)}
+                        onChange={() => toggleSelect(m.id)}
+                        aria-label={`Select ${m.name || 'member'}`}
+                      />
+                    </label>
+                  </td>
                   <td>
                     <div className="flex items-center gap-3">
                       <div
                         className="org-roster-table-avatar"
-                        style={{ background: m.theme.avatarBg, color: m.theme.avatarColor }}
+                        style={{ background: m.photo ? 'transparent' : m.theme.avatarBg, color: m.theme.avatarColor }}
                       >
-                        {m.loading ? <CircleNotch size={14} className="animate-spin" /> : getInitials(m.name)}
+                        {m.loading ? (
+                          <CircleNotch size={14} className="animate-spin" />
+                        ) : m.photo ? (
+                          <img src={m.photo} alt={m.name} className="org-member-avatar-photo" />
+                        ) : (
+                          getInitials(m.name)
+                        )}
                       </div>
                       <div>
                         <div className="flex items-center gap-1.5">
@@ -950,21 +1139,39 @@ export default function OrganizerRosterPage() {
                         </button>
                       </div>
                     ) : (
-                      <button
-                        type="button"
-                        className="org-member-role-badge"
-                        style={{
-                          backgroundColor: m.theme.badgeBg,
-                          color: m.theme.badgeColor,
-                          borderColor: m.theme.badgeBorder,
-                        }}
-                        onClick={() => startEditLabel(m)}
-                        title="Click to edit role designation"
-                      >
-                        <RoleCategoryIcon category={m.category} size={12} />
-                        <span>{m.role}</span>
-                        <PencilSimple size={10} className="opacity-60 ml-0.5" />
-                      </button>
+                      <div className="space-y-1">
+                        <button
+                          type="button"
+                          className="org-member-role-badge"
+                          style={{
+                            backgroundColor: m.theme.badgeBg,
+                            color: m.theme.badgeColor,
+                            borderColor: m.theme.badgeBorder,
+                          }}
+                          onClick={() => startEditLabel(m)}
+                          title="Click to edit role designation"
+                        >
+                          <RoleCategoryIcon category={m.category} size={12} />
+                          <span>{m.role}</span>
+                          <PencilSimple size={10} className="opacity-60 ml-0.5" />
+                        </button>
+                        {m.wing && (
+                          <span className="org-member-wing-badge org-member-wing-badge--sm">
+                            <Network size={10} />
+                            {m.wing}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </td>
+
+                  <td>
+                    {m.joinedAt ? (
+                      <span className="text-xs text-gray-500" title={new Date(m.joinedAt).toLocaleDateString()}>
+                        {formatRelativeDate(m.joinedAt)}
+                      </span>
+                    ) : (
+                      <span className="text-gray-300 text-xs">—</span>
                     )}
                   </td>
 
@@ -1016,6 +1223,54 @@ export default function OrganizerRosterPage() {
       {showAuditModal && (
         <AuditAccessModal onClose={() => setShowAuditModal(false)} />
       )}
+
+      {/* ── Bulk Actions Floating Bar ── */}
+      <AnimatePresence>
+        {selectedIds.size > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 24 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+            className="org-bulk-actions-bar"
+          >
+            <ListChecks size={16} className="text-white/70" />
+            <span className="org-bulk-count">
+              {selectedIds.size} member{selectedIds.size !== 1 ? 's' : ''} selected
+            </span>
+            <button
+              type="button"
+              className="org-btn org-btn-ghost org-btn-sm !text-white/80 hover:!text-white !border-white/20"
+              onClick={handleSelectAll}
+            >
+              {filteredMembers.every((m) => selectedIds.has(m.id)) ? 'Deselect All' : `Select All (${filteredMembers.length})`}
+            </button>
+            <div className="flex-1" />
+            <button
+              type="button"
+              className="org-btn org-btn-ghost org-btn-sm !text-white/70 hover:!text-white !border-white/15"
+              onClick={() => setSelectedIds(new Set())}
+              title="Clear selection"
+            >
+              <X size={13} />
+              Clear
+            </button>
+            <button
+              type="button"
+              className="org-bulk-remove-btn"
+              onClick={handleBulkRemove}
+              disabled={isBulkRemoving}
+            >
+              {isBulkRemoving ? (
+                <CircleNotch size={14} className="animate-spin" />
+              ) : (
+                <Trash size={14} />
+              )}
+              Remove {selectedIds.size} Selected
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── Remove Member Confirmation Dialog ── */}
       {memberToRemove && (

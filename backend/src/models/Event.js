@@ -115,6 +115,15 @@ const eventSchema = new Schema(
     // from client request bodies.
     price: { type: Number, required: true, default: 0, min: 0 },
 
+    // Manual payment verification fields (QR Code & UPI details)
+    paymentQrCode: {
+      url: { type: String, trim: true },
+      cloudinaryId: { type: String, trim: true },
+      filename: { type: String, trim: true },
+    },
+    paymentInstructions: { type: String, trim: true, maxlength: 1000 },
+    upiId: { type: String, trim: true, maxlength: 100 },
+
     // ── Registration settings ────────────────────────────────────
     // Whether the registration form should also collect the registrant's
     // profile data (branch, year, etc.) alongside the custom formQuestions.

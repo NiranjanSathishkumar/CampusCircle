@@ -1,6 +1,7 @@
 const Joi = require("joi");
 const { objectId, email, newPassword, displayName, year } = require("../../validators/common");
 const { BRANCHES } = require("../../models/User");
+const { COMMUNITY_CATEGORIES } = require("../../models/Community");
 
 // createOrganizer spreads the leftover body keys straight into a new Community
 // document, so every optional field an admin may set is listed explicitly here.
@@ -10,7 +11,7 @@ const createOrganizer = Joi.object({
     name: displayName.required(),
     email: email.required(),
     password: newPassword.required(),
-    category: Joi.string().trim().max(60).required(),
+    category: Joi.string().trim().valid(...COMMUNITY_CATEGORIES).required(),
 
     description: Joi.string().trim().max(1000).allow(""),
     location: Joi.string().trim().max(200).allow(""),

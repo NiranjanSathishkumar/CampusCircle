@@ -48,3 +48,28 @@ export const listTeamMembers = (registrationId) =>
 // it is ahead of time.
 export const checkInEvent = (eventId, qrToken) =>
   apiFetch(`/events/${eventId}/check-in`, { method: 'POST', body: { qrToken }, role: 'organizer' });
+
+export const uploadEventPaymentQr = (eventId, file) => {
+  const formData = new FormData();
+  formData.append('paymentQr', file);
+  return apiFetch(`/events/${eventId}/payment-qr`, { method: 'PUT', body: formData, role: 'organizer' });
+};
+
+export const removeEventPaymentQr = (eventId) =>
+  apiFetch(`/events/${eventId}/payment-qr`, { method: 'DELETE', role: 'organizer' });
+
+export const listEventPaymentVerifications = (eventId, { status, page = 1, limit = 50 } = {}) => {
+  const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+  if (status && status !== 'all') params.set('status', status);
+  return apiFetch(`/events/${eventId}/payment-verifications?${params.toString()}`, { method: 'GET', role: 'organizer' });
+};
+
+export const verifyPayment = (
+  registrationId,
+  { action, reason, cancelRegistration, transactionId, paymentNotes } = {}
+) =>
+  apiFetch(`/events/registrations/${registrationId}/verify-payment`, {
+    method: 'PATCH',
+    body: { action, reason, cancelRegistration, transactionId, paymentNotes },
+    role: 'organizer',
+  });

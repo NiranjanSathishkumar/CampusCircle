@@ -64,7 +64,7 @@ let _toastId = 0;
 export default function CommunitiesPage({ onNavigateToLogin }) {
   const { communityId: urlCommunityId } = useParams();
   const navigate = useNavigate();
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, initializing } = useAuth();
   const searchInputRef = useRef(null);
 
   /* ── View State ── */
@@ -95,8 +95,12 @@ export default function CommunitiesPage({ onNavigateToLogin }) {
   /* ── Toast System ── */
   const { toasts, addToast } = useToasts();
 
-  /* ── Load Communities + (if logged in) the student's own follow set ── */
+  /* ── Load Communities + (if logged in) the student's own follow set.
+       Waits for AuthContext's silent-refresh-on-mount: /communities requires
+       a session (communities.routes.js), so firing before it resolved
+       guaranteed a 401-then-retry on every full page load. ── */
   useEffect(() => {
+    if (initializing) return;
     let cancelled = false;
     setLoading(true);
     setLoadError('');
@@ -123,7 +127,7 @@ export default function CommunitiesPage({ onNavigateToLogin }) {
       }
     })();
     return () => { cancelled = true; };
-  }, [isLoggedIn]);
+  }, [isLoggedIn, initializing]);
 
   /* ── Keyboard shortcut '/' to focus search ── */
   useEffect(() => {

@@ -62,7 +62,7 @@ const CARDS_PER_PAGE = 30;
 export default function BuddiesPage({ onNavigateToLogin }) {
   const { buddyId: urlBuddyId } = useParams();
   const navigate = useNavigate();
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, initializing } = useAuth();
 
   /* ── View state ── */
   const [view, setView] = useState(urlBuddyId ? 'detail' : 'list'); // 'list' | 'detail'
@@ -102,8 +102,12 @@ export default function BuddiesPage({ onNavigateToLogin }) {
     setCurrentPage(1);
   }, [searchQuery, selectedBranch, selectedYear, selectedSkill]);
 
-  /* ── Load Directory Students + Followed Set from Backend ── */
+  /* ── Load Directory Students + Followed Set from Backend. Waits for
+       AuthContext's silent-refresh-on-mount: /students/buddies requires a
+       session, so firing before it resolved guaranteed a 401-then-retry on
+       every full page load. ── */
   useEffect(() => {
+    if (initializing) return;
     let cancelled = false;
     setLoading(true);
     setLoadError('');
@@ -154,7 +158,7 @@ export default function BuddiesPage({ onNavigateToLogin }) {
     return () => {
       cancelled = true;
     };
-  }, [searchQuery, selectedBranch, selectedYear, selectedSkill, currentPage, isLoggedIn]);
+  }, [searchQuery, selectedBranch, selectedYear, selectedSkill, currentPage, isLoggedIn, initializing]);
 
   /* ── Handle Route Parameter Changes (Detail View) ── */
   useEffect(() => {

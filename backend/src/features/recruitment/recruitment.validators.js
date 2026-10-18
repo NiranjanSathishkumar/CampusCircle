@@ -13,6 +13,7 @@ const formQuestion = Joi.object({
     placeholder: Joi.string().trim().max(200).allow(""),
     helpText: Joi.string().trim().max(300).allow(""),
     required: Joi.boolean(),
+    scope: Joi.string().valid("team", "member").default("member"),
     options: Joi.array().items(Joi.string().trim().max(100)),
 });
 
@@ -24,7 +25,7 @@ const createDrive = Joi.object({
     title: Joi.string().trim().max(200).required(),
     description: Joi.string().trim().max(3000).required(),
     formQuestions: Joi.array().items(formQuestion).max(30),
-    deadline: Joi.date().greater("now"),
+    deadline: Joi.date().greater("now").allow(null, "").empty("").default(null),
     collectProfileData: Joi.boolean(),
     requireWaiver: Joi.boolean(),
     waiverText: Joi.string().trim().max(2000).allow(""),
@@ -40,7 +41,7 @@ const updateDrive = Joi.object({
     title: Joi.string().trim().max(200),
     description: Joi.string().trim().max(3000),
     formQuestions: Joi.array().items(formQuestion).max(30),
-    deadline: Joi.date().allow(null),
+    deadline: Joi.date().allow(null, "").empty("").default(null),
     collectProfileData: Joi.boolean(),
     requireWaiver: Joi.boolean(),
     waiverText: Joi.string().trim().max(2000).allow(""),
@@ -87,11 +88,17 @@ const addMember = Joi.object({
     studentId: objectId.required(),
     label: Joi.string().trim().max(128),
 });
-const updateMemberLabel = Joi.object({ label: Joi.string().trim().max(128).required() });
+const updateMemberLabel = Joi.object({
+    label: Joi.string().trim().max(128).required(),
+    wing: Joi.string().trim().max(60).allow(null, ''),
+});
 const membershipParams = Joi.object({ membershipId: objectId.required() });
+const bulkRemoveMembers = Joi.object({
+    membershipIds: Joi.array().items(objectId.required()).min(1).max(100).required(),
+});
 
 module.exports = {
     createDrive, updateDrive, recruitmentParams, communityParams, drivesQuery, paginationQuery,
     submitApplication, applicationParams, applicationsQuery, updateApplicationStatus,
-    addMember, updateMemberLabel, membershipParams,
+    addMember, updateMemberLabel, membershipParams, bulkRemoveMembers,
 };

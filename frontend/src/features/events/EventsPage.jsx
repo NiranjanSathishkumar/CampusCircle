@@ -62,7 +62,7 @@ import { findScheduleConflict } from '@/features/events/eventsDateUtils';
 export default function EventsPage({ onNavigateToLogin }) {
   const { eventId: urlEventId } = useParams();
   const navigate = useNavigate();
-  const { isLoggedIn, user } = useAuth();
+  const { isLoggedIn, user, initializing } = useAuth();
 
   // The route renders this page without props, so onNavigateToLogin is
   // normally undefined — falling back to the real /login route is what keeps
@@ -128,8 +128,16 @@ export default function EventsPage({ onNavigateToLogin }) {
     }
   }, [isLoggedIn]);
 
-  useEffect(() => { loadEvents(); }, [loadEvents]);
-  useEffect(() => { loadMyState(); }, [loadMyState]);
+  // Wait for AuthContext's silent-refresh-on-mount to settle before firing
+  // either fetch: every route here requires a student session (see
+  // events.routes.js's router.use(requireAuth)), so firing immediately on
+  // mount raced the refresh on every full page load — guaranteed 401s in the
+  // console, and (worse) a real bug: loadMyState's registrations/bookmarks
+  // fetch could win that race and populate registeredIds/savedIds from a
+  // request made before the refreshed token existed, which is what made the
+  // "X registered · Y saved" header stat intermittently read wrong.
+  useEffect(() => { if (!initializing) loadEvents(); }, [initializing, loadEvents]);
+  useEffect(() => { if (!initializing) loadMyState(); }, [initializing, loadMyState]);
 
   /* ── Discovery state ── */
   const [searchQuery, setSearchQuery] = useState('');

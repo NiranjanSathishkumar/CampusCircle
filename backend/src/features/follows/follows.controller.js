@@ -5,7 +5,6 @@
 // applyCountChange() after every follow/unfollow/reactivate transition
 // below (it also runs from the model's cascade-delete hooks); self-follow
 // is already blocked at the schema level.
-const mongoose = require("mongoose");
 const Follow = require("../../models/Follow");
 const { applyCountChange } = Follow;
 const { User } = require("../../models/User");
@@ -13,36 +12,6 @@ const Community = require("../../models/Community");
 const { notifyNewFollower } = require("../../services/notification.service");
 
 const FOLLOWABLE_MODELS = { User, Community };
-
-// Follow documents whose target (or follower) no longer exists are filtered
-// out of the returned list, so `total`/`totalPages` must exclude them too —
-// otherwise pagination metadata counts rows the client will never see.
-async function countActiveFollowsWithExistingTarget(filter) {
-    const rows = await Follow.aggregate([
-        { $match: filter },
-        { $lookup: { from: User.collection.name, localField: "following", foreignField: "_id", as: "u" } },
-        { $lookup: { from: Community.collection.name, localField: "following", foreignField: "_id", as: "c" } },
-        {
-            $match: {
-                $expr: {
-                    $gt: [{ $size: { $cond: [{ $eq: ["$followingType", "User"] }, "$u", "$c"] } }, 0],
-                },
-            },
-        },
-        { $count: "count" },
-    ]);
-    return rows[0]?.count ?? 0;
-}
-
-async function countActiveFollowsWithExistingFollower(filter) {
-    const rows = await Follow.aggregate([
-        { $match: filter },
-        { $lookup: { from: User.collection.name, localField: "follower", foreignField: "_id", as: "u" } },
-        { $match: { $expr: { $gt: [{ $size: "$u" }, 0] } } },
-        { $count: "count" },
-    ]);
-    return rows[0]?.count ?? 0;
-}
 
 module.exports.followTarget = async (req, res) => {
     const follower = req.user;
@@ -148,7 +117,7 @@ module.exports.listFollowing = async (req, res) => {
                 path: "following",
                 select: "name profilePicture profileBanner logo banner category tagline description branch yearOfJoining bio followerCount followingCount isVerified isRecruiting",
             }),
-        countActiveFollowsWithExistingTarget(filter),
+        Follow.countDocuments(filter),
     ]);
 
     const following = rawFollows.filter((f) => f.following != null);
@@ -176,11 +145,6 @@ module.exports.listFollowers = async (req, res) => {
     }
 
     const filter = { following: followingId, followingType, isActive: true };
-    // countActiveFollowsWithExistingFollower runs an aggregate $match, which -
-    // unlike Follow.find() below - does not auto-cast query values against the
-    // schema, so followingId (a plain string from req.params) must be cast to
-    // an ObjectId here or the count silently comes back 0.
-    const countFilter = { ...filter, following: new mongoose.Types.ObjectId(followingId) };
 
     const skip = (page - 1) * limit;
     const [rawFollows, total] = await Promise.all([
@@ -189,7 +153,7 @@ module.exports.listFollowers = async (req, res) => {
             .skip(skip)
             .limit(limit)
             .populate("follower", "name profilePicture profileBanner branch yearOfJoining bio followerCount followingCount isProfileComplete"),
-        countActiveFollowsWithExistingFollower(countFilter),
+        Follow.countDocuments(filter),
     ]);
 
     const followers = rawFollows.filter((f) => f.follower != null);

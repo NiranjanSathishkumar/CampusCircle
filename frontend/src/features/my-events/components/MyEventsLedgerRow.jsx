@@ -1,12 +1,21 @@
 import { motion } from 'motion/react';
-import { Calendar, MapPin, Ticket, Ticket as TicketIcon, VideoCamera, Warning } from '@phosphor-icons/react';
+import { Calendar, MapPin, Receipt, Ticket, Ticket as TicketIcon, VideoCamera, Warning } from '@phosphor-icons/react';
 import { computeCountdownStatus } from '@/features/events/eventsDateUtils';
 
 /* ─────────────────────────────────────────────────────────────
    MY EVENTS LEDGER ROW — Compact Ledger List View
    ───────────────────────────────────────────────────────────── */
-export default function MyEventsLedgerRow({ index, event, hasTimeConflict, onViewTicket, onCancel, onManageTeam }) {
+export default function MyEventsLedgerRow({
+  index,
+  event,
+  hasTimeConflict,
+  onViewTicket,
+  onPayOrViewProof,
+  onCancel,
+  onManageTeam,
+}) {
   const countdown = computeCountdownStatus(event.rawDate);
+  const isPaidEvent = event.price_amount > 0 || event.payment === 'PAID';
 
   const badgeColors = {
     completed: '#6B7280',
@@ -36,11 +45,21 @@ export default function MyEventsLedgerRow({ index, event, hasTimeConflict, onVie
               Conflict
             </span>
           )}
-          {event.registrationStatus === 'waitlisted' && (
+          {event.registrationStatus === 'waitlisted' ? (
             <span className="cc-ledger-badge" style={{ color: '#B45309', background: 'rgba(180,83,9,0.1)' }}>
               Waitlisted
             </span>
-          )}
+          ) : isPaidEvent && event.paymentStatus !== 'confirmed' ? (
+            <span
+              className="cc-ledger-badge"
+              style={{
+                color: event.paymentStatus === 'proof_submitted' ? '#B45309' : event.paymentStatus === 'rejected' ? '#DC2626' : '#2563EB',
+                background: event.paymentStatus === 'proof_submitted' ? 'rgba(180,83,9,0.1)' : event.paymentStatus === 'rejected' ? 'rgba(220,38,38,0.1)' : 'rgba(37,99,235,0.1)',
+              }}
+            >
+              {event.paymentStatus === 'proof_submitted' ? 'Proof in Review' : event.paymentStatus === 'rejected' ? 'Proof Rejected' : 'Payment Required'}
+            </span>
+          ) : null}
         </span>
         <span className="cc-ledger-meta">
           <span className="cc-ledger-meta-item"><Calendar size={11} />{event.dateFormatted}</span>
@@ -49,19 +68,40 @@ export default function MyEventsLedgerRow({ index, event, hasTimeConflict, onVie
             {event.venue}
           </span>
           <span className="cc-ledger-meta-item cc-ledger-meta-hide-mobile">{event.hostName}</span>
-          <span className="cc-ledger-meta-item">Ticket: {event.ticketId}</span>
+          <span className="cc-ledger-meta-item">
+            {isPaidEvent && event.paymentStatus !== 'confirmed'
+              ? `Status: ${event.paymentStatus === 'proof_submitted' ? 'Pending Review' : event.paymentStatus === 'rejected' ? 'Rejected' : 'Unpaid'}`
+              : `Ticket: ${event.ticketId || 'Active'}`}
+          </span>
         </span>
       </span>
 
       <span className="cc-ledger-actions">
-        <motion.button
-          className="myevents-btn-ticket"
-          onClick={() => onViewTicket(event)}
-          whileTap={{ scale: 0.96 }}
-          aria-label={`View digital ticket for ${event.title}`}
-        >
-          <TicketIcon size={14} /> Ticket
-        </motion.button>
+        {isPaidEvent && event.paymentStatus !== 'confirmed' ? (
+          <motion.button
+            className={`myevents-btn-ticket ${
+              event.paymentStatus === 'proof_submitted'
+                ? '!bg-amber-600 hover:!bg-amber-700 !text-white'
+                : event.paymentStatus === 'rejected'
+                ? '!bg-red-600 hover:!bg-red-700 !text-white'
+                : '!bg-[#1A3A2A] hover:!bg-[#12281D] !text-white'
+            }`}
+            onClick={() => onPayOrViewProof?.(event)}
+            whileTap={{ scale: 0.96 }}
+            aria-label={`Pay or submit proof for ${event.title}`}
+          >
+            <Receipt size={14} /> {event.paymentStatus === 'proof_submitted' ? 'Proof' : 'Pay'}
+          </motion.button>
+        ) : (
+          <motion.button
+            className="myevents-btn-ticket"
+            onClick={() => onViewTicket(event)}
+            whileTap={{ scale: 0.96 }}
+            aria-label={`View digital ticket for ${event.title}`}
+          >
+            <TicketIcon size={14} /> Ticket
+          </motion.button>
+        )}
         {!countdown.isPast && event.registrationType === 'team' && (
           <motion.button
             className="myevents-btn-manage-team"

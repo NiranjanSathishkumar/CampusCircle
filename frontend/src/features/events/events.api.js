@@ -98,3 +98,13 @@ export const listMyBookmarks = ({ page = 1, limit = 100 } = {}) => {
 // AddMemberModal already uses; requireAuth only, any role.
 export const lookupStudentByEmail = (email) =>
   apiFetch(`/profile/lookup?${new URLSearchParams({ email }).toString()}`, { method: 'GET', role: 'student' });
+
+export const uploadPaymentProof = (registrationId, file) => {
+  const formData = new FormData();
+  formData.append('paymentProof', file);
+  return apiFetch(`/events/registrations/${registrationId}/payment-proof`, {
+    method: 'POST',
+    body: formData,
+    role: 'student',
+  });
+};

@@ -734,3 +734,255 @@
     justify-content: center;
   }
 }
+
+/* ── Profile Photo Avatar ─────────────────────────────────── */
+
+.org-member-avatar-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+
+.org-roster-table-avatar .org-member-avatar-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+
+/* ── Wing Badge ───────────────────────────────────────────── */
+
+.org-member-wing-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #4338CA;
+  background-color: rgba(79, 70, 229, 0.08);
+  border: 1px solid rgba(79, 70, 229, 0.18);
+  padding: 0.15rem 0.5rem;
+  border-radius: 99px;
+  margin-top: 0.2rem;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.org-member-wing-badge--sm {
+  font-size: 0.6rem;
+  padding: 0.1rem 0.4rem;
+}
+
+/* ── Join Date Chip ───────────────────────────────────────── */
+
+.org-member-join-chip {
+  color: #4338CA;
+  background-color: rgba(79, 70, 229, 0.06);
+  border-color: rgba(79, 70, 229, 0.16);
+}
+
+/* ── Role History Panel ───────────────────────────────────── */
+
+.org-role-history {
+  margin-top: 0.625rem;
+  border-top: 1px solid #F1EFE9;
+  padding-top: 0.5rem;
+}
+
+.org-role-history-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #64748B;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s ease;
+}
+
+.org-role-history-toggle:hover {
+  color: #0F172A;
+}
+
+.org-role-history-list {
+  margin-top: 0.5rem;
+  border-radius: 8px;
+  background: #FAF8F5;
+  border: 1px solid #E6E1D5;
+  overflow: hidden;
+}
+
+.org-role-history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.35rem 0.625rem;
+  border-bottom: 1px solid #F1EFE9;
+  gap: 0.5rem;
+}
+
+.org-role-history-item:last-child {
+  border-bottom: none;
+}
+
+.org-role-history-role {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #1E293B;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.org-role-history-date {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  color: #94A3B8;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Bulk Selection Checkbox on Member Cards ─────────────── */
+
+.org-member-select-check {
+  position: absolute;
+  top: 0.625rem;
+  right: 0.625rem;
+  z-index: 2;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  cursor: pointer;
+}
+
+.org-member-card:hover .org-member-select-check,
+.org-member-select-check.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.org-member-select-check input[type='checkbox'] {
+  display: none;
+}
+
+.org-member-select-check-visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 2px solid #CBD5E1;
+  background: #FFFFFF;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);
+}
+
+.org-member-select-check:has(input:checked) .org-member-select-check-visual {
+  background: #0F172A;
+  border-color: #0F172A;
+  color: #FFFFFF;
+}
+
+.org-member-select-check:hover .org-member-select-check-visual {
+  border-color: #0F172A;
+}
+
+/* Selected card state */
+.org-member-card--selected {
+  background-color: #FAF8F5;
+  box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.12), 0 4px 12px rgba(15, 23, 42, 0.04);
+}
+
+/* ── Bulk Actions Floating Bar ───────────────────────────── */
+
+.org-bulk-actions-bar {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.75rem 1.25rem;
+  background: #0F172A;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  box-shadow: 0 8px 32px -4px rgba(15, 23, 42, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+  min-width: 460px;
+  max-width: calc(100vw - 3rem);
+}
+
+.org-bulk-count {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  white-space: nowrap;
+}
+
+.org-bulk-remove-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.45rem 1rem;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);
+  color: #FFFFFF;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.4);
+}
+
+.org-bulk-remove-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.5);
+}
+
+.org-bulk-remove-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── Table row selection highlight ──────────────────────── */
+
+.org-table-row--selected td {
+  background-color: rgba(79, 70, 229, 0.04);
+}
+
+.org-table-select-all {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.org-table-select-all input[type='checkbox'] {
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+  accent-color: #0F172A;
+}
+
+@media (max-width: 640px) {
+  .org-bulk-actions-bar {
+    min-width: calc(100vw - 2rem);
+    flex-wrap: wrap;
+    bottom: 1rem;
+  }
+}

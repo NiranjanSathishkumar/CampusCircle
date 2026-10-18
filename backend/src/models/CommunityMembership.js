@@ -3,6 +3,15 @@ const { Schema } = mongoose;
 
 // A student's membership in a Community, plus the Organizer-assigned label
 // (role/position) for that membership.
+
+const labelHistoryEntrySchema = new Schema(
+  {
+    label: { type: String, required: true, trim: true, maxlength: 128 },
+    changedAt: { type: Date, default: Date.now },
+  },
+  { _id: false }
+);
+
 const communityMembershipSchema = new Schema(
   {
     community: { type: Schema.Types.ObjectId, ref: "Community", required: true },
@@ -12,6 +21,12 @@ const communityMembershipSchema = new Schema(
     // informational only, no permission changes. Defaults to plain
     // "Member" until the Organizer gives them a posting.
     label: { type: String, required: true, trim: true, default: "Member" },
+
+    // Optional domain wing (e.g. 'Technical', 'Design', 'Finance')
+    wing: { type: String, trim: true, maxlength: 60, default: null },
+
+    // Append-only log; each entry records the label at the time it was set.
+    labelHistory: { type: [labelHistoryEntrySchema], default: [] },
 
     // When this membership started. timestamps.createdAt tracks the same
     // moment technically, but this is the semantic field analytics/UI

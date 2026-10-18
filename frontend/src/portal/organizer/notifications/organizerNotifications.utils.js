@@ -22,6 +22,15 @@ function describe(n) {
         link: event?._id ? `/organizer/events/${event._id}` : '/organizer/events',
       };
     }
+    case 'payment_proof_received': {
+      const event = target.event;
+      return {
+        category: 'payment',
+        title: actor?.name ? `Payment proof from ${actor.name}` : 'New payment proof submitted',
+        desc: event?.title ? `Payment proof submitted for ${event.title}. Verification required.` : 'A student submitted payment proof for verification.',
+        link: event?._id ? `/organizer/events/${event._id}?tab=payments` : '/organizer/events',
+      };
+    }
     case 'recruitment_application': {
       const recruitment = target.recruitment;
       return {

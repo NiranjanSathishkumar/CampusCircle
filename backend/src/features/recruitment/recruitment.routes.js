@@ -23,6 +23,7 @@ const {
     addMember,
     updateMemberLabel,
     removeMember,
+    bulkRemoveMembers,
     listMyMemberships,
 } = require("./memberships.controller");
 
@@ -54,6 +55,10 @@ router.route("/applications/:applicationId")
 // Membership roster — organizer manages their own community's roster via req.user
 router.route("/members/mine")
     .get(requireRole("student"), validate(schema.paginationQuery, "query"), wrapAsync(listMyMemberships));
+
+// bulk-remove MUST come before /members/:membershipId so it isn't swallowed as a param
+router.route("/members/bulk-remove")
+    .post(requireRole("organizer"), validate(schema.bulkRemoveMembers), wrapAsync(bulkRemoveMembers));
 
 router.route("/members")
     .get(requireRole("organizer"), validate(schema.paginationQuery, "query"), wrapAsync(listRoster))

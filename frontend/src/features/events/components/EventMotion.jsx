@@ -80,6 +80,21 @@ const STATUS_STYLES = {
     border: 'rgba(153, 27, 27, 0.35)',
     dotColor: '#991B1B',
   },
+  // Time-based closure (event ended / registration window passed) — kept
+  // visually distinct (neutral grey) from the capacity-driven "Sold Out"
+  // red, since seats being free isn't why these are closed.
+  'Concluded': {
+    color: '#4B5563',
+    bg: 'rgba(75, 85, 99, 0.12)',
+    border: 'rgba(75, 85, 99, 0.28)',
+    dotColor: '#4B5563',
+  },
+  'Registration Closed': {
+    color: '#4B5563',
+    bg: 'rgba(75, 85, 99, 0.12)',
+    border: 'rgba(75, 85, 99, 0.28)',
+    dotColor: '#4B5563',
+  },
 };
 
 /* ── Status Dot Helper ── */

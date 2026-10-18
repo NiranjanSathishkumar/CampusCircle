@@ -64,7 +64,7 @@ export default function OrganizerRegistrationSubmissionModal({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 16 }}
         transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-        style={{ maxWidth: 640 }}
+        style={{ width: '80vw', maxWidth: '82vw', maxHeight: '90vh' }}
       >
         {/* Header */}
         <div className="org-modal-header border-b border-[#D8D2C4] pb-3">

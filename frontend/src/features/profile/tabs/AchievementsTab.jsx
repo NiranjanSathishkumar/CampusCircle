@@ -20,7 +20,10 @@ export default function AchievementsTab({
     <div>
       <div className="profile-section-header">
         <div>
-          <h2 className="profile-section-title">Verified Achievements ({certificates.length})</h2>
+          {/* "Verified" would contradict the landing page's own Closed Campus
+              Policy FAQ, which states achievements are "entirely self-reported"
+              and never validated by CampusCircle or the college. */}
+          <h2 className="profile-section-title">Achievements — Self-Reported ({certificates.length})</h2>
           <p className="profile-section-desc">
             Showcase hackathon prizes, cloud certifications, workshop completions, and academic credentials.
           </p>

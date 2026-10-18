@@ -5,7 +5,24 @@
  * inline here — see [[phase-3-showcase-tab-decision]] for why.
  */
 import { useNavigate } from 'react-router-dom';
-import { Calendar, Check, Circle, CurrencyInr, Envelope, Hash, MapPin, MapPinArea, PencilSimple, Phone, ShareNetwork, ShieldCheck, Ticket, Users } from '@phosphor-icons/react';
+import {
+  ArrowSquareOut,
+  Calendar,
+  Check,
+  Circle,
+  Clock,
+  CurrencyInr,
+  Envelope,
+  Hash,
+  MapPin,
+  MapPinArea,
+  PencilSimple,
+  Phone,
+  ShareNetwork,
+  ShieldCheck,
+  Ticket,
+  Users,
+} from '@phosphor-icons/react';
 import { motion } from 'motion/react';
 import FaqAccordionItem from '@/portal/organizer/events/components/OrganizerFaqAccordionItem';
 import StatusPill from '@/layouts/portal/components/StatusPill';
@@ -28,10 +45,36 @@ export default function EventShowcaseTab({
 
   return (
     <div id="panel-showcase" role="tabpanel" className="org-showcase-preview-frame">
-      {/* Preview mode label */}
+      {/* High-fidelity preview toolbar */}
       <div className="org-showcase-preview-label">
-        <span className="org-showcase-preview-label-dot" />
-        Student Showcase Preview — this is exactly what students see
+        <div className="flex items-center gap-2">
+          <span className="org-showcase-preview-label-dot" />
+          <span className="font-semibold text-gray-800 text-xs">Student Showcase Preview</span>
+          <span className="hidden sm:inline text-xs text-gray-500 font-normal">
+            &middot; Live 1:1 simulation of the student-facing event page
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-gray-700 bg-white border border-[#D8D2C4] hover:bg-[#FAF8F5] rounded-lg shadow-2xs transition-colors cursor-pointer"
+            onClick={() => window.open(`/events/${event.id}`, '_blank')}
+            title="Open real student-facing page in a new tab"
+          >
+            <span>Open Public Page</span>
+            <ArrowSquareOut size={13} />
+          </button>
+          <button
+            type="button"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-gray-700 bg-white border border-[#D8D2C4] hover:bg-[#FAF8F5] rounded-lg shadow-2xs transition-colors cursor-pointer"
+            onClick={() => navigate(`/organizer/events/${event.id}/edit`)}
+            title="Edit event details in the studio"
+          >
+            <PencilSimple size={13} />
+            <span>Edit Event</span>
+          </button>
+        </div>
       </div>
       <div className="org-showcase-preview-inner">
       <div className="events-detail-inner !p-0">
@@ -310,6 +353,12 @@ export default function EventShowcaseTab({
                       <Users size={15} className="events-sticky-meta-icon" />
                       <span>{event.teamFormat || 'Solo'}</span>
                     </div>
+                    {event.registrationDeadlineFormatted && (
+                      <div className="events-sticky-meta-row" style={{ color: event.registrationClosed ? '#991B1B' : undefined }}>
+                        <Clock size={15} className="events-sticky-meta-icon" />
+                        <span>{event.registrationClosed ? 'Registration Closed' : `Register by: ${event.registrationDeadlineFormatted}`}</span>
+                      </div>
+                    )}
                   </div>
 
                   <div className="events-sticky-progress-section">
@@ -329,22 +378,33 @@ export default function EventShowcaseTab({
                     </div>
                   </div>
 
-                  <button
-                    type="button"
-                    className="events-sticky-reg-btn registered"
-                    onClick={() => navigate(`/organizer/events/${event.id}/edit`)}
-                  >
-                    <PencilSimple size={16} /> Edit Event Details
-                  </button>
+                  {event.status === 'completed' ? (
+                    <div className="events-sticky-reg-btn registered !cursor-default text-center">
+                      Event Completed
+                    </div>
+                  ) : event.registrationClosed ? (
+                    <div className="events-sticky-reg-btn registered !cursor-default text-center">
+                      Registration Closed
+                    </div>
+                  ) : (
+                    <div className="events-sticky-reg-btn !cursor-default text-center" title="Student Preview Mode">
+                      Register for Event
+                    </div>
+                  )}
 
-                  <div className="events-sticky-secondary-actions mt-3">
+                  <p className="text-[10px] text-center text-gray-500 font-mono mt-1.5 mb-2">
+                    Student CTA Simulation &middot; Read-Only
+                  </p>
+
+                  <div className="events-sticky-secondary-actions">
                     <button
                       type="button"
                       className={`events-sticky-icon-btn ${copied ? 'copied' : ''}`}
                       onClick={handleShare}
+                      title="Copy public event URL"
                     >
                       {copied ? <Check size={15} /> : <ShareNetwork size={15} />}
-                      {copied ? 'Copied!' : 'Share Link'}
+                      {copied ? 'Copied!' : 'Share Public Link'}
                     </button>
                   </div>
                 </div>

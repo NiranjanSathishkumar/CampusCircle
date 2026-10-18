@@ -1,6 +1,6 @@
 const Joi = require("joi");
 const { email, year, objectId, url } = require("../../validators/common");
-const { COMMUNITY_SOCIAL_PLATFORMS } = require("../../models/Community");
+const { COMMUNITY_SOCIAL_PLATFORMS, COMMUNITY_CATEGORIES } = require("../../models/Community");
 
 // Mirrors the old allowedUpdates whitelist, minus `logo` and `banner`: those are
 // media objects owned by the upload/remove routes, which also sync Cloudinary and
@@ -9,7 +9,7 @@ const { COMMUNITY_SOCIAL_PLATFORMS } = require("../../models/Community");
 const updateInfo = Joi.object({
     name: Joi.string().trim().min(2).max(128),
     description: Joi.string().trim().max(1000).allow(""),
-    category: Joi.string().trim().max(60),
+    category: Joi.string().trim().valid(...COMMUNITY_CATEGORIES),
     location: Joi.string().trim().max(200).allow(""),
     establishedYear: year,
     isRecruiting: Joi.boolean(),
@@ -35,8 +35,14 @@ const addCoreTeamMember = Joi.object({
     email,
     role: memberRole.required(),
 }).or("studentId", "email");
-const updateCoreTeamMemberRole = Joi.object({ role: memberRole.required() });
+const updateCoreTeamMemberRole = Joi.object({
+    role: memberRole.required(),
+    wing: Joi.string().trim().max(60).allow(null, ''),
+});
 const coreTeamParams = Joi.object({ studentId: objectId.required() });
+const bulkRemoveCoreTeamMembers = Joi.object({
+    studentIds: Joi.array().items(objectId.required()).min(1).max(50).required(),
+});
 
 // Tags
 const addTag = Joi.object({ tag: tag.required() });
@@ -76,7 +82,7 @@ const dashboardQuery = Joi.object({
 
 module.exports = {
     updateInfo,
-    addCoreTeamMember, updateCoreTeamMemberRole, coreTeamParams,
+    addCoreTeamMember, updateCoreTeamMemberRole, coreTeamParams, bulkRemoveCoreTeamMembers,
     addTag, tagParams,
     setSocialLink, socialLinkParams,
     addFaq, updateFaq, faqParams,

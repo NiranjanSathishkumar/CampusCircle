@@ -13,6 +13,22 @@ const DEFAULT_COMMUNITY_BANNER = "https://alkuwaiti.com/wp-content/uploads/2020/
 
 const COMMUNITY_SOCIAL_PLATFORMS = ["github", "linkedin", "discord", "instagram", "twitter"];
 
+// Mirrors frontend/src/features/communities/communitiesConstants.js's
+// COMMUNITY_CATEGORY_VALUES — kept in sync manually since the two apps don't
+// share a package. This is the only place a community's category can come
+// from (admin creation, organizer self-update); enforcing it here (and via
+// the schema enum below) is what stops a value like "Technical" from ever
+// landing in the database and silently falling out of every category filter
+// tab, which is undiscoverable-by-category and has no dropdown option that
+// would let an organizer fix it themselves.
+const COMMUNITY_CATEGORIES = [
+  "Technology & Development",
+  "Arts & Culture",
+  "Sports & Fitness",
+  "Academic & Literary",
+  "Social & Cultural",
+];
+
 const socialLinkSchema = new Schema(
   {
     platform: {
@@ -38,10 +54,24 @@ const faqSchema = new Schema(
   }
 );
 
+const roleHistoryEntrySchema = new Schema(
+  {
+    role: { type: String, required: true, trim: true, maxlength: 128 },
+    changedAt: { type: Date, default: Date.now },
+  },
+  { _id: false }
+);
+
 const coreTeamMemberSchema = new Schema(
   {
     user: { type: Schema.Types.ObjectId, ref: "User", required: true },
     role: { type: String, required: true, trim: true, maxlength: 128 },
+    // Optional domain wing (e.g. 'Technical', 'Design', 'Finance')
+    wing: { type: String, trim: true, maxlength: 60, default: null },
+    // Set automatically when the member is added to the team
+    joinedAt: { type: Date, default: Date.now },
+    // Append-only log; latest entry is always the current role
+    roleHistory: { type: [roleHistoryEntrySchema], default: [] },
   },
   { _id: false },
 );
@@ -82,7 +112,7 @@ const communitySchema = new Schema(
       },
     },
 
-    category: { type: String, required: true, trim: true, maxlength: 60 },
+    category: { type: String, required: true, trim: true, maxlength: 60, enum: COMMUNITY_CATEGORIES },
 
     location: { type: String, trim: true },
 
@@ -182,6 +212,10 @@ communitySchema.path("coreTeam").validate(function (arr) {
 communitySchema.index({ isActive: 1, tags: 1 });
 communitySchema.index({ isActive: 1, category: 1 });
 communitySchema.index({ name: "text", description: "text" });
+// Discover Communities' default listing: filter isActive, sort by
+// followerCount desc then name — without this, Mongo full-scans + sorts
+// the collection in memory on every page load.
+communitySchema.index({ isActive: 1, followerCount: -1, name: 1 });
 
 // ── Password comparison ───────────────────────────────────────────
 communitySchema.methods.comparePassword = function (candidatePassword) {
@@ -212,3 +246,4 @@ module.exports = Community;
 module.exports.DEFAULT_COMMUNITY_LOGO = DEFAULT_COMMUNITY_LOGO;
 module.exports.DEFAULT_COMMUNITY_BANNER = DEFAULT_COMMUNITY_BANNER;
 module.exports.COMMUNITY_SOCIAL_PLATFORMS = COMMUNITY_SOCIAL_PLATFORMS;
+module.exports.COMMUNITY_CATEGORIES = COMMUNITY_CATEGORIES;

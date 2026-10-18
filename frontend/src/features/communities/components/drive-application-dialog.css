@@ -21,8 +21,16 @@
 /* Compound selector so this beats the base .events-dialog rule regardless
    of stylesheet import order (higher specificity, no !important needed). */
 .events-dialog.drv-apply-dialog {
-  max-width: 780px;
-  max-height: 94vh;
+  width: 80vw;
+  max-width: 82vw;
+  max-height: 90vh;
+}
+
+@media (max-width: 768px) {
+  .events-dialog.drv-apply-dialog {
+    width: 94vw !important;
+    max-width: 94vw !important;
+  }
 }
 
 .drv-apply-dialog::before {

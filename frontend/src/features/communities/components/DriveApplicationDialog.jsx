@@ -72,10 +72,12 @@ export default function DriveApplicationDialog({ drive, communityName, onSuccess
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [submitting]);
 
+  const isDeadlinePassed = drive.deadline ? new Date() > new Date(drive.deadline) : false;
+  const isClosed = !drive.isOpen || isDeadlinePassed;
   const hasFormQuestions = Array.isArray(drive.formQuestions) && drive.formQuestions.length > 0;
   const questionsValid = validateAnswers(drive.formQuestions, answers);
   const waiverValid = !drive.requireWaiver || waiverAccepted;
-  const canSubmit = questionsValid && waiverValid;
+  const canSubmit = questionsValid && waiverValid && !isClosed;
   const deadline = formatDeadline(drive.deadline);
 
   const studentName = user?.name || 'Logged-In Student';
@@ -85,7 +87,7 @@ export default function DriveApplicationDialog({ drive, communityName, onSuccess
       .join(' · ') || 'SIES Graduate School of Technology';
 
   const handleSubmit = async () => {
-    if (submitting) return;
+    if (submitting || isClosed) return;
     if (!canSubmit) {
       setAttemptedSubmit(true);
       return;
@@ -226,6 +228,15 @@ export default function DriveApplicationDialog({ drive, communityName, onSuccess
             </div>
           )}
 
+          {isClosed && (
+            <div className="events-conflict-notice" style={{ background: '#FEF2F2', borderColor: '#FECACA' }}>
+              <Clock size={16} style={{ color: '#DC2626', flexShrink: 0 }} weight="bold" />
+              <p className="events-conflict-text" style={{ color: '#991B1B', fontWeight: 600 }}>
+                {isDeadlinePassed ? 'The application deadline has passed. New applications are no longer accepted.' : 'This recruitment drive is closed.'}
+              </p>
+            </div>
+          )}
+
           {submitError && (
             <div className="events-conflict-notice" style={{ background: '#FEF2F2', borderColor: '#FECACA' }}>
               <Warning size={16} style={{ color: '#DC2626', flexShrink: 0 }} weight="fill" />
@@ -240,12 +251,14 @@ export default function DriveApplicationDialog({ drive, communityName, onSuccess
           <button type="button" className="events-dialog-cancel" onClick={requestClose} disabled={submitting}>
             Cancel
           </button>
-          <button type="button" className="events-dialog-confirm" onClick={handleSubmit} disabled={submitting}>
+          <button type="button" className="events-dialog-confirm" onClick={handleSubmit} disabled={submitting || isClosed}>
             {submitting ? (
               <>
                 <CircleNotch size={16} className="animate-spin" />
                 <span>Submitting…</span>
               </>
+            ) : isClosed ? (
+              <span>{isDeadlinePassed ? 'Deadline Passed' : 'Closed'}</span>
             ) : (
               <>
                 <PaperPlaneTilt size={16} weight="fill" />

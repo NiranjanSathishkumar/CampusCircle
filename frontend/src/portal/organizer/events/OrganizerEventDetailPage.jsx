@@ -7,7 +7,7 @@
  * happens via the create-event wizard in edit mode, not inline here.
  */
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import {
   ArrowLeft,
@@ -26,7 +26,10 @@ import {
   FloppyDisk,
   Trash,
   CircleNotch,
+  Receipt,
   X,
+  ShareNetwork,
+  Check,
 } from '@phosphor-icons/react';
 import { checkInEvent, deleteEvent, getEvent, listEventRegistrations, updateEvent } from '@/portal/organizer/events/events.api';
 import { useOrganizerAuth } from '@/shared/auth/useOrganizerAuth';
@@ -40,10 +43,13 @@ import './org-events.css';
 import EventAnalyticsTab from '@/portal/organizer/events/tabs/EventAnalyticsTab';
 import EventRosterTab from '@/portal/organizer/events/tabs/EventRosterTab';
 import EventShowcaseTab from '@/portal/organizer/events/tabs/EventShowcaseTab';
+import EventPaymentVerificationTab from '@/portal/organizer/events/tabs/EventPaymentVerificationTab';
 
 function mapEventForDisplay(event) {
   const eventDate = new Date(event.eventDate);
   const isPast = eventDate.getTime() < Date.now();
+  const registrationDeadline = event.registrationDeadline ? new Date(event.registrationDeadline) : null;
+  const registrationClosed = registrationDeadline ? registrationDeadline.getTime() < Date.now() : isPast;
   let status = 'published';
   if (event.status === 'draft') status = 'draft';
   else if (isPast) status = 'completed';
@@ -59,6 +65,13 @@ function mapEventForDisplay(event) {
     dateFormatted: eventDate.toLocaleString('en-IN', {
       weekday: 'short', day: '2-digit', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit',
     }),
+    registrationDeadline,
+    registrationDeadlineFormatted: registrationDeadline
+      ? registrationDeadline.toLocaleString('en-IN', {
+          weekday: 'short', day: '2-digit', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit',
+        })
+      : null,
+    registrationClosed,
     teamFormat: event.registrationType === 'team' ? `${event.teamSize?.min}–${event.teamSize?.max} members` : 'Solo',
     payment: event.price === 0 ? 'Free' : 'Paid',
     priceAmount: event.price,
@@ -100,11 +113,13 @@ export default function OrganizerEventDetailPage() {
   const { community } = useOrganizerAuth();
   const communityName = community?.name || 'GDSC SIES GST';
 
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get('tab') === 'payments' ? 'payments' : 'showcase';
   const [rawEvent, setRawEvent] = useState(null);
   const [rawRegistrations, setRawRegistrations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
-  const [activeTab, setActiveTab] = useState('showcase'); // 'showcase' | 'form' | 'roster' | 'analytics'
+  const [activeTab, setActiveTab] = useState(initialTab); // 'showcase' | 'form' | 'roster' | 'analytics' | 'payments'
   const [search, setSearch] = useState('');
   const [copied, setCopied] = useState(false);
   const [imgError, setImgError] = useState(false);
@@ -131,6 +146,13 @@ export default function OrganizerEventDetailPage() {
   useEffect(() => {
     loadAll();
   }, [loadAll]);
+
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam === 'payments') {
+      setActiveTab('payments');
+    }
+  }, [searchParams]);
 
   // Global Escape key listener — closes the submission modal first if one's
   // open, only navigates away once nothing else is open to dismiss.
@@ -160,10 +182,39 @@ export default function OrganizerEventDetailPage() {
     () => rawRegistrations.filter((r) => r.status === 'confirmed').map(mapRegistration),
     [rawRegistrations]
   );
+  const confirmedCount = useMemo(
+    () => rawRegistrations.filter((r) => r.status === 'confirmed').length,
+    [rawRegistrations]
+  );
+  const reservedCount = useMemo(
+    () => rawRegistrations.filter((r) => r.status === 'reserved').length,
+    [rawRegistrations]
+  );
   const waitlistCount = useMemo(
     () => rawRegistrations.filter((r) => r.status === 'waitlisted').length,
     [rawRegistrations]
   );
+  const pendingPaymentCount = useMemo(
+    () => rawRegistrations.filter((r) => r.paymentStatus === 'proof_submitted').length,
+    [rawRegistrations]
+  );
+  const confirmedRevenue = useMemo(() => {
+    if (!rawEvent || rawEvent.price <= 0) return 0;
+    return rawRegistrations
+      .filter((r) => r.status === 'confirmed' && r.paymentStatus === 'confirmed')
+      .reduce((sum, r) => sum + (r.amountPaid || rawEvent.price || 0), 0);
+  }, [rawEvent, rawRegistrations]);
+
+  const effectiveRegisteredCount = useMemo(() => {
+    return Math.max(confirmedCount, rawEvent?.confirmedRegistrationIds?.length || 0);
+  }, [confirmedCount, rawEvent]);
+
+  const fillRate = useMemo(() => {
+    const cap = rawEvent?.capacity || event?.capacity;
+    if (!cap) return 0;
+    const occupied = confirmedCount + reservedCount;
+    return Math.min(Math.round((occupied / cap) * 100), 100);
+  }, [rawEvent, event, confirmedCount, reservedCount]);
 
   const filtered = useMemo(() => {
     if (!search.trim()) return confirmedRegistrations;
@@ -180,11 +231,6 @@ export default function OrganizerEventDetailPage() {
     () => confirmedRegistrations.filter((r) => r.checkedIn).length,
     [confirmedRegistrations]
   );
-
-  const fillRate = useMemo(() => {
-    if (!event || !event.capacity) return 0;
-    return Math.min(Math.round((event.registeredCount / event.capacity) * 100), 100);
-  }, [event]);
 
   const showToast = (msg) => {
     setToastMsg(msg);
@@ -294,9 +340,20 @@ export default function OrganizerEventDetailPage() {
 
   const agenda = rawEvent.agenda || [];
   const rules = rawEvent.rules || [];
-  const contact = rawEvent.contact || null;
   const faqs = rawEvent.faqs || [];
-  const analyticsEvent = { ...event, waitlistCount };
+  const contact = rawEvent.contact || null;
+  const analyticsEvent = {
+    ...event,
+    capacity: rawEvent.capacity || event.capacity,
+    registeredCount: effectiveRegisteredCount,
+    confirmedCount,
+    reservedCount,
+    waitlistCount,
+    pendingPaymentCount,
+    confirmedRevenue,
+    payment: rawEvent.price > 0 ? 'Paid' : 'Free',
+    priceAmount: rawEvent.price || 0,
+  };
 
   return (
     <div className="org-page org-event-detail-page">
@@ -308,39 +365,38 @@ export default function OrganizerEventDetailPage() {
         </div>
       )}
 
-      {/* ── Organizer Header Bar ── */}
-      <div className="events-breadcrumb flex items-center justify-between mb-3">
-        <div className="flex items-center gap-1">
+      {/* ── Organizer Breadcrumb & Back Link ── */}
+      <div className="flex items-center justify-between flex-wrap gap-2 mb-3 text-xs font-['Plus_Jakarta_Sans']">
+        <div className="flex items-center gap-1.5 text-gray-500">
           <button
-            className="events-breadcrumb-link"
+            type="button"
+            className="hover:text-gray-900 transition-colors cursor-pointer flex items-center gap-1 font-medium"
             onClick={() => navigate('/organizer/events')}
-            aria-label="Back to Events"
           >
-            Events
+            <ArrowLeft size={13} />
+            <span>Events</span>
           </button>
-          <CaretRight size={10} className="events-breadcrumb-sep" />
-          <span className="events-breadcrumb-link" style={{ cursor: 'default' }}>
-            {communityName}
-          </span>
-          <CaretRight size={10} className="events-breadcrumb-sep" />
-          <span className="events-breadcrumb-current" title={event.title}>
+          <CaretRight size={11} className="text-gray-400" />
+          <span className="text-gray-600 font-medium">{communityName}</span>
+          <CaretRight size={11} className="text-gray-400" />
+          <span className="text-gray-900 font-semibold truncate max-w-[260px] sm:max-w-md" title={event.title}>
             {event.title}
           </span>
         </div>
 
         <button
-          className="org-back-link !mb-0"
+          type="button"
+          className="text-xs text-gray-500 hover:text-gray-900 transition-colors flex items-center gap-1 font-medium cursor-pointer"
           onClick={() => navigate('/organizer/events')}
-          aria-label="Back to events list"
         >
-          <ArrowLeft size={13} /> Back to Events Hub
+          <span>Return to Events Hub</span>
         </button>
       </div>
 
       {/* ── Organizer Management Header Card ── */}
       <div className="org-event-mgmt-header">
         <div className="org-event-mgmt-header-top">
-          <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ flex: 1, minWidth: 260 }}>
             <div className="org-event-mgmt-header-meta">
               <StatusPill status={event.status} />
               <span className="org-badge">{event.category || 'Workshop'}</span>
@@ -350,48 +406,89 @@ export default function OrganizerEventDetailPage() {
           </div>
 
           <div className="org-event-mgmt-actions">
+            {/* Primary Live Attendance Check-In */}
             <button
               type="button"
-              className="org-btn org-btn-ghost"
-              onClick={() => navigate(`/organizer/events/${eventId}/edit`)}
-              title="Edit title, dates, venue, banner, pricing, and more"
-            >
-              <PencilSimple size={15} /> Edit Event
-            </button>
-            <button
-              type="button"
-              className="org-btn org-btn-ghost"
-              onClick={() => navigate(`/organizer/analytics/${eventId}`)}
-            >
-              <ChartBar size={15} /> Analytics
-            </button>
-            <button
-              type="button"
-              className="org-btn org-btn-primary"
+              className="org-btn org-btn-primary shadow-xs"
               onClick={() => navigate(`/organizer/events/${eventId}/scan`)}
+              title="Launch QR Camera Check-In Scanner"
             >
-              <QrCode size={15} /> Scan Attendance
+              <QrCode size={16} weight="bold" />
+              <span>Scan Attendance</span>
             </button>
+
+            {/* Core Event Editor */}
+            <button
+              type="button"
+              className="org-btn org-btn-ghost border border-[#D8D2C4] bg-white hover:bg-[#FAF8F5] text-gray-800 shadow-xs"
+              onClick={() => navigate(`/organizer/events/${eventId}/edit`)}
+              title="Edit event title, dates, venue, banner, agenda, and pricing"
+            >
+              <PencilSimple size={15} />
+              <span>Edit Event</span>
+            </button>
+
+            {/* Quick Share Link */}
+            <button
+              type="button"
+              className={`org-btn org-btn-ghost border border-[#D8D2C4] bg-white hover:bg-[#FAF8F5] text-gray-800 shadow-xs ${copied ? '!text-emerald-700 !border-emerald-300 !bg-emerald-50' : ''}`}
+              onClick={handleShare}
+              title="Copy student public link to clipboard"
+            >
+              {copied ? <Check size={15} weight="bold" /> : <ShareNetwork size={15} />}
+              <span>{copied ? 'Link Copied!' : 'Share Link'}</span>
+            </button>
+
+            {/* Status Switcher (Publish / Draft) */}
             {(rawEvent.status === 'draft' || rawEvent.status === 'published') && (
               <button
                 type="button"
-                className="org-btn org-btn-secondary"
+                className={`org-btn ${
+                  rawEvent.status === 'draft'
+                    ? '!bg-emerald-700 hover:!bg-emerald-800 !text-white shadow-xs'
+                    : 'org-btn-ghost border border-[#D8D2C4] bg-white hover:bg-amber-50 text-gray-700 hover:text-amber-800 shadow-xs'
+                }`}
                 onClick={handleToggleStatus}
                 disabled={changingStatus}
                 title={rawEvent.status === 'draft' ? 'Publish this event live to students' : 'Unpublish — moves back to draft, hidden from students'}
               >
-                {rawEvent.status === 'draft' ? <RocketLaunch size={15} /> : <FloppyDisk size={15} />}
-                {rawEvent.status === 'draft' ? 'Publish' : 'Move to Draft'}
+                {changingStatus ? (
+                  <CircleNotch size={15} className="animate-spin" />
+                ) : rawEvent.status === 'draft' ? (
+                  <RocketLaunch size={15} />
+                ) : (
+                  <FloppyDisk size={15} />
+                )}
+                <span>
+                  {changingStatus
+                    ? 'Updating…'
+                    : rawEvent.status === 'draft'
+                    ? 'Publish Live'
+                    : 'Move to Draft'}
+                </span>
               </button>
             )}
+
+            {/* Full Analytics Deep Dive */}
             <button
               type="button"
-              className="org-btn org-btn-ghost"
-              style={{ color: '#991B1B' }}
-              onClick={() => setShowDeleteModal(true)}
-              title="Delete this event"
+              className="org-btn org-btn-ghost border border-[#D8D2C4] bg-white hover:bg-[#FAF8F5] text-gray-700 shadow-xs"
+              onClick={() => navigate(`/organizer/analytics/${eventId}`)}
+              title="Open standalone analytics dashboard for this event"
             >
-              <Trash size={15} /> Delete
+              <ChartBar size={15} />
+              <span className="hidden sm:inline">Analytics Report</span>
+            </button>
+
+            {/* Delete Event */}
+            <button
+              type="button"
+              className="org-btn org-btn-ghost text-red-700 hover:bg-red-50 hover:border-red-300 border border-transparent"
+              onClick={() => setShowDeleteModal(true)}
+              title="Delete this event from the portal"
+            >
+              <Trash size={15} />
+              <span className="hidden sm:inline">Delete</span>
             </button>
           </div>
         </div>
@@ -399,27 +496,27 @@ export default function OrganizerEventDetailPage() {
         {/* Info bar */}
         <div className="org-event-mgmt-infobar">
           <div className="org-event-mgmt-infobar-item">
-            <CalendarBlank size={13} style={{ color: '#991B1B' }} />
+            <CalendarBlank size={14} style={{ color: '#991B1B' }} />
             <span>{event.dateFormatted}</span>
           </div>
           <div className="org-event-mgmt-infobar-item">
-            <MapPin size={13} style={{ color: '#1A3A2A' }} />
+            <MapPin size={14} style={{ color: '#1A3A2A' }} />
             <span>{event.venue}</span>
           </div>
           <div className="org-event-mgmt-infobar-item">
-            <UsersThree size={13} style={{ color: '#2563EB' }} />
-            <span>{event.registeredCount}/{event.capacity} registered</span>
+            <UsersThree size={14} style={{ color: '#2563EB' }} />
+            <span>{effectiveRegisteredCount}/{event.capacity} registered</span>
             <span className={`fill-rate-chip${fillRate >= 90 ? ' high' : ''}`}>{fillRate}%</span>
           </div>
           <div className="org-event-mgmt-infobar-item">
-            <CurrencyInr size={13} style={{ color: '#B45309' }} />
+            <CurrencyInr size={14} style={{ color: '#B45309' }} />
             <span>{event.payment === 'Free' ? 'Free Entry' : `Rs. ${event.priceAmount}`}</span>
           </div>
         </div>
       </div>
 
-      {/* ── View Navigation Tabs ── */}
-      <div className="org-detail-tabs-bar mb-4" role="tablist" aria-label="Event Detail View Navigation">
+      {/* ── View Navigation Tabs (Modern Segmented Pills) ── */}
+      <div className="org-detail-tabs-bar" role="tablist" aria-label="Event Detail View Navigation">
         <button
           type="button"
           role="tab"
@@ -429,8 +526,9 @@ export default function OrganizerEventDetailPage() {
           onClick={() => setActiveTab('showcase')}
         >
           <Eye size={15} />
-          <span>Student Showcase Page</span>
+          <span>Showcase Preview</span>
         </button>
+
         <button
           type="button"
           role="tab"
@@ -441,7 +539,11 @@ export default function OrganizerEventDetailPage() {
         >
           <FileText size={15} />
           <span>Registration Form</span>
+          {rawEvent?.formQuestions?.length > 0 && (
+            <span className="org-tab-count">{rawEvent.formQuestions.length}</span>
+          )}
         </button>
+
         <button
           type="button"
           role="tab"
@@ -454,6 +556,7 @@ export default function OrganizerEventDetailPage() {
           <span>Registrations Roster</span>
           <span className="org-tab-count">{confirmedRegistrations.length}</span>
         </button>
+
         <button
           type="button"
           role="tab"
@@ -464,7 +567,27 @@ export default function OrganizerEventDetailPage() {
         >
           <ChartBar size={15} />
           <span>Capacity &amp; Performance</span>
+          <span className={`org-tab-count ${fillRate >= 90 ? '!text-red-700 !bg-red-50' : ''}`}>{fillRate}%</span>
         </button>
+
+        {rawEvent?.price > 0 && (
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'payments'}
+            aria-controls="panel-payments"
+            className={`org-detail-tab-btn ${activeTab === 'payments' ? 'active' : ''}`}
+            onClick={() => setActiveTab('payments')}
+          >
+            <Receipt size={15} />
+            <span>Payment Verification</span>
+            {pendingPaymentCount > 0 ? (
+              <span className="org-tab-count !bg-amber-600 !text-white font-bold">{pendingPaymentCount} pending</span>
+            ) : (
+              <span className="org-tab-count">Paid</span>
+            )}
+          </button>
+        )}
       </div>
 
       {activeTab === 'showcase' && (
@@ -510,6 +633,16 @@ export default function OrganizerEventDetailPage() {
 
       {activeTab === 'analytics' && (
         <EventAnalyticsTab checkedInCount={checkedInCount} event={analyticsEvent} fillRate={fillRate} />
+      )}
+
+      {activeTab === 'payments' && rawEvent?.price > 0 && (
+        <div id="panel-payments" role="tabpanel">
+          <EventPaymentVerificationTab
+            event={rawEvent}
+            onRefresh={loadAll}
+            showToast={showToast}
+          />
+        </div>
       )}
 
       <AnimatePresence>

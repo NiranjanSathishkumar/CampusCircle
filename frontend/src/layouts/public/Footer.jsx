@@ -119,7 +119,7 @@ export default function Footer({ variant = 'full', compact = false }) {
               </a>
 
               <a
-                href="#signup"
+                href="#closed-campus-policy"
                 className="hover:text-[#F5F2EA] transition-colors flex items-center gap-1.5"
               >
                 <ShieldCheck size={14} className="text-[#991B1B]" />

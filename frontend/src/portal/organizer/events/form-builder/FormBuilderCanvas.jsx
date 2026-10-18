@@ -18,11 +18,12 @@ export default function FormBuilderCanvas({
   updateForm,
   updateOptionInField,
 }) {
+  const isTeamEvent = Boolean(form?.allowTeam || event?.registrationType === 'team' || event?.teamFormat === 'Team' || (event?.teamSize?.max && event?.teamSize?.max > 1));
   const eventDateLabel = event?.eventDate
     ? new Date(event.eventDate).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit' })
     : 'TBA';
-  const teamFormatLabel = event?.registrationType === 'team'
-    ? `${event.teamSize?.min}–${event.teamSize?.max} members`
+  const teamFormatLabel = isTeamEvent
+    ? `${event?.teamSize?.min || form?.teamMin || 2}–${event?.teamSize?.max || form?.teamMax || 4} members`
     : 'Solo';
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
@@ -121,6 +122,8 @@ export default function FormBuilderCanvas({
               {form.fields.map((field, idx) => {
                 const typeMeta = FIELD_TYPES.find((t) => t.type === field.type) || FIELD_TYPES[0];
                 const IconComponent = typeMeta.icon;
+                const effectiveScope = field.scope || (/(team|project|idea|pitch|track|problem|abstract|theme|topic|synopsis|solution|startup|repo|repository|github|deck|presentation|slide|stack)/i.test(field.label || '') ? 'team' : 'member');
+                const isTeamScope = effectiveScope === 'team';
 
                 return (
                   <motion.div
@@ -240,6 +243,66 @@ export default function FormBuilderCanvas({
                           />
                         </div>
                       </div>
+
+                      {/* Team Event Question Scope (Common for Team vs Each Member) */}
+                      {isTeamEvent ? (
+                        <div style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px dashed #D8D2C4' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.375rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                            <label className="org-field-label" style={{ margin: 0, fontWeight: 700, color: '#0F172A' }}>
+                              Who Answers This Question? <span style={{ color: '#991B1B' }}>*</span>
+                            </label>
+                            <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-gray-100 text-gray-700 border border-gray-200">
+                              {isTeamScope ? '👑 Team-Level Question' : '👤 Member-Level Question'}
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
+                            <button
+                              type="button"
+                              className={`p-2.5 rounded-lg border text-left transition-all flex items-start gap-2.5 cursor-pointer ${
+                                isTeamScope
+                                  ? 'bg-[#1A3A2A]/5 border-[#1A3A2A] ring-2 ring-[#1A3A2A]/20 shadow-xs'
+                                  : 'bg-white border-[#D8D2C4] hover:border-gray-400 text-gray-600'
+                              }`}
+                              onClick={() => updateField(idx, { scope: 'team' })}
+                            >
+                              <span className="text-base leading-none mt-0.5">👑</span>
+                              <div>
+                                <div className={`text-xs font-bold font-['Space_Grotesk'] ${isTeamScope ? 'text-[#1A3A2A]' : 'text-gray-800'}`}>
+                                  Common for Whole Team
+                                </div>
+                                <div className="text-[11px] text-gray-500 leading-tight mt-0.5">
+                                  Answered once by Team Leader (e.g. project idea, track, repo).
+                                </div>
+                              </div>
+                            </button>
+
+                            <button
+                              type="button"
+                              className={`p-2.5 rounded-lg border text-left transition-all flex items-start gap-2.5 cursor-pointer ${
+                                !isTeamScope
+                                  ? 'bg-[#991B1B]/5 border-[#991B1B] ring-2 ring-[#991B1B]/20 shadow-xs'
+                                  : 'bg-white border-[#D8D2C4] hover:border-gray-400 text-gray-600'
+                              }`}
+                              onClick={() => updateField(idx, { scope: 'member' })}
+                            >
+                              <span className="text-base leading-none mt-0.5">👤</span>
+                              <div>
+                                <div className={`text-xs font-bold font-['Space_Grotesk'] ${!isTeamScope ? 'text-[#991B1B]' : 'text-gray-800'}`}>
+                                  Each Member Individually
+                                </div>
+                                <div className="text-[11px] text-gray-500 leading-tight mt-0.5">
+                                  Answered per participant tab (e.g. T-shirt size, dietary).
+                                </div>
+                              </div>
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px dashed #E5DFD3' }} className="flex items-center justify-between text-[11px] font-mono text-gray-500">
+                          <span>Solo Event · Answered once by registering student</span>
+                          <span className="text-gray-400 text-[10px]">Enable "Allow Team Submissions" in sidebar to split scopes</span>
+                        </div>
+                      )}
 
                       {/* Options Editor for Select / Radio / Checkbox */}
                       {['select', 'radio', 'checkbox'].includes(field.type) && (

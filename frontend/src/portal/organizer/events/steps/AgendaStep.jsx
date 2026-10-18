@@ -333,23 +333,32 @@ export default function AgendaStep({
         </div>
       </div>
 
-      <div className="flex justify-between pt-2">
+      <div className="flex items-center justify-between pt-4 border-t border-[#E6E1D5]">
         <button
           type="button"
           className="org-btn org-btn-ghost text-xs"
           onClick={() => setActiveStep('capacity')}
         >
           <ArrowLeft size={13} />
-          <span>Previous</span>
+          <span>Back to Tickets</span>
         </button>
-        <button
-          type="button"
-          className="org-btn org-btn-secondary text-xs"
-          onClick={() => setActiveStep('questions')}
-        >
-          <span>Next: RSVP Form Questions</span>
-          <CaretRight size={13} />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            className="org-btn org-btn-ghost text-xs text-gray-500 hover:text-gray-900"
+            onClick={() => setActiveStep('preview')}
+          >
+            <span className="font-mono">⚡ Quick Preview</span>
+          </button>
+          <button
+            type="button"
+            className="org-btn org-btn-primary text-xs"
+            onClick={() => setActiveStep('questions')}
+          >
+            <span>Next: RSVP Form</span>
+            <CaretRight size={13} />
+          </button>
+        </div>
       </div>
     </motion.div>
   );

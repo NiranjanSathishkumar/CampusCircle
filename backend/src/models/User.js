@@ -194,6 +194,9 @@ const userSchema = new Schema(
 // ── Indexes ──────────────────────────────────────────────────────
 userSchema.index({ branch: 1, yearOfJoining: 1 });
 userSchema.index({ interestTags: 1 });
+// Find Buddies' default listing sorts by followerCount desc then name —
+// without this, Mongo full-scans + sorts the collection in memory.
+userSchema.index({ followerCount: -1, name: 1 });
 
 // ── Virtuals ───────────────────────────────────────────────────────
 userSchema.virtual("currentYear").get(function () {
@@ -203,6 +206,19 @@ userSchema.virtual("isEnrolled").get(function () {
   const yr = computeCurrentYear(this.yearOfJoining);
   if (yr == null) return null;
   return yr >= 1 && yr <= COURSE_DURATION_YEARS;
+});
+// Whether the student has actually set their own picture/banner, as opposed
+// to still carrying the schema default — the frontend's profile-completion
+// checklist reads these two to decide whether "Profile Avatar"/"Profile
+// Banner" are done. There used to be no field for this at all (the frontend
+// read profileData.hasCustomAvatar/hasCustomBanner, which the API never
+// sent), so those two checklist items were Boolean(undefined) === false for
+// every student regardless of what they'd uploaded.
+userSchema.virtual("hasCustomAvatar").get(function () {
+  return Boolean(this.profilePicture?.cloudinaryUrl) || this.profilePicture?.filename !== DEFAULT_PROFILE_PICTURE;
+});
+userSchema.virtual("hasCustomBanner").get(function () {
+  return Boolean(this.profileBanner?.cloudinaryUrl) || this.profileBanner?.filename !== DEFAULT_PROFILE_BANNER;
 });
 userSchema.set("toJSON", { virtuals: true });
 userSchema.set("toObject", { virtuals: true });

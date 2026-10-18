@@ -139,7 +139,11 @@ export default function NewDriveModal({ onClose, onCreate, drive }) {
       sendEmailReceipt: draft.sendEmailReceipt,
       autoDeleteAfterMonths: draft.autoDeleteAfterMonths,
     };
-    if (draft.deadline) payload.deadline = draft.deadline;
+    if (draft.deadline) {
+      payload.deadline = draft.deadline;
+    } else if (isEditing) {
+      payload.deadline = null;
+    }
     if (draft.requireWaiver) payload.waiverText = draft.waiverText.trim();
     if (draft.confirmationMessage.trim()) payload.confirmationMessage = draft.confirmationMessage.trim();
 
@@ -307,19 +311,33 @@ export default function NewDriveModal({ onClose, onCreate, drive }) {
 
           {/* Deadline */}
           <div className="org-form-group">
-            <label htmlFor="drive-deadline" className="org-form-label">
-              Application Deadline <span className="org-form-hint">(optional)</span>
-            </label>
+            <div className="flex items-center justify-between">
+              <label htmlFor="drive-deadline" className="org-form-label mb-0">
+                Application Deadline <span className="org-form-hint">(optional)</span>
+              </label>
+              {draft.deadline && (
+                <button
+                  type="button"
+                  onClick={() => setDraft((d) => ({ ...d, deadline: '' }))}
+                  className="text-[11px] text-gray-500 hover:text-[#991B1B] underline cursor-pointer"
+                >
+                  Clear deadline
+                </button>
+              )}
+            </div>
             <input
               id="drive-deadline"
               type="date"
-              className="org-form-input text-xs font-mono"
+              className="org-form-input text-xs font-mono mt-1.5"
               value={draft.deadline}
               onChange={(e) => setDraft({ ...draft, deadline: e.target.value })}
             />
             {deadlineInPast && (
               <span className="text-[11px] text-red-600 mt-1 block">Deadline must be in the future.</span>
             )}
+            <p className="text-[11px] text-gray-500 mt-1">
+              Once this cutoff passes, students cannot submit new applications for this position.
+            </p>
           </div>
 
           {/* Auto-delete Timeline */}

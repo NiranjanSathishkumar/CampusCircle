@@ -26,9 +26,17 @@ const notificationSchema = new Schema(
         "recruitment_application", // organizer: a student applied to one of your recruitment drives
         "organizer_activated", // organizer: an admin activated your account
         "organizer_deactivated", // organizer: an admin deactivated your account
+        "payment_required", // student: slot reserved, payment required
+        "payment_proof_submitted", // student: payment screenshot uploaded, awaiting verification
+        "payment_proof_received", // organizer: student uploaded payment proof to verify
+        "payment_confirmed", // student: payment verified, registration confirmed & ticket generated
+        "payment_rejected", // student: payment proof rejected by organizer
       ],
       required: true,
     },
+
+    // Optional message (e.g. rejection reason or custom notice)
+    message: { type: String, trim: true },
 
     // Who triggered it. Set for new_follower (the follower), team_invite
     // (the inviting leader), and team_invite_accepted/declined (the

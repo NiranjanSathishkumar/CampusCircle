@@ -2,32 +2,40 @@ import { useRef, useEffect } from 'react';
 import { useReducedMotion } from 'motion/react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin';
 
-gsap.registerPlugin(ScrollTrigger, DrawSVGPlugin);
+gsap.registerPlugin(ScrollTrigger);
 
+// Plain scaleX bars instead of SVG paths drawn with DrawSVGPlugin — a
+// straight horizontal hairline doesn't need path-length "drawing" at all,
+// and the SVGs here (viewBox="0 0 100 1" stretched via preserveAspectRatio
+// "none" across a fluid-width container) scaled X and Y non-uniformly,
+// which is exactly the combination DrawSVGPlugin warns about when the path
+// also carries vector-effect="non-scaling-stroke" (needed to keep the
+// hairline visually 1px regardless of container width) — a real console
+// warning on every landing-page load for a visual effect scaleX achieves
+// identically with no such measurement step involved.
 export default function SectionRule({ label, dark = false, className = 'mb-10' }) {
   const reduce       = useReducedMotion();
   const containerRef = useRef(null);
-  const leftPathRef  = useRef(null);
-  const rightPathRef = useRef(null);
+  const leftBarRef   = useRef(null);
+  const rightBarRef  = useRef(null);
   const labelRef     = useRef(null);
 
   useEffect(() => {
     const container = containerRef.current;
-    const leftPath  = leftPathRef.current;
-    const rightPath = rightPathRef.current;
+    const leftBar   = leftBarRef.current;
+    const rightBar  = rightBarRef.current;
     const labelEl   = labelRef.current;
 
-    if (!container || !leftPath || !rightPath || !labelEl) return;
+    if (!container || !leftBar || !rightBar || !labelEl) return;
 
     if (reduce) {
-      gsap.set([leftPath, rightPath], { drawSVG: '100%' });
+      gsap.set([leftBar, rightBar], { scaleX: 1 });
       gsap.set(labelEl, { opacity: 1, y: 0 });
       return;
     }
 
-    gsap.set([leftPath, rightPath], { drawSVG: '0%' });
+    gsap.set([leftBar, rightBar], { scaleX: 0 });
     gsap.set(labelEl, { opacity: 0, y: 4 });
 
     const ctx = gsap.context(() => {
@@ -39,9 +47,9 @@ export default function SectionRule({ label, dark = false, className = 'mb-10' }
         },
       });
 
-      // 1. Hairlines draw outward on left and right via DrawSVG
-      tl.to([leftPath, rightPath], {
-        drawSVG: '100%',
+      // 1. Hairlines grow outward on left and right
+      tl.to([leftBar, rightBar], {
+        scaleX: 1,
         duration: 0.48,
         stagger: 0.08,
         ease: 'power2.out',
@@ -71,22 +79,14 @@ export default function SectionRule({ label, dark = false, className = 'mb-10' }
       className={`flex items-center gap-4 w-full ${className}`}
       aria-label={`Section: ${label}`}
     >
-      {/* Left Hairline Vector */}
+      {/* Left Hairline */}
       <div className="flex-1 h-3 flex items-center overflow-hidden">
-        <svg
-          className="w-full h-[1px] overflow-visible"
-          preserveAspectRatio="none"
-          viewBox="0 0 100 1"
+        <div
+          ref={leftBarRef}
+          className="w-full h-px origin-left"
+          style={{ backgroundColor: strokeColor }}
           aria-hidden="true"
-        >
-          <path
-            ref={leftPathRef}
-            d="M 0 0.5 H 100"
-            stroke={strokeColor}
-            strokeWidth="1"
-            vectorEffect="non-scaling-stroke"
-          />
-        </svg>
+        />
       </div>
 
       {/* Center Label */}
@@ -99,22 +99,14 @@ export default function SectionRule({ label, dark = false, className = 'mb-10' }
         {label}
       </span>
 
-      {/* Right Hairline Vector */}
+      {/* Right Hairline */}
       <div className="flex-1 h-3 flex items-center overflow-hidden">
-        <svg
-          className="w-full h-[1px] overflow-visible"
-          preserveAspectRatio="none"
-          viewBox="0 0 100 1"
+        <div
+          ref={rightBarRef}
+          className="w-full h-px origin-left"
+          style={{ backgroundColor: strokeColor }}
           aria-hidden="true"
-        >
-          <path
-            ref={rightPathRef}
-            d="M 0 0.5 H 100"
-            stroke={strokeColor}
-            strokeWidth="1"
-            vectorEffect="non-scaling-stroke"
-          />
-        </svg>
+        />
       </div>
     </div>
   );

@@ -99,6 +99,7 @@ export default function OrganizerRegistrationFormBuilder({
   };
 
   const addField = (fieldType = 'text') => {
+    const isTeam = Boolean(form?.allowTeam || event?.registrationType === 'team' || event?.teamFormat === 'Team');
     const newField = {
       id: `f_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
       type: fieldType,
@@ -106,6 +107,7 @@ export default function OrganizerRegistrationFormBuilder({
       placeholder: fieldType === 'url' ? 'https://...' : 'Enter placeholder...',
       helpText: '',
       required: false,
+      scope: isTeam && (fieldType === 'url' || fieldType === 'textarea') ? 'team' : 'member',
       options: ['select', 'radio', 'checkbox'].includes(fieldType) ? ['Option 1', 'Option 2'] : [],
     };
     updateForm({ fields: [...form.fields, newField] });
@@ -183,7 +185,10 @@ export default function OrganizerRegistrationFormBuilder({
      whole (edited via the create-wizard's edit mode). ── */
   const handleSave = async () => {
     const patch = {
-      formQuestions: form.fields.map(({ id, ...rest }) => rest),
+      formQuestions: form.fields.map(({ id, ...rest }) => ({
+        ...rest,
+        scope: rest.scope || (/(team|project|idea|pitch|track|problem|abstract|theme|topic|synopsis|solution|startup|repo|repository|github|deck|presentation|slide|stack)/i.test(rest.label || '') ? 'team' : 'member'),
+      })),
       requireWaiver: form.requireWaiver,
       registrationType: form.allowTeam ? 'team' : 'solo',
     };

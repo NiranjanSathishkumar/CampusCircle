@@ -290,6 +290,23 @@ export default function EventDetailPanel({
                 </motion.div>
               )}
 
+              {/* Registration deadline passed notice */}
+              {!eventConcluded && event.registrationClosed && (
+                <motion.div
+                  className="events-past-notice"
+                  role="status"
+                  style={{ borderColor: '#FECACA', background: '#FEF2F2' }}
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <Clock size={18} style={{ color: '#991B1B', flexShrink: 0, marginTop: 1 }} />
+                  <p className="events-past-text" style={{ color: '#991B1B', fontWeight: 500 }}>
+                    Registration closed on {event.registrationDeadlineFormatted || event.effectiveRegistrationDeadlineFormatted || event.dateFormatted}. No further entries are being accepted.
+                  </p>
+                </motion.div>
+              )}
+
               {/* Event title */}
               <SplitTitleReveal
                 as="h1"
@@ -587,6 +604,12 @@ export default function EventDetailPanel({
                         <Users size={15} className="events-sticky-meta-icon" aria-hidden="true" />
                         <span>{event.teamFormat || 'Solo'}</span>
                       </div>
+                      {event.registrationDeadlineFormatted && !eventConcluded && (
+                        <div className="events-sticky-meta-row" style={{ color: event.registrationClosed ? '#991B1B' : undefined }}>
+                          <Clock size={15} className="events-sticky-meta-icon" aria-hidden="true" />
+                          <span>{event.registrationClosed ? 'Registration closed' : `Register by: ${event.registrationDeadlineFormatted}`}</span>
+                        </div>
+                      )}
                     </div>
 
                     {/* Progress */}

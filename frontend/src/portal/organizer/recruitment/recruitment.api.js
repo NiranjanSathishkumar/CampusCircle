@@ -47,8 +47,15 @@ export const listRecruitmentRoster = ({ page = 1, limit = 100 } = {}) =>
 export const addRosterMember = (data) =>
   apiFetch('/recruitment/members', { method: 'POST', body: data, role: 'organizer' });
 
-export const updateRosterMemberLabel = (membershipId, label) =>
-  apiFetch(`/recruitment/members/${membershipId}`, { method: 'PATCH', body: { label }, role: 'organizer' });
+export const updateRosterMemberLabel = (membershipId, label, wing) =>
+  apiFetch(`/recruitment/members/${membershipId}`, {
+    method: 'PATCH',
+    body: wing !== undefined ? { label, wing } : { label },
+    role: 'organizer',
+  });
 
 export const removeRosterMember = (membershipId) =>
   apiFetch(`/recruitment/members/${membershipId}`, { method: 'DELETE', role: 'organizer' });
+
+export const bulkRemoveRosterMembers = (membershipIds) =>
+  apiFetch('/recruitment/members/bulk-remove', { method: 'POST', body: { membershipIds }, role: 'organizer' });

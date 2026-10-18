@@ -7,6 +7,17 @@ const CommunityApplication = require("../../models/CommunityApplication");
 const Community = require("../../models/Community");
 const { notifyCommunityRecruitment } = require("../../services/notification.service");
 
+async function syncCommunityRecruitingStatus(communityId) {
+    const now = new Date();
+    const hasActiveDrive = await CommunityRecruitment.exists({
+        community: communityId,
+        isActive: true,
+        isOpen: true,
+        $or: [{ deadline: null }, { deadline: { $gte: now } }],
+    });
+    await Community.findByIdAndUpdate(communityId, { isRecruiting: Boolean(hasActiveDrive) });
+}
+
 module.exports.createDrive = async (req, res) => {
     const community = req.user;
 
@@ -18,6 +29,8 @@ module.exports.createDrive = async (req, res) => {
         if (err.name === "ValidationError") return res.status(400).json({ message: err.message });
         throw err;
     }
+
+    await syncCommunityRecruitingStatus(community._id);
 
     if (drive.isOpen) {
         await notifyCommunityRecruitment({ community: community._id, recruitment: drive._id });
@@ -51,6 +64,8 @@ module.exports.updateDrive = async (req, res) => {
         await notifyCommunityRecruitment({ community: community._id, recruitment: drive._id });
     }
 
+    await syncCommunityRecruitingStatus(community._id);
+
     return res.status(200).json({ message: "Recruitment drive updated", drive });
 };
 
@@ -65,6 +80,8 @@ module.exports.deleteDrive = async (req, res) => {
 
     drive.isActive = false;
     await drive.save();
+
+    await syncCommunityRecruitingStatus(community._id);
 
     return res.status(200).json({ message: "Recruitment drive removed" });
 };

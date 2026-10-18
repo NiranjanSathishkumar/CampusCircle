@@ -104,23 +104,23 @@ export default function IdentityStep({
         <label className="org-form-label">Event Cover Poster Art</label>
         <div className="space-y-2.5">
           {bannerPreviewUrl ? (
-            <div className="relative rounded-lg overflow-hidden border-2 border-[#D8D2C4] aspect-video max-w-xs">
+            <div className="relative rounded-xl overflow-hidden border-2 border-[#D8D2C4] aspect-video max-w-md shadow-xs">
               <img src={bannerPreviewUrl} alt="Banner preview" className="w-full h-full object-cover" />
               <button
                 type="button"
                 onClick={handleRemoveBanner}
-                className="absolute top-1.5 right-1.5 bg-black/60 hover:bg-red-700 text-white p-1.5 rounded-full transition-colors"
+                className="absolute top-2 right-2 bg-black/60 hover:bg-red-700 text-white p-1.5 rounded-full transition-colors shadow-xs"
                 title="Remove banner"
                 aria-label="Remove banner"
               >
-                <Trash size={13} />
+                <Trash size={14} />
               </button>
             </div>
           ) : (
-            <label className="flex flex-col items-center justify-center gap-1.5 border-2 border-dashed border-[#D8D2C4] rounded-lg p-6 cursor-pointer hover:border-[#991B1B] hover:bg-[#FAF8F5] transition-colors max-w-xs">
-              <ImageIcon size={22} className="text-gray-400" />
-              <span className="text-xs font-semibold text-gray-600">Click to upload a banner image</span>
-              <span className="text-[10px] font-mono text-gray-400">PNG / JPG, up to 5MB</span>
+            <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-[#D8D2C4] rounded-xl p-8 cursor-pointer hover:border-[#991B1B] hover:bg-[#FAF8F5] transition-colors max-w-md">
+              <ImageIcon size={26} className="text-gray-400" />
+              <span className="text-xs font-semibold text-gray-700">Click to upload banner artwork</span>
+              <span className="text-[10px] font-mono text-gray-400">Recommended 16:9 ratio · PNG or JPG up to 5MB</span>
               <input type="file" accept="image/*" className="hidden" onChange={handleBannerFileChange} />
             </label>
           )}
@@ -190,10 +190,17 @@ export default function IdentityStep({
         />
       </div>
 
-      <div className="flex justify-end pt-2">
+      <div className="flex items-center justify-between pt-4 border-t border-[#E6E1D5]">
         <button
           type="button"
-          className="org-btn org-btn-secondary text-xs"
+          className="org-btn org-btn-ghost text-xs text-gray-500 hover:text-gray-900"
+          onClick={() => setActiveStep('preview')}
+        >
+          <span className="font-mono">⚡ Quick Preview</span>
+        </button>
+        <button
+          type="button"
+          className="org-btn org-btn-primary text-xs"
           onClick={() => setActiveStep('schedule')}
         >
           <span>Next: Schedule &amp; Venue</span>

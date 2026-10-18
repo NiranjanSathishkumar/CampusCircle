@@ -4,8 +4,10 @@
 // Check the roster size against Event.teamSize.min / max before confirming.
 const TeamMember = require("../../models/TeamMember");
 const Registration = require("../../models/Registration");
+const Event = require("../../models/Event");
 const { User } = require("../../models/User");
 const buildAnswers = require("../../utils/buildAnswers");
+const { isTeamQuestion } = require("../../models/FormQuestion.schema");
 const { isRegistrationClosed } = require("../../utils/registrationWindow");
 const { notifyTeamInvite, notifyTeamInviteResponse } = require("../../services/notification.service");
 
@@ -81,7 +83,14 @@ module.exports.addTeamMember = async (req, res) => {
         return res.status(400).json({ message: "This student is already registered for this event" });
     }
 
-    const memberAnswers = buildAnswers(event.formQuestions, answers);
+    const memberQuestions = (event.formQuestions || []).filter((q) => !isTeamQuestion(q));
+    const teamQuestions = (event.formQuestions || []).filter((q) => isTeamQuestion(q));
+
+    const memberAnswers = buildAnswers(memberQuestions, answers);
+    const parentRegistration = await Registration.findById(registrationId);
+    const inheritedTeamAnswers = (parentRegistration?.answers || []).filter((a) =>
+        teamQuestions.some((tq) => String(tq._id) === String(a.question))
+    );
 
     let teamMember;
     try {
@@ -89,7 +98,7 @@ module.exports.addTeamMember = async (req, res) => {
             registration: registrationId,
             event: event._id,
             student: studentId,
-            answers: memberAnswers,
+            answers: [...inheritedTeamAnswers, ...memberAnswers],
         });
     } catch (err) {
         if (err.code === 11000) return res.status(400).json({ message: "This student is already on a team for this event" });
@@ -173,6 +182,14 @@ module.exports.respondToTeamInvite = async (req, res) => {
     }
 
     if (action === "accept") {
+        const event = await Event.findById(registration.event);
+        if (!event || !event.isActive) {
+            return res.status(404).json({ message: "Event not found" });
+        }
+        if (isRegistrationClosed(event)) {
+            return res.status(400).json({ message: "Registration deadline has passed" });
+        }
+
         teamMember.status = "accepted";
         teamMember.respondedAt = new Date();
         await teamMember.save();

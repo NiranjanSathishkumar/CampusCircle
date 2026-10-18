@@ -12,6 +12,7 @@ const formQuestion = Joi.object({
     placeholder: Joi.string().trim().max(200).allow(""),
     helpText: Joi.string().trim().max(300).allow(""),
     required: Joi.boolean(),
+    scope: Joi.string().valid("team", "member").default("member"),
     options: Joi.array().items(Joi.string().trim().max(100)),
 });
 
@@ -55,8 +56,8 @@ const createEvent = Joi.object({
     description: Joi.string().trim().max(5000).required(),
     venue: Joi.string().trim().max(300).required(),
     eventDate: Joi.date().required(),
-    eventEndDate: Joi.date(),
-    registrationDeadline: Joi.date(),
+    eventEndDate: Joi.date().allow(null, "").empty(""),
+    registrationDeadline: Joi.date().allow(null, "").empty(""),
     contact: contactCard,
     agenda: Joi.array().items(agendaItem).max(30),
     rules: Joi.array().items(Joi.string().trim().max(300)).max(50),
@@ -72,6 +73,8 @@ const createEvent = Joi.object({
     }),
     capacity: Joi.number().integer().min(1).max(1000).required(),
     price: Joi.number().min(0),
+    paymentInstructions: Joi.string().trim().max(1000).allow(""),
+    upiId: Joi.string().trim().max(100).allow(""),
     collectProfileData: Joi.boolean(),
     allowWaitlist: Joi.boolean(),
     requireWaiver: Joi.boolean(),
@@ -92,8 +95,8 @@ const updateEvent = Joi.object({
     description: Joi.string().trim().max(5000),
     venue: Joi.string().trim().max(300),
     eventDate: Joi.date(),
-    eventEndDate: Joi.date().allow(null),
-    registrationDeadline: Joi.date().allow(null),
+    eventEndDate: Joi.date().allow(null, "").empty(""),
+    registrationDeadline: Joi.date().allow(null, "").empty(""),
     contact: contactCard.allow(null),
     agenda: Joi.array().items(agendaItem).max(30),
     rules: Joi.array().items(Joi.string().trim().max(300)).max(50),
@@ -103,6 +106,8 @@ const updateEvent = Joi.object({
     teamSize: teamSize.allow(null),
     capacity: Joi.number().integer().min(1).max(1000),
     price: Joi.number().min(0),
+    paymentInstructions: Joi.string().trim().max(1000).allow(""),
+    upiId: Joi.string().trim().max(100).allow(""),
     collectProfileData: Joi.boolean(),
     allowWaitlist: Joi.boolean(),
     requireWaiver: Joi.boolean(),
@@ -147,7 +152,17 @@ const cancelRegistration = Joi.object({ reason: Joi.string().trim().max(300).all
 const registrationParams = Joi.object({ registrationId: objectId.required() });
 
 const registrationsQuery = paginationQuery.keys({
-    status: Joi.string().valid("confirmed", "waitlisted", "cancelled"),
+    status: Joi.string().valid("confirmed", "reserved", "waitlisted", "cancelled"),
+    paymentStatus: Joi.string().valid("not_required", "pending", "proof_submitted", "confirmed", "rejected", "paid", "failed"),
+});
+
+// ── Payment Verification ──────────────────────────────────────────
+const verifyPayment = Joi.object({
+    action: Joi.string().valid("confirm", "reject", "update_details").required(),
+    reason: Joi.string().trim().max(500).allow("", null),
+    cancelRegistration: Joi.boolean(),
+    transactionId: Joi.string().trim().max(100).allow("", null),
+    paymentNotes: Joi.string().trim().max(500).allow("", null),
 });
 
 // ── Team members ──────────────────────────────────────────────────
@@ -173,6 +188,7 @@ const checkIn = Joi.object({
 module.exports = {
     createEvent, updateEvent, eventParams, communityParams, paginationQuery, eventsQuery,
     register, cancelRegistration, registrationParams, registrationsQuery,
+    verifyPayment,
     addTeamMember, teamMemberParams, respondToInvite,
     checkIn,
 };

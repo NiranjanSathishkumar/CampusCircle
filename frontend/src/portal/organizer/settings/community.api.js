@@ -34,11 +34,18 @@ export const addCoreTeamMember = (studentIdOrPayload, role) => {
   return apiFetch('/community/core-team', { method: 'POST', body, role: 'organizer' });
 };
 
-export const updateCoreTeamMemberRole = (studentId, role) =>
-  apiFetch(`/community/core-team/${studentId}`, { method: 'PATCH', body: { role }, role: 'organizer' });
+export const updateCoreTeamMemberRole = (studentId, role, wing) =>
+  apiFetch(`/community/core-team/${studentId}`, {
+    method: 'PATCH',
+    body: wing !== undefined ? { role, wing } : { role },
+    role: 'organizer',
+  });
 
 export const removeCoreTeamMember = (studentId) =>
   apiFetch(`/community/core-team/${studentId}`, { method: 'DELETE', role: 'organizer' });
+
+export const bulkRemoveCoreTeamMembers = (studentIds) =>
+  apiFetch('/community/core-team/bulk-remove', { method: 'POST', body: { studentIds }, role: 'organizer' });
 
 // Tags
 export const addTag = (tag) => apiFetch('/community/tags', { method: 'POST', body: { tag }, role: 'organizer' });

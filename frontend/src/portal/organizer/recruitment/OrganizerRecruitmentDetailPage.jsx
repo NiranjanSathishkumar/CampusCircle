@@ -303,7 +303,8 @@ export default function OrganizerRecruitmentDetailPage() {
     );
   }
 
-  const isClosed = !drive.isOpen;
+  const isDeadlinePassed = Boolean(drive.deadline && new Date(drive.deadline) < new Date());
+  const isClosed = !drive.isOpen || isDeadlinePassed;
 
   return (
     <div className="org-page org-recruitment-page">
@@ -364,9 +365,13 @@ export default function OrganizerRecruitmentDetailPage() {
               </span>
               <StatusPill status={isClosed ? 'closed' : 'open'} />
               {drive.deadline && (
-                <span className="font-mono text-xs text-gray-600 flex items-center gap-1.5 bg-[#FAF8F5] border border-[#E6E1D5] px-2.5 py-0.5 rounded-full">
-                  <CalendarBlank size={13} className="text-[#991B1B]" />
-                  <span>{isClosed ? 'Concluded' : 'Closes'} {new Date(drive.deadline).toLocaleDateString()}</span>
+                <span className={`font-mono text-xs flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border ${
+                  isDeadlinePassed
+                    ? 'bg-rose-50 text-rose-700 border-rose-200'
+                    : 'bg-[#FAF8F5] text-gray-600 border-[#E6E1D5]'
+                }`}>
+                  <CalendarBlank size={13} className={isDeadlinePassed ? 'text-rose-600' : 'text-[#991B1B]'} />
+                  <span>{isDeadlinePassed ? 'Deadline Passed' : isClosed ? 'Concluded' : 'Closes'} {new Date(drive.deadline).toLocaleDateString()}</span>
                 </span>
               )}
             </div>

@@ -34,6 +34,14 @@ export function isQuestionAnswered(question, value) {
   return typeof value === 'string' && value.trim().length > 0;
 }
 
+export function isTeamQuestion(q) {
+  if (!q) return false;
+  if (q.scope === 'team') return true;
+  if (q.scope === 'member') return false;
+  const label = (q.label || '').toLowerCase();
+  return /(team|project|idea|pitch|track|problem|abstract|theme|topic|synopsis|solution|startup|repo|repository|github|deck|presentation|slide|stack)/i.test(label);
+}
+
 export function validateAnswers(formQuestions, answers) {
   if (!Array.isArray(formQuestions)) return true;
   for (const q of formQuestions) {

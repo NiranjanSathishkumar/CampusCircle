@@ -11,6 +11,11 @@
 const registrationDeadlineFor = (event) =>
     event.registrationDeadline || event.eventEndDate || event.eventDate;
 
-const isRegistrationClosed = (event) => new Date() > registrationDeadlineFor(event);
+const isRegistrationClosed = (event) => {
+    if (!event) return true;
+    const deadline = registrationDeadlineFor(event);
+    if (!deadline) return false;
+    return new Date() > new Date(deadline);
+};
 
 module.exports = { registrationDeadlineFor, isRegistrationClosed };

@@ -18,6 +18,8 @@ const {
     deleteEvent,
     uploadBanner,
     removeBanner,
+    uploadPaymentQr,
+    removePaymentQr,
     getEvent,
     listEvents,
     listCommunityEvents,
@@ -33,6 +35,9 @@ const {
     listEventRegistrations,
     getRegistration,
     cancelRegistration,
+    uploadPaymentProof,
+    listEventPaymentVerifications,
+    verifyPayment,
 } = require("./registrations.controller");
 
 const {
@@ -80,6 +85,12 @@ router.route("/registrations/:registrationId/team-members/:teamMemberId")
 router.route("/registrations/:registrationId/team-members/:teamMemberId/respond")
     .patch(requireRole("student"), validate(schema.teamMemberParams, "params"), validate(schema.respondToInvite), wrapAsync(respondToTeamInvite));
 
+router.route("/registrations/:registrationId/payment-proof")
+    .post(requireRole("student"), validate(schema.registrationParams, "params"), uploadImage.single("paymentProof"), syncToCloudinary("payment-proofs"), wrapAsync(uploadPaymentProof));
+
+router.route("/registrations/:registrationId/verify-payment")
+    .patch(requireRole("organizer"), validate(schema.registrationParams, "params"), validate(schema.verifyPayment), wrapAsync(verifyPayment));
+
 router.route("/:eventId")
     .get(validate(schema.eventParams, "params"), wrapAsync(getEvent))
     .patch(requireRole("organizer"), validate(schema.eventParams, "params"), validate(schema.updateEvent), wrapAsync(updateEvent))
@@ -88,6 +99,13 @@ router.route("/:eventId")
 router.route("/:eventId/banner")
     .put(requireRole("organizer"), validate(schema.eventParams, "params"), uploadImage.single("banner"), syncToCloudinary("event-banners"), wrapAsync(uploadBanner))
     .delete(requireRole("organizer"), validate(schema.eventParams, "params"), wrapAsync(removeBanner));
+
+router.route("/:eventId/payment-qr")
+    .put(requireRole("organizer"), validate(schema.eventParams, "params"), uploadImage.single("paymentQr"), syncToCloudinary("event-payment-qrs"), wrapAsync(uploadPaymentQr))
+    .delete(requireRole("organizer"), validate(schema.eventParams, "params"), wrapAsync(removePaymentQr));
+
+router.route("/:eventId/payment-verifications")
+    .get(requireRole("organizer"), validate(schema.eventParams, "params"), wrapAsync(listEventPaymentVerifications));
 
 router.route("/:eventId/like")
     .post(requireRole("student"), validate(schema.eventParams, "params"), wrapAsync(likeEvent))

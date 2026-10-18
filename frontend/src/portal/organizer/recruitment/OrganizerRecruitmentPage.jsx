@@ -128,7 +128,8 @@ export default function OrganizerRecruitmentPage() {
   // Computed metrics
   const counts = useMemo(() => {
     const total = drives.length;
-    const openDrives = drives.filter((d) => d.isOpen).length;
+    const now = new Date();
+    const openDrives = drives.filter((d) => d.isOpen && (!d.deadline || new Date(d.deadline) >= now)).length;
     const closedDrives = total - openDrives;
     const totalApps = drives.reduce((sum, d) => sum + (applicationCounts[d._id] || 0), 0);
     return { total, openDrives, closedDrives, totalApps };
@@ -136,9 +137,12 @@ export default function OrganizerRecruitmentPage() {
 
   // Filtered & Sorted Drives
   const filteredDrives = useMemo(() => {
+    const now = new Date();
     const list = drives.filter((d) => {
-      if (statusFilter === 'open' && !d.isOpen) return false;
-      if (statusFilter === 'closed' && d.isOpen) return false;
+      const isDeadlinePassed = Boolean(d.deadline && new Date(d.deadline) < now);
+      const isEffectiveOpen = d.isOpen && !isDeadlinePassed;
+      if (statusFilter === 'open' && !isEffectiveOpen) return false;
+      if (statusFilter === 'closed' && isEffectiveOpen) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const titleMatch = d.title.toLowerCase().includes(q);
@@ -434,7 +438,8 @@ export default function OrganizerRecruitmentPage() {
         <div className="org-drive-grid">
           <AnimatePresence mode="popLayout">
             {filteredDrives.map((d) => {
-              const isClosed = !d.isOpen;
+              const isDeadlinePassed = Boolean(d.deadline && new Date(d.deadline) < new Date());
+              const isClosed = !d.isOpen || isDeadlinePassed;
               const appCount = applicationCounts[d._id] || 0;
 
               return (
@@ -475,7 +480,7 @@ export default function OrganizerRecruitmentPage() {
                       <CalendarBlank size={14} className={isClosed ? 'text-gray-400' : 'text-[#991B1B]'} />
                       <span>
                         {d.deadline
-                          ? `${isClosed ? 'Concluded' : 'Closes'} ${new Date(d.deadline).toLocaleDateString()}`
+                          ? `${isDeadlinePassed ? 'Closed' : isClosed ? 'Closed' : 'Closes'} ${new Date(d.deadline).toLocaleDateString()}`
                           : 'No deadline'}
                       </span>
                     </span>
@@ -564,7 +569,8 @@ export default function OrganizerRecruitmentPage() {
               </thead>
               <tbody>
                 {filteredDrives.map((d) => {
-                  const isClosed = !d.isOpen;
+                  const isDeadlinePassed = Boolean(d.deadline && new Date(d.deadline) < new Date());
+                  const isClosed = !d.isOpen || isDeadlinePassed;
                   const appCount = applicationCounts[d._id] || 0;
 
                   return (
@@ -578,7 +584,13 @@ export default function OrganizerRecruitmentPage() {
                         </Link>
                       </td>
                       <td className="font-mono text-xs whitespace-nowrap text-gray-600">
-                        {d.deadline ? new Date(d.deadline).toLocaleDateString() : '—'}
+                        {d.deadline ? (
+                          <span className={isDeadlinePassed ? 'text-red-700 font-semibold' : ''}>
+                            {new Date(d.deadline).toLocaleDateString()} {isDeadlinePassed && '(Passed)'}
+                          </span>
+                        ) : (
+                          '—'
+                        )}
                       </td>
                       <td>
                         <span className="font-mono text-xs font-bold text-[#0D9488] bg-teal-50 px-2 py-0.5 rounded border border-teal-200">

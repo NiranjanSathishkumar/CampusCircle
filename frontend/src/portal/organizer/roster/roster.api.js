@@ -20,6 +20,7 @@ export {
   addCoreTeamMember,
   updateCoreTeamMemberRole,
   removeCoreTeamMember,
+  bulkRemoveCoreTeamMembers,
 } from '@/portal/organizer/settings/community.api';
 
 export const getStudentPublicProfile = (studentId) =>

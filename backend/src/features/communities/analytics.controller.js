@@ -10,49 +10,66 @@ const { User } = require("../../models/User");
 const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const YEAR_LABELS = { 1: "1st Year", 2: "2nd Year", 3: "3rd Year", 4: "4th Year" };
 
-// Cumulative "followers as of end of month" series from a list of follow
-// createdAt dates — ignores churn (unfollows), same simplification the old
-// mock's always-increasing curve made.
-function buildFollowerGrowth(createdAts) {
-    if (!createdAts.length) return [];
-
-    const buckets = new Map(); // "YYYY-MM" -> count that month
-    for (const date of createdAts) {
-        const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-        buckets.set(key, (buckets.get(key) || 0) + 1);
-    }
-
-    const keys = [...buckets.keys()].sort();
+// Cumulative "followers as of end of month" series from Mongo-side monthly
+// buckets ({_id: {y, m}, count}, pre-sorted ascending) — ignores churn
+// (unfollows), same simplification the old mock's always-increasing curve
+// made. Bucketing runs as a $group stage in fetchFollowerStats rather than
+// here, so this only ever iterates one row per calendar month, not one per
+// follower.
+function buildFollowerGrowth(monthlyBuckets) {
     let cumulative = 0;
-    return keys.map((key) => {
-        cumulative += buckets.get(key);
-        const month = Number(key.split("-")[1]);
-        return { label: MONTH_LABELS[month - 1], value: cumulative, date: `${key}-01` };
+    return monthlyBuckets.map(({ _id, count }) => {
+        cumulative += count;
+        const month = String(_id.m).padStart(2, "0");
+        return { label: MONTH_LABELS[_id.m - 1], value: cumulative, date: `${_id.y}-${month}-01` };
     });
 }
 
-function buildComposition(rows, keyFn) {
+// Turns Mongo-grouped {_id, count} rows (one per distinct raw key, e.g. per
+// branch or per yearOfJoining) into a labeled, sorted composition list.
+// labelFn maps the raw key to a display label; multiple raw keys mapping to
+// the same label (e.g. two yearOfJoining values both reading as "4th Year"
+// after the academic-year cutover) are merged.
+function toCompositionList(groups, labelFn) {
     const counts = new Map();
-    for (const row of rows) {
-        const key = keyFn(row);
-        if (key == null) continue;
-        counts.set(key, (counts.get(key) || 0) + 1);
+    for (const { _id, count } of groups) {
+        const label = labelFn(_id);
+        if (label == null) continue;
+        counts.set(label, (counts.get(label) || 0) + count);
     }
     return [...counts.entries()]
         .map(([label, value]) => ({ label, value }))
         .sort((a, b) => b.value - a.value);
 }
 
+// Joins to User only to read branch/yearOfJoining, then immediately groups
+// server-side into monthly/branch/year buckets via $facet — the amount of
+// data pulled into Node is O(months + distinct branches + distinct years),
+// not O(total followers).
+async function fetchFollowerStats(communityId) {
+    const [result] = await Follow.aggregate([
+        { $match: { following: communityId, followingType: "Community", isActive: true } },
+        { $lookup: { from: User.collection.name, localField: "follower", foreignField: "_id", as: "u" } },
+        { $unwind: "$u" },
+        {
+            $facet: {
+                monthly: [
+                    { $group: { _id: { y: { $year: "$createdAt" }, m: { $month: "$createdAt" } }, count: { $sum: 1 } } },
+                    { $sort: { "_id.y": 1, "_id.m": 1 } },
+                ],
+                branch: [{ $group: { _id: "$u.branch", count: { $sum: 1 } } }],
+                year: [{ $group: { _id: "$u.yearOfJoining", count: { $sum: 1 } } }],
+            },
+        },
+    ]);
+    return result || { monthly: [], branch: [], year: [] };
+}
+
 module.exports.getOverviewAnalytics = async (req, res) => {
     const communityId = req.community._id;
 
-    const [followerRows, eventDocs] = await Promise.all([
-        Follow.aggregate([
-            { $match: { following: communityId, followingType: "Community", isActive: true } },
-            { $lookup: { from: User.collection.name, localField: "follower", foreignField: "_id", as: "u" } },
-            { $unwind: "$u" },
-            { $project: { createdAt: 1, branch: "$u.branch", yearOfJoining: "$u.yearOfJoining" } },
-        ]),
+    const [followerStats, eventDocs] = await Promise.all([
+        fetchFollowerStats(communityId),
         Event.find({ community: communityId }, "title isActive confirmedRegistrationIds").lean(),
     ]);
 
@@ -72,11 +89,11 @@ module.exports.getOverviewAnalytics = async (req, res) => {
           ])
         : [];
 
-    const followerGrowth = buildFollowerGrowth(followerRows.map((r) => r.createdAt));
-    const branchComposition = buildComposition(followerRows, (r) => r.branch || null);
-    const yearComposition = buildComposition(
-        followerRows,
-        (r) => YEAR_LABELS[User.computeCurrentYear(r.yearOfJoining)] || null
+    const followerGrowth = buildFollowerGrowth(followerStats.monthly);
+    const branchComposition = toCompositionList(followerStats.branch, (branch) => branch || null);
+    const yearComposition = toCompositionList(
+        followerStats.year,
+        (yearOfJoining) => YEAR_LABELS[User.computeCurrentYear(yearOfJoining)] || null
     );
 
     const topEvents = eventDocs

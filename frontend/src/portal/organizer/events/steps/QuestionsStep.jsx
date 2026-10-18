@@ -2,9 +2,10 @@
  * Wizard step 5 — registration questions and FAQs.
  */
 import { motion } from 'motion/react';
-import { ArrowLeft, Plus, RocketLaunch, ShieldCheck, Trash } from '@phosphor-icons/react';
+import { ArrowLeft, Plus, RocketLaunch, ShieldCheck, Trash, CaretRight, Eye } from '@phosphor-icons/react';
 
 export default function QuestionsStep({
+  teamFormat,
   customQuestions,
   handleAddOption,
   handleAddQuestion,
@@ -133,6 +134,64 @@ export default function QuestionsStep({
                   </div>
                 </div>
 
+                {/* Team Event Question Scope (Common for Team vs Each Member) */}
+                {teamFormat === 'Team' && (() => {
+                  const isTeamScope = q.scope === 'team' || (!q.scope && /(team|project|idea|pitch|track|problem|abstract|theme|topic|synopsis|solution|startup|repo|repository|github|deck|presentation|slide|stack)/i.test(q.label || ''));
+                  return (
+                    <div className="pt-2 border-t border-[#E6E1D5] space-y-1.5">
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <label className="text-[11px] font-mono font-bold text-gray-700">
+                          Who Answers This Question? <span className="text-[#991B1B]">*</span>
+                        </label>
+                        <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-white text-gray-700 border border-[#D8D2C4]">
+                          {isTeamScope ? '👑 Team-Level Question' : '👤 Member-Level Question'}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          className={`p-2 rounded-lg border text-left transition-all flex items-start gap-2 cursor-pointer ${
+                            isTeamScope
+                              ? 'bg-[#1A3A2A]/5 border-[#1A3A2A] ring-2 ring-[#1A3A2A]/20 shadow-xs'
+                              : 'bg-white border-[#D8D2C4] hover:border-gray-400 text-gray-600'
+                          }`}
+                          onClick={() => handleUpdateQuestion(qIndex, 'scope', 'team')}
+                        >
+                          <span className="text-sm mt-0.5">👑</span>
+                          <div>
+                            <div className={`text-xs font-bold font-['Space_Grotesk'] ${isTeamScope ? 'text-[#1A3A2A]' : 'text-gray-800'}`}>
+                              Common for Whole Team
+                            </div>
+                            <div className="text-[10px] text-gray-500 leading-tight mt-0.5">
+                              Answered once by Team Leader (e.g. project idea, track, repo).
+                            </div>
+                          </div>
+                        </button>
+
+                        <button
+                          type="button"
+                          className={`p-2 rounded-lg border text-left transition-all flex items-start gap-2 cursor-pointer ${
+                            !isTeamScope
+                              ? 'bg-[#991B1B]/5 border-[#991B1B] ring-2 ring-[#991B1B]/20 shadow-xs'
+                              : 'bg-white border-[#D8D2C4] hover:border-gray-400 text-gray-600'
+                          }`}
+                          onClick={() => handleUpdateQuestion(qIndex, 'scope', 'member')}
+                        >
+                          <span className="text-sm mt-0.5">👤</span>
+                          <div>
+                            <div className={`text-xs font-bold font-['Space_Grotesk'] ${!isTeamScope ? 'text-[#991B1B]' : 'text-gray-800'}`}>
+                              Each Member Individually
+                            </div>
+                            <div className="text-[10px] text-gray-500 leading-tight mt-0.5">
+                              Answered per participant tab (e.g. T-shirt size, dietary).
+                            </div>
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })()}
+
                 {/* Options editor for Select, Radio, Checkbox */}
                 {(q.type === 'select' || q.type === 'radio' || q.type === 'checkbox') && (
                   <div className="pt-2 border-t border-[#E6E1D5] space-y-2">
@@ -200,26 +259,24 @@ export default function QuestionsStep({
         )}
       </div>
 
-      <div className="flex justify-between pt-2">
+      <div className="flex items-center justify-between pt-4 border-t border-[#E6E1D5]">
         <button
           type="button"
           className="org-btn org-btn-ghost text-xs"
           onClick={() => setActiveStep('agenda')}
         >
           <ArrowLeft size={13} />
-          <span>Previous</span>
+          <span>Back to Agenda</span>
         </button>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            className="org-btn org-btn-primary text-xs"
-            onClick={() => handleSaveEvent('published')}
-            disabled={isPublishing}
-          >
-            <RocketLaunch size={14} />
-            <span>Publish Event Listing</span>
-          </button>
-        </div>
+        <button
+          type="button"
+          className="org-btn org-btn-primary text-xs"
+          onClick={() => setActiveStep('preview')}
+        >
+          <Eye size={14} />
+          <span>Next: Preview &amp; Launch</span>
+          <CaretRight size={13} />
+        </button>
       </div>
     </motion.div>
   );

@@ -3,7 +3,7 @@
  */
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { ArrowLeft, Buildings, CaretRight, Globe } from '@phosphor-icons/react';
+import { ArrowLeft, Buildings, CaretRight, Clock, Globe, Warning } from '@phosphor-icons/react';
 import { CAMPUS_VENUES } from '@/portal/organizer/events/createEventConstants';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -28,6 +28,15 @@ function toDatetimeLocalValue(d) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
+function offsetFromEventDate(eventDateStr, daysBefore, hoursBefore = 0) {
+  if (!eventDateStr) return '';
+  const d = new Date(eventDateStr);
+  if (isNaN(d.getTime())) return '';
+  d.setDate(d.getDate() - daysBefore);
+  if (hoursBefore) d.setHours(d.getHours() - hoursBefore);
+  return toDatetimeLocalValue(d);
+}
+
 function nextWeekday(targetDay, hour, minute, weeksAhead = 0) {
   const d = new Date();
   d.setSeconds(0, 0);
@@ -50,17 +59,25 @@ export default function ScheduleStep({
   eventDate,
   isCustomVenue,
   isVirtual,
+  registrationDeadline,
   setActiveStep,
   setCustomVenueName,
   setEventDate,
   setIsCustomVenue,
   setIsVirtual,
+  setRegistrationDeadline,
   setVenue,
   setVirtualLink,
   title,
   venue,
   virtualLink,
 }) {
+  const isDeadlineAfterEvent = Boolean(
+    eventDate &&
+    registrationDeadline &&
+    new Date(registrationDeadline).getTime() > new Date(eventDate).getTime()
+  );
+
   return (
     <motion.div
       key="step-schedule"
@@ -73,7 +90,7 @@ export default function ScheduleStep({
           Event Timing &amp; Venue Logistics
         </h2>
         <p className="text-xs text-gray-500 font-['Plus_Jakarta_Sans'] mt-0.5">
-          Set event calendar schedules, lab bookings, and physical check-in locations.
+          Set event calendar schedules, registration cutoff deadlines, and physical check-in locations.
         </p>
       </div>
 
@@ -108,6 +125,73 @@ export default function ScheduleStep({
             </button>
           ))}
         </div>
+      </div>
+
+      {/* Registration Deadline Picker */}
+      <div className="org-form-group bg-[#FAF8F5] p-3.5 rounded-lg border border-[#D8D2C4]">
+        <div className="flex items-center justify-between mb-1">
+          <label htmlFor="evt-create-deadline" className="org-form-label mb-0 flex items-center gap-1.5 font-bold text-[#0F172A]">
+            <Clock size={14} className="text-[#991B1B]" />
+            <span>Last Date of Registration / Deadline</span>
+            <span className="org-form-hint font-normal text-gray-500">(optional)</span>
+          </label>
+          <span className="text-[10px] font-mono text-gray-500">
+            {registrationDeadline ? formatEventDate(registrationDeadline) : 'Closes at event start'}
+          </span>
+        </div>
+        <input
+          id="evt-create-deadline"
+          type="datetime-local"
+          className="org-form-input font-mono text-xs bg-white"
+          value={registrationDeadline || ''}
+          onChange={(e) => setRegistrationDeadline(e.target.value)}
+        />
+        {/* Deadline presets */}
+        <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+          <span className="text-[10px] font-mono text-gray-500">Presets:</span>
+          <button
+            type="button"
+            disabled={!eventDate}
+            className="text-[10px] font-mono bg-white border border-[#D8D2C4] px-2 py-0.5 rounded hover:border-[#991B1B] text-gray-700 disabled:opacity-40"
+            onClick={() => eventDate && setRegistrationDeadline(eventDate)}
+          >
+            At Event Start
+          </button>
+          <button
+            type="button"
+            disabled={!eventDate}
+            className="text-[10px] font-mono bg-white border border-[#D8D2C4] px-2 py-0.5 rounded hover:border-[#991B1B] text-gray-700 disabled:opacity-40"
+            onClick={() => eventDate && setRegistrationDeadline(offsetFromEventDate(eventDate, 1))}
+          >
+            1 Day Before
+          </button>
+          <button
+            type="button"
+            disabled={!eventDate}
+            className="text-[10px] font-mono bg-white border border-[#D8D2C4] px-2 py-0.5 rounded hover:border-[#991B1B] text-gray-700 disabled:opacity-40"
+            onClick={() => eventDate && setRegistrationDeadline(offsetFromEventDate(eventDate, 2))}
+          >
+            2 Days Before
+          </button>
+          {registrationDeadline && (
+            <button
+              type="button"
+              className="text-[10px] font-mono bg-white border border-red-200 px-2 py-0.5 rounded hover:border-red-400 text-red-600"
+              onClick={() => setRegistrationDeadline('')}
+            >
+              Clear
+            </button>
+          )}
+        </div>
+        {isDeadlineAfterEvent && (
+          <div className="flex items-center gap-1.5 mt-2 text-[11px] text-red-700 font-medium">
+            <Warning size={14} weight="bold" />
+            <span>Registration deadline cannot be after the event start time.</span>
+          </div>
+        )}
+        <p className="text-[11px] text-gray-500 font-['Plus_Jakarta_Sans'] mt-2">
+          After this deadline passes, registrations and team invites will automatically close and no new entries will be accepted.
+        </p>
       </div>
 
       {/* Venue / Campus Location */}
@@ -200,23 +284,32 @@ export default function ScheduleStep({
         )}
       </div>
 
-      <div className="flex justify-between pt-2">
+      <div className="flex items-center justify-between pt-4 border-t border-[#E6E1D5]">
         <button
           type="button"
           className="org-btn org-btn-ghost text-xs"
           onClick={() => setActiveStep('identity')}
         >
           <ArrowLeft size={13} />
-          <span>Previous</span>
+          <span>Back to Identity</span>
         </button>
-        <button
-          type="button"
-          className="org-btn org-btn-secondary text-xs"
-          onClick={() => setActiveStep('capacity')}
-        >
-          <span>Next: Capacity &amp; Pricing</span>
-          <CaretRight size={13} />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            className="org-btn org-btn-ghost text-xs text-gray-500 hover:text-gray-900"
+            onClick={() => setActiveStep('preview')}
+          >
+            <span className="font-mono">⚡ Quick Preview</span>
+          </button>
+          <button
+            type="button"
+            className="org-btn org-btn-primary text-xs"
+            onClick={() => setActiveStep('capacity')}
+          >
+            <span>Next: Capacity &amp; Tickets</span>
+            <CaretRight size={13} />
+          </button>
+        </div>
       </div>
     </motion.div>
   );

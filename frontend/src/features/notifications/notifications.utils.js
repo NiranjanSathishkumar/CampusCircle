@@ -109,6 +109,42 @@ function describe(n) {
         link: target._id ? `/events/detail/${target._id}` : '/myevents',
       };
     }
+    case 'payment_required': {
+      const event = target.event;
+      return {
+        category: 'events',
+        title: 'Slot Reserved — Payment Required',
+        desc: event?.title ? `Complete payment & upload proof for ${event.title}.` : 'Complete your event payment from My Events.',
+        link: '/myevents',
+      };
+    }
+    case 'payment_proof_submitted': {
+      const event = target.event;
+      return {
+        category: 'events',
+        title: 'Payment Proof Submitted',
+        desc: event?.title ? `Your payment for ${event.title} is awaiting organizer verification.` : 'Awaiting organizer verification.',
+        link: '/myevents',
+      };
+    }
+    case 'payment_confirmed': {
+      const event = target.event;
+      return {
+        category: 'events',
+        title: 'Payment Confirmed & Ticket Ready!',
+        desc: event?.title ? `Your registration for ${event.title} is confirmed. View your digital ticket.` : 'Your event registration is confirmed.',
+        link: '/myevents',
+      };
+    }
+    case 'payment_rejected': {
+      const event = target.event;
+      return {
+        category: 'events',
+        title: 'Payment Proof Rejected',
+        desc: n.message || (event?.title ? `Payment proof for ${event.title} was rejected. Please re-upload valid proof.` : 'Please re-upload valid payment proof.'),
+        link: '/myevents',
+      };
+    }
     default:
       return { category: 'system', title: 'Notification', desc: '', link: '/discover' };
   }

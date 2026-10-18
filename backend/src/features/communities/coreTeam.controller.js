@@ -46,7 +46,13 @@ module.exports.addCoreTeamMember = async (req, res) => {
     return res.status(400).json({ message: "Core team cannot exceed 50 members" });
   }
 
-  community.coreTeam.push({ user: student._id, role });
+  const now = new Date();
+  community.coreTeam.push({
+    user: student._id,
+    role,
+    joinedAt: now,
+    roleHistory: [{ role, changedAt: now }],
+  });
 
   try {
     await community.save();
@@ -77,7 +83,14 @@ module.exports.updateCoreTeamMemberRole = async (req, res) => {
     return res.status(404).json({ message: "This student is not on the core team" });
   }
 
+  // Append old role to history before overwriting
+  if (!member.roleHistory) member.roleHistory = [];
+  member.roleHistory.push({ role, changedAt: new Date() });
   member.role = role;
+  // Optionally update wing in the same request
+  if (Object.prototype.hasOwnProperty.call(req.body, 'wing')) {
+    member.wing = req.body.wing || null;
+  }
 
   try {
     await community.save();
@@ -122,6 +135,31 @@ module.exports.removeCoreTeamMember = async (req, res) => {
     message: "Core team member removed",
     coreTeam: community.coreTeam,
     member: { user: removedUserId, role: removedRole, student: serializeStudent(student) },
+  });
+};
+
+module.exports.bulkRemoveCoreTeamMembers = async (req, res) => {
+  const community = req.community;
+  const { studentIds } = req.body; // array of ObjectId strings
+
+  const initialLength = community.coreTeam.length;
+  community.coreTeam = community.coreTeam.filter(
+    (m) => !studentIds.includes(m.user.toString())
+  );
+  const removedCount = initialLength - community.coreTeam.length;
+
+  try {
+    await community.save();
+  } catch (err) {
+    if (sendSaveError(err, res)) return;
+    throw err;
+  }
+
+  return res.status(200).json({
+    success: true,
+    message: `${removedCount} member(s) removed`,
+    coreTeam: community.coreTeam,
+    removedCount,
   });
 };
 

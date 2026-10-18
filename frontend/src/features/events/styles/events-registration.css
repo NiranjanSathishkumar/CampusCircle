@@ -22,8 +22,8 @@
   background: #FDFCF9;
   border: 1.5px solid #D8D2C4;
   border-radius: 16px;
-  width: 100%;
-  max-width: 600px;
+  width: 80vw;
+  max-width: 82vw;
   box-shadow: 0 32px 80px -12px rgba(15, 23, 42, 0.38), 0 0 0 1px rgba(255, 255, 255, 0.6) inset;
   position: relative;
   outline: none;
@@ -32,6 +32,13 @@
   flex-direction: column;
   max-height: 90vh;
   margin: auto;
+}
+
+@media (max-width: 768px) {
+  .events-dialog {
+    width: 94vw;
+    max-width: 94vw;
+  }
 }
 
 .events-dialog::before {

@@ -25,6 +25,7 @@ const {
     addCoreTeamMember,
     updateCoreTeamMemberRole,
     removeCoreTeamMember,
+    bulkRemoveCoreTeamMembers,
     addTag,
     removeTag,
     setSocialLink,
@@ -67,7 +68,10 @@ router.route("/banner")
     .put(uploadImage.single("banner"), syncToCloudinary("community-banners"), wrapAsync(uploadBanner))
     .delete(wrapAsync(removeBanner));
 
-// Core Team
+// Core Team — bulk-remove MUST come before :studentId so it's not swallowed as a param
+router.route("/core-team/bulk-remove")
+    .post(validate(schemas.bulkRemoveCoreTeamMembers), wrapAsync(bulkRemoveCoreTeamMembers));
+
 router.route("/core-team")
     .post(validate(schemas.addCoreTeamMember), wrapAsync(addCoreTeamMember));
 

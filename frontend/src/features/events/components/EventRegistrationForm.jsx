@@ -16,6 +16,7 @@ import {
   Check,
   CheckCircle,
   CircleNotch,
+  Clock,
   CurrencyInr,
   FileText,
   MapPin,
@@ -34,8 +35,10 @@ import TeamMemberLookup from '@/features/events/components/TeamMemberLookup';
 import EventFormQuestionsFieldset, {
   validateAnswers,
   answersToPayload,
+  isTeamQuestion,
 } from '@/features/events/components/EventFormQuestionsFieldset';
 import RegistrationSuccessView from '@/features/events/components/RegistrationSuccessView';
+import PaidRegistrationPaymentView from '@/features/events/components/PaidRegistrationPaymentView';
 
 function getInitials(name) {
   if (!name) return 'CC';
@@ -74,21 +77,43 @@ export default function EventRegistrationForm({
     trackRegistrationStarted(event.id).catch(() => {});
   }, [event.id]);
 
+  const allQuestions = event.formQuestions || [];
+  const hasFormQuestions = allQuestions.length > 0;
+  const teamQuestions = useMemo(
+    () => (isTeamEvent ? allQuestions.filter(isTeamQuestion) : []),
+    [isTeamEvent, allQuestions]
+  );
+  const memberQuestions = useMemo(
+    () => (isTeamEvent ? allQuestions.filter((q) => !isTeamQuestion(q)) : allQuestions),
+    [isTeamEvent, allQuestions]
+  );
+
   const rosterSize = 1 + teamMembers.length;
   const teamSizeValid =
     !isTeamEvent ||
     (rosterSize >= (event.teamSize?.min || 1) && rosterSize <= (event.teamSize?.max || 1));
   const teamNameValid = !isTeamEvent || teamName.trim().length > 0;
-  const questionsValid = useMemo(
-    () => validateAnswers(event.formQuestions, answers),
-    [event.formQuestions, answers]
+
+  const teamQuestionsValid = useMemo(
+    () => !isTeamEvent || validateAnswers(teamQuestions, answers),
+    [isTeamEvent, teamQuestions, answers]
   );
+  const leaderMemberQuestionsValid = useMemo(
+    () => validateAnswers(memberQuestions, answers),
+    [memberQuestions, answers]
+  );
+  const questionsValid = teamQuestionsValid && leaderMemberQuestionsValid;
+
   const memberAnswersValid = useMemo(
-    () => !isTeamEvent || teamMembers.every((m) => validateAnswers(event.formQuestions, m.answers)),
-    [isTeamEvent, event.formQuestions, teamMembers]
+    () =>
+      !isTeamEvent ||
+      memberQuestions.length === 0 ||
+      teamMembers.every((m) => validateAnswers(memberQuestions, m.answers)),
+    [isTeamEvent, memberQuestions, teamMembers]
   );
+  const isClosed = Boolean(event.registrationClosed || event.isPast);
   const waiverValid = !event.requireWaiver || waiverAccepted;
-  const canSubmit = teamNameValid && teamSizeValid && questionsValid && memberAnswersValid && waiverValid;
+  const canSubmit = !isClosed && teamNameValid && teamSizeValid && questionsValid && memberAnswersValid && waiverValid;
 
   const handleAddMember = (member) => {
     setTeamMembers((m) => [...m, { ...member, answers: {} }]);
@@ -111,7 +136,7 @@ export default function EventRegistrationForm({
   }, [answers, teamName, teamMembers, waiverAccepted]);
 
   const handleSubmit = async () => {
-    if (submitting) return;
+    if (submitting || isClosed) return;
     if (!canSubmit) {
       setAttemptedSubmit(true);
       return;
@@ -125,7 +150,7 @@ export default function EventRegistrationForm({
         teamMembers: isTeamEvent
           ? teamMembers.map((m) => ({
               studentId: m.studentId,
-              answers: answersToPayload(event.formQuestions, m.answers),
+              answers: answersToPayload(memberQuestions, m.answers),
             }))
           : undefined,
       });
@@ -141,6 +166,15 @@ export default function EventRegistrationForm({
   };
 
   if (result) {
+    if (result.status === 'reserved' || (event.price_amount > 0 && result.paymentStatus && result.paymentStatus !== 'confirmed')) {
+      return (
+        <PaidRegistrationPaymentView
+          event={event}
+          registration={result}
+          onDone={onClose}
+        />
+      );
+    }
     return (
       <RegistrationSuccessView
         event={event}
@@ -158,7 +192,6 @@ export default function EventRegistrationForm({
     .filter(Boolean)
     .join(' · ') || 'SIES Graduate School of Technology';
 
-  const hasFormQuestions = Array.isArray(event.formQuestions) && event.formQuestions.length > 0;
 
   return (
     <>
@@ -264,6 +297,18 @@ export default function EventRegistrationForm({
           </div>
         )}
 
+        {/* ── Common Team Questions (Project Idea, Track, Repo, etc. — Answered ONCE for Whole Team) ── */}
+        {isTeamEvent && teamQuestions.length > 0 && (
+          <EventFormQuestionsFieldset
+            formQuestions={teamQuestions}
+            answers={answers}
+            onChange={setAnswers}
+            showAllErrors={attemptedSubmit}
+            idPrefix="team"
+            title="Team & Project Submission (Common for Whole Team)"
+          />
+        )}
+
         {/* ── Team Roster Lookup ── */}
         {isTeamEvent && (
           <>
@@ -290,82 +335,98 @@ export default function EventRegistrationForm({
           </>
         )}
 
-        {/* ── Custom Questions (Solo or Team Tabs) ── */}
+        {/* ── Participant Questions (Member-Specific or Solo) ── */}
         {hasFormQuestions && (
           <>
-            {isTeamEvent && teamMembers.length > 0 ? (
-              <div className="events-form-section">
-                <div className="events-form-section-header">
-                  <p className="events-form-section-title">
-                    <FileText size={15} style={{ color: '#991B1B' }} />
-                    Participant Questions
-                  </p>
-                  <span className="events-form-section-count">
-                    {rosterSize} Member{rosterSize === 1 ? '' : 's'}
-                  </span>
-                </div>
+            {isTeamEvent ? (
+              memberQuestions.length > 0 && (
+                <div className="events-form-section">
+                  <div className="events-form-section-header">
+                    <p className="events-form-section-title">
+                      <FileText size={15} style={{ color: '#991B1B' }} />
+                      Individual Member Questions
+                    </p>
+                    <span className="events-form-section-count">
+                      {rosterSize} Member{rosterSize === 1 ? '' : 's'}
+                    </span>
+                  </div>
 
-                <div className="events-teammate-tabs-nav">
-                  <button
-                    type="button"
-                    className={`events-teammate-tab-btn${activeQuestionTab === 'leader' ? ' active' : ''}`}
-                    onClick={() => setActiveQuestionTab('leader')}
-                  >
-                    <span
-                      className={`events-teammate-tab-status${questionsValid ? ' valid' : ''}`}
-                    />
-                    You (Lead)
-                  </button>
-                  {teamMembers.map((m) => {
-                    const isMemberValid = validateAnswers(event.formQuestions, m.answers);
-                    const isTabActive = activeQuestionTab === `member-${m.studentId}`;
-                    return (
-                      <button
-                        key={m.studentId}
-                        type="button"
-                        className={`events-teammate-tab-btn${isTabActive ? ' active' : ''}`}
-                        onClick={() => setActiveQuestionTab(`member-${m.studentId}`)}
-                      >
-                        <span
-                          className={`events-teammate-tab-status${isMemberValid ? ' valid' : ''}`}
+                  {teamMembers.length > 0 ? (
+                    <>
+                      <div className="events-teammate-tabs-nav">
+                        <button
+                          type="button"
+                          className={`events-teammate-tab-btn${activeQuestionTab === 'leader' ? ' active' : ''}`}
+                          onClick={() => setActiveQuestionTab('leader')}
+                        >
+                          <span
+                            className={`events-teammate-tab-status${leaderMemberQuestionsValid ? ' valid' : ''}`}
+                          />
+                          You (Lead)
+                        </button>
+                        {teamMembers.map((m) => {
+                          const isMemberValid = validateAnswers(memberQuestions, m.answers);
+                          const isTabActive = activeQuestionTab === `member-${m.studentId}`;
+                          return (
+                            <button
+                              key={m.studentId}
+                              type="button"
+                              className={`events-teammate-tab-btn${isTabActive ? ' active' : ''}`}
+                              onClick={() => setActiveQuestionTab(`member-${m.studentId}`)}
+                            >
+                              <span
+                                className={`events-teammate-tab-status${isMemberValid ? ' valid' : ''}`}
+                              />
+                              {m.name.split(' ')[0]}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {activeQuestionTab === 'leader' ? (
+                        <EventFormQuestionsFieldset
+                          formQuestions={memberQuestions}
+                          answers={answers}
+                          onChange={setAnswers}
+                          showAllErrors={attemptedSubmit}
+                          idPrefix="lead"
+                          title="Your Individual Responses"
                         />
-                        {m.name.split(' ')[0]}
-                      </button>
-                    );
-                  })}
+                      ) : (
+                        teamMembers
+                          .filter((m) => `member-${m.studentId}` === activeQuestionTab)
+                          .map((m) => (
+                            <EventFormQuestionsFieldset
+                              key={m.studentId}
+                              formQuestions={memberQuestions}
+                              answers={m.answers}
+                              onChange={(next) => handleUpdateMemberAnswers(m.studentId, next)}
+                              showAllErrors={attemptedSubmit}
+                              idPrefix={`member-${m.studentId}`}
+                              title={`${m.name}'s Individual Responses`}
+                            />
+                          ))
+                      )}
+                    </>
+                  ) : (
+                    <EventFormQuestionsFieldset
+                      formQuestions={memberQuestions}
+                      answers={answers}
+                      onChange={setAnswers}
+                      showAllErrors={attemptedSubmit}
+                      idPrefix="lead"
+                      title="Your Individual Responses"
+                    />
+                  )}
                 </div>
-
-                {activeQuestionTab === 'leader' ? (
-                  <EventFormQuestionsFieldset
-                    formQuestions={event.formQuestions}
-                    answers={answers}
-                    onChange={setAnswers}
-                    showAllErrors={attemptedSubmit}
-                    title="Your Responses"
-                  />
-                ) : (
-                  teamMembers
-                    .filter((m) => `member-${m.studentId}` === activeQuestionTab)
-                    .map((m) => (
-                      <EventFormQuestionsFieldset
-                        key={m.studentId}
-                        formQuestions={event.formQuestions}
-                        answers={m.answers}
-                        onChange={(next) => handleUpdateMemberAnswers(m.studentId, next)}
-                        showAllErrors={attemptedSubmit}
-                        idPrefix={`member-${m.studentId}`}
-                        title={`${m.name}'s Responses`}
-                      />
-                    ))
-                )}
-              </div>
+              )
             ) : (
               <EventFormQuestionsFieldset
-                formQuestions={event.formQuestions}
+                formQuestions={allQuestions}
                 answers={answers}
                 onChange={setAnswers}
                 showAllErrors={attemptedSubmit}
-                title={isTeamEvent ? 'Team Lead Questions' : 'Registration Questions'}
+                title="Registration Questions"
               />
             )}
           </>
@@ -430,6 +491,22 @@ export default function EventRegistrationForm({
           </div>
         </div>
 
+        {/* ── Registration Closed Alert ── */}
+        {isClosed && (
+          <div
+            className="events-conflict-notice"
+            style={{
+              background: '#FEF2F2',
+              borderColor: '#FECACA',
+            }}
+          >
+            <Clock size={16} style={{ color: '#DC2626', flexShrink: 0 }} weight="bold" />
+            <p className="events-conflict-text" style={{ color: '#991B1B', fontWeight: 600 }}>
+              Registration deadline has passed. This event is no longer accepting new entries.
+            </p>
+          </div>
+        )}
+
         {/* ── Global Submit Error Banner ── */}
         {submitError && (
           <div
@@ -461,13 +538,15 @@ export default function EventRegistrationForm({
           type="button"
           className="events-dialog-confirm"
           onClick={handleSubmit}
-          disabled={submitting}
+          disabled={submitting || isClosed}
         >
           {submitting ? (
             <>
               <CircleNotch size={16} className="animate-spin" />
               <span>Reserving Your Pass…</span>
             </>
+          ) : isClosed ? (
+            <span>Registration Closed</span>
           ) : (
             <>
               <Ticket size={16} weight="bold" />

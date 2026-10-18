@@ -12,18 +12,19 @@ export const createDefaultForm = (event) => ({
   description: event
     ? `Please complete the following details to register for ${event.title}.`
     : 'Please complete this registration form to secure your entry pass.',
-  allowTeam: event?.registrationType === 'team',
+  allowTeam: Boolean(event?.registrationType === 'team' || event?.teamFormat === 'Team' || (event?.teamSize?.max && event?.teamSize?.max > 1)),
   teamMin: event?.teamSize?.min || 2,
   teamMax: event?.teamSize?.max || 4,
   requireWaiver: Boolean(event?.requireWaiver),
   waiverText: event?.waiverText || '',
   fields: (event?.formQuestions || []).map((q) => ({
-    id: q._id,
+    id: q._id || `q_${Math.random().toString(36).substr(2, 6)}`,
     type: q.type,
     label: q.label,
     placeholder: q.placeholder || '',
     helpText: q.helpText || '',
     required: Boolean(q.required),
+    scope: q.scope || (/(team|project|idea|pitch|track|problem|abstract|theme|topic|synopsis|solution|startup|repo|repository|github|deck|presentation|slide|stack)/i.test(q.label || '') ? 'team' : 'member'),
     options: q.options || [],
   })),
   settings: {

@@ -142,7 +142,8 @@ export default function CommunityQuickPreviewModal({
               {community.recruiting && (
                 <div className="p-3 bg-[#991B1B]/8 border border-[#991B1B]/20 rounded-sm">
                   <span className="font-mono text-xs font-bold text-[#991B1B] uppercase tracking-wider flex items-center gap-1.5">
-                    <Flame size={14} weight="fill" /> Recruiting Open: {community.recruitingRole}
+                    <Flame size={14} weight="fill" />
+                    {community.recruitingRole ? `Recruiting Open: ${community.recruitingRole}` : 'Now Recruiting'}
                   </span>
                 </div>
               )}

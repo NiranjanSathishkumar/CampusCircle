@@ -1154,12 +1154,19 @@ nav a[aria-current="page"]::before {
   background: #F5F2EA;
   border: 1.5px solid #D8D2C4;
   border-radius: 10px;
-  width: 100%;
-  max-width: 450px;
+  width: 80vw;
+  max-width: 82vw;
   box-shadow: 0 28px 72px rgba(15, 23, 42, 0.32), 0 4px 16px rgba(15, 23, 42, 0.1);
   position: relative;
   outline: none;
   overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .events-dialog {
+    width: 94vw !important;
+    max-width: 94vw !important;
+  }
 }
 
 .events-dialog::before {

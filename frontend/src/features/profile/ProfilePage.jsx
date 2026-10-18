@@ -70,9 +70,7 @@ import {
 import ImageCropModal from '@/features/profile/components/ImageCropModal';
 import ConfirmDialog from '@/features/profile/components/ConfirmDialog';
 import PublicProfileView from '@/features/profile/PublicProfileView';
-import {
-  INITIAL_BOOKMARKS,
-} from '@/mocks/profile.mock';
+import { listMyBookmarks, unbookmarkEvent } from '@/features/events/events.api';
 import './profile.css';
 import AchievementsTab from '@/features/profile/tabs/AchievementsTab';
 import BookmarkedTab from '@/features/profile/tabs/BookmarkedTab';
@@ -80,23 +78,6 @@ import FollowedClubsTab from '@/features/profile/tabs/FollowedClubsTab';
 import NetworkTab from '@/features/profile/tabs/NetworkTab';
 import PersonalDetailsTab from '@/features/profile/tabs/PersonalDetailsTab';
 import RecruitmentTab from '@/features/profile/tabs/RecruitmentTab';
-
-/* ─────────────────────────────────────────────────────────────
-   PERSISTENCE HELPERS (bookmarks / clubs / network — still mock-backed)
-   ───────────────────────────────────────────────────────────── */
-function loadPersistedData(key, fallback) {
-  try {
-    const item = localStorage.getItem(key);
-    if (item) return JSON.parse(item);
-  } catch { /* ignore */ }
-  return fallback;
-}
-
-function savePersistedData(key, value) {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-  } catch { /* ignore */ }
-}
 
 /* ─────────────────────────────────────────────────────────────
    BACKEND <-> UI MAPPING HELPERS
@@ -159,8 +140,12 @@ function mapUserToProfileData(user) {
     // Only a real upload has a cloudinaryUrl — the shared default asset
     // doesn't — so this is how "Remove" knows whether there's anything to
     // remove without hardcoding the default asset's URL here.
-    hasCustomAvatar: Boolean(user.profilePicture?.cloudinaryUrl),
-    hasCustomBanner: Boolean(user.profileBanner?.cloudinaryUrl),
+    // Backend virtuals (User.js) — checking cloudinaryUrl alone here missed
+    // any avatar/banner set via filename only (e.g. seeded accounts with a
+    // real photo URL but no Cloudinary upload), so this always read false
+    // for those even though the picture shown was genuinely a custom one.
+    hasCustomAvatar: Boolean(user.hasCustomAvatar),
+    hasCustomBanner: Boolean(user.hasCustomBanner),
     socialLinks: socialLinksArrayToObject(user.socialLinks),
     // Community roles aren't sourced from a real endpoint yet — left empty
     // rather than showing stale/fake chips.
@@ -207,6 +192,25 @@ function mapClubFollowDoc(doc) {
     icon: logoUrl ? null : '🏢',
     iconBg: 'rgba(26, 58, 42, 0.12)',
     iconColor: '#1A3A2A',
+  };
+}
+
+// Bookmark.js is events-only (see backend/src/models/Bookmark.js) — there is
+// no backend or UI concept of bookmarking a Discover post, so `posts` has no
+// real source and is left permanently empty rather than mock data pretending
+// otherwise (see BookmarkedTab's own empty state for that sub-tab).
+function mapBookmarkDoc(doc) {
+  const ev = doc.event || {};
+  const dateStr = ev.eventDate
+    ? new Date(ev.eventDate).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
+    : '';
+  return {
+    id: String(ev._id || ''),
+    title: ev.title || 'Untitled event',
+    category: ev.category || 'Event',
+    meta: [dateStr, ev.venue].filter(Boolean).join(' · '),
+    hostName: ev.community?.name || 'Campus Community',
+    imageUrl: ev.bannerImage?.url || ev.bannerImage?.filename || '',
   };
 }
 
@@ -349,10 +353,9 @@ export default function ProfilePage() {
   const [certFormError, setCertFormError] = useState('');
   const [isUploadingCert, setIsUploadingCert] = useState(false);
 
-  /* ── Bookmarks state ── */
-  const [bookmarks, setBookmarks] = useState(() =>
-    loadPersistedData('cc_profile_bookmarks', INITIAL_BOOKMARKS)
-  );
+  /* ── Bookmarks state — events live from backend /api/events/bookmarks/mine;
+     posts has no backing feature at all (see mapBookmarkDoc), so it stays [] ── */
+  const [bookmarks, setBookmarks] = useState({ events: [], posts: [] });
   const [bookmarkSubTab, setBookmarkSubTab] = useState('events'); // 'events' | 'posts'
 
   /* ── Followed Clubs state — live from backend /api/follows ── */
@@ -400,7 +403,19 @@ export default function ProfilePage() {
       }
     })();
 
-    // 2. Followed clubs
+    // 2. Bookmarked events
+    (async () => {
+      try {
+        const { bookmarks: raw } = await listMyBookmarks({ limit: 100 });
+        if (!cancelled) {
+          setBookmarks({ events: (raw || []).map(mapBookmarkDoc), posts: [] });
+        }
+      } catch {
+        // Background fetch
+      }
+    })();
+
+    // 3. Followed clubs
     (async () => {
       setClubsLoading(true);
       try {
@@ -415,7 +430,7 @@ export default function ProfilePage() {
       }
     })();
 
-    // 3. Network (followers & following peers)
+    // 4. Network (followers & following peers)
     if (user?._id) {
       (async () => {
         setNetworkLoading(true);
@@ -459,9 +474,6 @@ export default function ProfilePage() {
     if (profileData && !isEditing) setFormData(profileData);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profileData]);
-
-  /* ── Persist mock-backed bookmarks ── */
-  useEffect(() => { savePersistedData('cc_profile_bookmarks', bookmarks); }, [bookmarks]);
 
   /* ── Academic Standing — derived from backend virtuals (currentYear/isEnrolled).
      isEnrolled is null (not false) until yearOfJoining is set, so that case
@@ -978,21 +990,22 @@ export default function ProfilePage() {
   /* ─────────────────────────────────────────────────────────────
      BOOKMARKS HANDLERS
      ───────────────────────────────────────────────────────────── */
-  const handleRemoveBookmarkEvent = (eventId) => {
-    setBookmarks(prev => ({
-      ...prev,
-      events: prev.events.filter(e => e.id !== eventId),
-    }));
-    showToast('Event removed from bookmarks');
+  const handleRemoveBookmarkEvent = async (eventId) => {
+    const target = bookmarks.events.find(e => e.id === eventId);
+
+    // Optimistic update
+    setBookmarks(prev => ({ ...prev, events: prev.events.filter(e => e.id !== eventId) }));
+    try {
+      await unbookmarkEvent(eventId);
+      showToast('Event removed from bookmarks');
+    } catch (err) {
+      if (target) setBookmarks(prev => ({ ...prev, events: [target, ...prev.events] }));
+      showToast(err.message || 'Failed to remove bookmark');
+    }
   };
 
-  const handleRemoveBookmarkPost = (postId) => {
-    setBookmarks(prev => ({
-      ...prev,
-      posts: prev.posts.filter(p => p.id !== postId),
-    }));
-    showToast('Post removed from bookmarks');
-  };
+  // Posts have no bookmarking feature to remove from — see mapBookmarkDoc.
+  const handleRemoveBookmarkPost = () => {};
 
   /* ─────────────────────────────────────────────────────────────
      FOLLOWED CLUBS HANDLERS

@@ -5,6 +5,7 @@
 // Cancelling frees a slot - promote the oldest waitlisted entry and fire a
 // waitlist_promotion notification.
 const mongoose = require("mongoose");
+const crypto = require("crypto");
 const Event = require("../../models/Event");
 const Registration = require("../../models/Registration");
 const TeamMember = require("../../models/TeamMember");
@@ -12,7 +13,18 @@ const { User } = require("../../models/User");
 const ExpressError = require("../../utils/ExpressError");
 const buildAnswers = require("../../utils/buildAnswers");
 const buildProfileSnapshot = require("../../utils/buildProfileSnapshot");
-const { notifyWaitlistPromotion, notifyTeamInvite, notifyEventRegistration } = require("../../services/notification.service");
+const { isTeamQuestion } = require("../../models/FormQuestion.schema");
+const { deleteEverywhere } = require("../../utils/fileStorage");
+const {
+    notifyWaitlistPromotion,
+    notifyTeamInvite,
+    notifyEventRegistration,
+    notifyPaymentRequired,
+    notifyPaymentProofSubmitted,
+    notifyPaymentProofReceived,
+    notifyPaymentConfirmed,
+    notifyPaymentRejected,
+} = require("../../services/notification.service");
 const { isRegistrationClosed } = require("../../utils/registrationWindow");
 
 // Atomically reserves a confirmed slot if one is free, otherwise waitlists
@@ -77,7 +89,7 @@ module.exports.registerForEvent = async (req, res) => {
     const alreadyRegisteredLeader = await Registration.exists({
         event: eventId,
         student: student._id,
-        status: { $in: ["confirmed", "waitlisted"] },
+        status: { $in: ["confirmed", "reserved", "waitlisted"] },
     });
     if (alreadyRegisteredLeader) {
         return res.status(400).json({ message: "You have already registered for this event" });
@@ -113,31 +125,51 @@ module.exports.registerForEvent = async (req, res) => {
         const alreadyRegistered = await Registration.exists({
             event: eventId,
             student: { $in: memberIds },
-            status: { $in: ["confirmed", "waitlisted"] },
+            status: { $in: ["confirmed", "reserved", "waitlisted"] },
         });
         if (alreadyRegistered) {
             return res.status(400).json({ message: "One or more team members are already registered for this event" });
         }
 
-        memberDrafts = teamMembers.map((m) => ({
-            event: eventId,
-            student: m.studentId,
-            answers: buildAnswers(event.formQuestions, m.answers),
-        }));
+        const memberQuestions = (event.formQuestions || []).filter((q) => !isTeamQuestion(q));
+        const teamQuestions = (event.formQuestions || []).filter((q) => isTeamQuestion(q));
+
+        memberDrafts = teamMembers.map((m) => {
+            const memberAnswers = buildAnswers(memberQuestions, m.answers || []);
+            const inheritedTeamAnswers = leaderAnswers.filter((a) =>
+                teamQuestions.some((tq) => String(tq._id) === String(a.question))
+            );
+            return {
+                event: eventId,
+                student: m.studentId,
+                answers: [...inheritedTeamAnswers, ...memberAnswers],
+            };
+        });
     }
 
     const { registrationId, status, reservedSlot } = await reserveSlot(event);
 
-    const registration = new Registration({
+    const isPaid = event.price > 0;
+    const finalStatus = status === "confirmed" ? (isPaid ? "reserved" : "confirmed") : status;
+    const paymentStatus = isPaid && finalStatus === "reserved" ? "pending" : "not_required";
+    const slotExpiresAt = isPaid && finalStatus === "reserved" ? new Date(Date.now() + 30 * 60 * 1000) : undefined;
+    const qrToken = !isPaid ? crypto.randomBytes(16).toString("hex") : undefined;
+
+    const regData = {
         _id: registrationId,
         event: event._id,
         student: student._id,
         teamName,
-        status,
+        status: finalStatus,
         answers: leaderAnswers,
         profileSnapshot,
-        paymentStatus: event.price > 0 ? "pending" : "not_required",
-    });
+        paymentStatus,
+        amountPaid: isPaid ? event.price : 0,
+    };
+    if (slotExpiresAt) regData.slotExpiresAt = slotExpiresAt;
+    if (qrToken) regData.qrToken = qrToken;
+
+    const registration = new Registration(regData);
 
     let invitedMembers = [];
     try {
@@ -167,6 +199,9 @@ module.exports.registerForEvent = async (req, res) => {
         invitedMembers.map((tm) => notifyTeamInvite({ student: tm.student, actor: student._id, teamMember: tm })),
     );
 
+    if (isPaid && finalStatus === "reserved") {
+        await notifyPaymentRequired({ student: student._id, registration: registration._id });
+    }
     await notifyEventRegistration({ community: event.community, actor: student._id, registration: registration._id });
 
     return res.status(201).json({ message: event.confirmationMessage || "Registered successfully", registration });
@@ -194,7 +229,8 @@ module.exports.listMyRegistrations = async (req, res) => {
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit)
-            .populate({ path: "event", select: "title eventDate venue community", populate: { path: "community", select: "name logo" } }),
+            .populate({ path: "event", select: "title eventDate venue community", populate: { path: "community", select: "name logo" } })
+            .lean(),
         Registration.countDocuments(filter),
     ]);
 
@@ -215,7 +251,7 @@ module.exports.listEventRegistrations = async (req, res) => {
 
     const skip = (page - 1) * limit;
     const [registrations, total] = await Promise.all([
-        Registration.find(filter).sort({ createdAt: 1 }).skip(skip).limit(limit).populate("student", "name email profilePicture"),
+        Registration.find(filter).sort({ createdAt: 1 }).skip(skip).limit(limit).populate("student", "name email profilePicture").lean(),
         Registration.countDocuments(filter),
     ]);
 
@@ -225,7 +261,7 @@ module.exports.listEventRegistrations = async (req, res) => {
 module.exports.getRegistration = async (req, res) => {
     const { registrationId } = req.params;
 
-    const registration = await Registration.findById(registrationId).populate("event", "title eventDate venue community");
+    const registration = await Registration.findById(registrationId).populate("event", "title eventDate venue community").lean();
     if (!registration) return res.status(404).json({ message: "Registration not found" });
     // Dangling ref (event hard-deleted out from under this registration) —
     // registration.event.community below would otherwise throw a 500, the
@@ -270,29 +306,38 @@ const cancelRegistrationCore = async (existing, reason) => {
 
     await TeamMember.deleteMany({ registration: existing._id });
 
-    if (previous.status === "confirmed" && event) {
+    if ((previous.status === "confirmed" || previous.status === "reserved") && event) {
         // Atomic claim-and-select: findOneAndUpdate matches and updates a
         // single document in one step, so two cancellations racing each
         // other can never both pick the same oldest waitlisted registration
         // (a separate findOne-then-save would let both read it before either
         // wrote back, double-promoting one student and starving the next).
+        const isPaid = event.price > 0;
         const nextInLine = await Registration.findOneAndUpdate(
             { event: event._id, status: "waitlisted" },
-            { $set: { status: "confirmed" } },
-            { sort: { createdAt: 1 } },
+            {
+                $set: {
+                    status: isPaid ? "reserved" : "confirmed",
+                    paymentStatus: isPaid ? "pending" : "not_required",
+                    slotExpiresAt: isPaid ? new Date(Date.now() + 30 * 60 * 1000) : undefined,
+                    qrToken: !isPaid ? crypto.randomBytes(16).toString("hex") : undefined,
+                },
+            },
+            { sort: { createdAt: 1 }, new: true },
         );
 
         if (nextInLine) {
             // Push the promoted registration's slot in BEFORE pulling the
             // cancelled one out, so confirmedRegistrationIds never dips below
-            // capacity in between. Pulling first (the old releaseSlot-then-
-            // promote order) opens a window where a concurrent
-            // registerForEvent sees a free slot and snipes it ahead of the
-            // waitlisted student who was actually first in line.
+            // capacity in between.
             await Event.updateOne({ _id: event._id }, { $push: { confirmedRegistrationIds: nextInLine._id } });
             await Event.updateOne({ _id: event._id }, { $pull: { confirmedRegistrationIds: existing._id } });
 
-            await notifyWaitlistPromotion({ student: nextInLine.student, registration: nextInLine._id });
+            if (isPaid) {
+                await notifyPaymentRequired({ student: nextInLine.student, registration: nextInLine._id });
+            } else {
+                await notifyWaitlistPromotion({ student: nextInLine.student, registration: nextInLine._id });
+            }
         } else {
             await releaseSlot(event._id, existing._id);
         }
@@ -328,4 +373,273 @@ module.exports.cancelRegistration = async (req, res) => {
     if (!cancelled) return res.status(404).json({ message: "Registration not found" });
 
     return res.status(200).json({ message: "Registration cancelled" });
+};
+
+// ── Manual Payment Verification Flow ──────────────────────────────
+
+// Student uploads a payment screenshot proof for a reserved registration
+module.exports.uploadPaymentProof = async (req, res) => {
+    const student = req.user;
+    const { registrationId } = req.params;
+
+    if (!req.file) {
+        return res.status(400).json({ message: "No payment proof image uploaded" });
+    }
+
+    const registration = await Registration.findById(registrationId).populate("event");
+    if (!registration) {
+        await deleteEverywhere(req.file.filename, req.file.cloudinary?.publicId);
+        return res.status(404).json({ message: "Registration not found" });
+    }
+
+    if (!registration.student.equals(student._id)) {
+        await deleteEverywhere(req.file.filename, req.file.cloudinary?.publicId);
+        return res.status(403).json({ message: "You can only upload payment proof for your own registration" });
+    }
+
+    if (registration.status === "cancelled") {
+        await deleteEverywhere(req.file.filename, req.file.cloudinary?.publicId);
+        return res.status(400).json({ message: "This registration has been cancelled" });
+    }
+
+    if (registration.paymentStatus === "confirmed" && registration.status === "confirmed") {
+        await deleteEverywhere(req.file.filename, req.file.cloudinary?.publicId);
+        return res.status(400).json({ message: "Payment has already been confirmed for this registration" });
+    }
+
+    // Keep reference to previous proof if replacing
+    const previousProof = registration.paymentProof?.cloudinaryId
+        ? { filename: registration.paymentProof.filename, cloudinaryId: registration.paymentProof.cloudinaryId }
+        : null;
+
+    registration.paymentProof = {
+        url: req.file.cloudinary?.url || `/uploads/${req.file.filename}`,
+        cloudinaryId: req.file.cloudinary?.publicId,
+        filename: req.file.filename,
+        uploadedAt: new Date(),
+    };
+    registration.paymentStatus = "proof_submitted";
+    registration.paymentRejectionReason = undefined;
+    registration.paymentRejectedAt = undefined;
+
+    try {
+        await registration.save();
+    } catch (err) {
+        await deleteEverywhere(req.file.filename, req.file.cloudinary?.publicId);
+        throw err;
+    }
+
+    if (previousProof) {
+        await deleteEverywhere(previousProof.filename, previousProof.cloudinaryId);
+    }
+
+    // Notify student: proof submitted, awaiting verification
+    await notifyPaymentProofSubmitted({ student: student._id, registration: registration._id });
+
+    // Notify organizer: student submitted payment proof
+    if (registration.event?.community) {
+        await notifyPaymentProofReceived({
+            community: registration.event.community,
+            actor: student._id,
+            registration: registration._id,
+        });
+    }
+
+    return res.status(200).json({
+        success: true,
+        message: "Payment proof uploaded successfully. Awaiting organizer verification.",
+        registration,
+    });
+};
+
+// Organizer lists all paid registrations / payment verifications for an event
+module.exports.listEventPaymentVerifications = async (req, res) => {
+    const community = req.user;
+    const { eventId } = req.params;
+    const { status, page = 1, limit = 50 } = req.query;
+
+    const event = await Event.findOne({ _id: eventId, community: community._id });
+    if (!event) return res.status(404).json({ message: "Event not found" });
+
+    // Base filter: only paid registrations for this event
+    const filter = { event: eventId, paymentStatus: { $ne: "not_required" } };
+
+    if (status && status !== "all") {
+        filter.paymentStatus = status;
+    }
+
+    const skip = (Number(page) - 1) * Number(limit);
+
+    const [
+        registrations,
+        totalFiltered,
+        totalPaidCount,
+        pendingVerificationCount,
+        paymentRequiredCount,
+        confirmedCount,
+        rejectedCount,
+        confirmedRegs,
+    ] = await Promise.all([
+        Registration.find(filter)
+            .sort({ "paymentProof.uploadedAt": -1, createdAt: -1 })
+            .skip(skip)
+            .limit(Number(limit))
+            .populate("student", "name email profilePicture rollNo branch department year")
+            .lean(),
+        Registration.countDocuments(filter),
+        Registration.countDocuments({ event: eventId, paymentStatus: { $ne: "not_required" }, status: { $ne: "cancelled" } }),
+        Registration.countDocuments({ event: eventId, paymentStatus: "proof_submitted" }),
+        Registration.countDocuments({ event: eventId, paymentStatus: "pending", status: { $ne: "cancelled" } }),
+        Registration.countDocuments({ event: eventId, paymentStatus: "confirmed", status: "confirmed" }),
+        Registration.countDocuments({ event: eventId, paymentStatus: "rejected" }),
+        Registration.find({ event: eventId, paymentStatus: "confirmed", status: "confirmed" }, "amountPaid").lean(),
+    ]);
+
+    // Calculate total revenue from confirmed payments
+    const totalRevenue = confirmedRegs.reduce((sum, r) => sum + (r.amountPaid || event.price || 0), 0);
+
+    const summaryData = {
+        totalPaidRegistrations: totalPaidCount,
+        proofSubmittedCount: pendingVerificationCount,
+        confirmedCount,
+        rejectedCount,
+        pendingProofCount: paymentRequiredCount,
+        totalRevenue,
+    };
+
+    return res.status(200).json({
+        success: true,
+        registrations,
+        event: {
+            id: event._id,
+            title: event.title,
+            price: event.price,
+            paymentQrCode: event.paymentQrCode,
+            paymentInstructions: event.paymentInstructions,
+            upiId: event.upiId,
+        },
+        summary: summaryData,
+        counts: {
+            totalPaid: totalPaidCount,
+            pendingVerification: pendingVerificationCount,
+            proofSubmittedCount: pendingVerificationCount,
+            confirmed: confirmedCount,
+            confirmedCount,
+            rejected: rejectedCount,
+            rejectedCount,
+            paymentRequired: paymentRequiredCount,
+            pendingProofCount: paymentRequiredCount,
+            totalRevenue,
+        },
+        page: Number(page),
+        limit: Number(limit),
+        total: totalFiltered,
+        totalPages: Math.ceil(totalFiltered / Number(limit)),
+    });
+};
+
+// Organizer confirms, rejects, or adds payment details to a payment proof
+module.exports.verifyPayment = async (req, res) => {
+    const community = req.user;
+    const { registrationId } = req.params;
+    const { action, reason, cancelRegistration, transactionId, paymentNotes } = req.body;
+
+    const registration = await Registration.findById(registrationId).populate("event");
+    if (!registration) return res.status(404).json({ message: "Registration not found" });
+    if (!registration.event) return res.status(404).json({ message: "Event not found" });
+
+    if (!registration.event.community.equals(community._id)) {
+        return res.status(403).json({ message: "You can only verify payments for your own events" });
+    }
+
+    if (action === "update_details") {
+        if (transactionId !== undefined) registration.transactionId = transactionId ? transactionId.trim() : "";
+        if (paymentNotes !== undefined) registration.paymentNotes = paymentNotes ? paymentNotes.trim() : "";
+        await registration.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "Payment details updated successfully.",
+            registration,
+        });
+    }
+
+    if (action === "confirm") {
+        registration.paymentStatus = "confirmed";
+        registration.status = "confirmed";
+        registration.paymentVerifiedAt = new Date();
+        registration.paymentRejectionReason = undefined;
+        registration.amountPaid = registration.event.price || 0;
+        if (transactionId !== undefined) {
+            registration.transactionId = transactionId ? transactionId.trim() : registration.transactionId;
+        }
+        if (paymentNotes !== undefined) {
+            registration.paymentNotes = paymentNotes ? paymentNotes.trim() : registration.paymentNotes;
+        }
+        if (!registration.qrToken) {
+            registration.qrToken = crypto.randomBytes(16).toString("hex");
+        }
+
+        await registration.save();
+
+        await notifyPaymentConfirmed({
+            student: registration.student,
+            registration: registration._id,
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "Payment confirmed successfully. Event ticket generated.",
+            registration,
+        });
+    }
+
+    if (action === "reject") {
+        const shouldCancel = cancelRegistration === true;
+        registration.paymentStatus = "rejected";
+        registration.paymentRejectionReason = reason || "Payment verification failed. Please check the amount and transaction details, and upload a clear screenshot.";
+        registration.paymentRejectedAt = new Date();
+
+        if (shouldCancel) {
+            await releaseSlot(registration.event._id, registration._id);
+            registration.status = "cancelled";
+            registration.cancelledAt = new Date();
+            registration.cancellationReason = `Payment rejected: ${registration.paymentRejectionReason}`;
+
+            // Promote oldest waitlisted candidate if available
+            const nextInLine = await Registration.findOne({ event: registration.event._id, status: "waitlisted" }).sort({ createdAt: 1 });
+            if (nextInLine) {
+                const isPaid = registration.event.price > 0;
+                nextInLine.status = isPaid ? "reserved" : "confirmed";
+                if (isPaid) {
+                    nextInLine.paymentStatus = "pending";
+                    nextInLine.slotExpiresAt = new Date(Date.now() + 30 * 60 * 1000);
+                } else {
+                    nextInLine.qrToken = crypto.randomBytes(16).toString("hex");
+                }
+                await nextInLine.save();
+                await Event.updateOne({ _id: registration.event._id }, { $push: { confirmedRegistrationIds: nextInLine._id } });
+                await notifyWaitlistPromotion({ student: nextInLine.student, registration: nextInLine._id });
+            }
+        } else {
+            // Grant 24 hours extension so student can review the reason and re-upload without slot expiring immediately
+            registration.slotExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+        }
+
+        await registration.save();
+
+        await notifyPaymentRejected({
+            student: registration.student,
+            registration: registration._id,
+            reason: registration.paymentRejectionReason,
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: shouldCancel ? "Payment rejected and slot released." : "Payment proof rejected. Student has been notified to re-upload proof.",
+            registration,
+        });
+    }
+
+    return res.status(400).json({ message: "Invalid action. Must be 'confirm', 'reject', or 'update_details'." });
 };

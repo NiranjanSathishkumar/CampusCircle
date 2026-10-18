@@ -46,11 +46,11 @@ module.exports.checkIn = async (req, res) => {
         return res.status(400).json({ message: `Registration is ${registrationStatus}, not confirmed` });
     }
 
-    // For paid events, paymentStatus starts "pending" and only becomes "paid"
+    // For paid events, paymentStatus starts "pending" and only becomes "paid" or "confirmed"
     // once payment is confirmed server-side — "confirmed" registrationStatus
     // alone doesn't mean the ticket was paid for.
     const paymentStatus = kind === "leader" ? record.paymentStatus : record.registration.paymentStatus;
-    if (paymentStatus !== "not_required" && paymentStatus !== "paid") {
+    if (paymentStatus !== "not_required" && paymentStatus !== "paid" && paymentStatus !== "confirmed") {
         return res.status(400).json({ message: `Payment is ${paymentStatus} — cannot check in until payment is confirmed` });
     }
 

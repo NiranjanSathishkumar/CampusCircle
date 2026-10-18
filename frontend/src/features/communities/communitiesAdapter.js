@@ -56,7 +56,10 @@ export function mapCommunity(raw) {
   const style = styleFor(raw.category);
   const logoUrl = raw.logo?.cloudinaryUrl || raw.logo?.filename;
   const bannerUrl = raw.banner?.cloudinaryUrl || raw.banner?.filename;
-  const openRoles = raw.openRoles || [];
+  // Real, live CommunityRecruitment drives only - not Community.openRoles
+  // (a free-text field organizers can set independently of any actual
+  // drive), so the teaser never names a position students can't apply to.
+  const openRoles = raw.openRecruitmentRoles || [];
 
   return {
     id: raw._id,
@@ -71,10 +74,12 @@ export function mapCommunity(raw) {
     coverImage: bannerUrl,
     members: raw.followerCount || 0,
     activeEvents: raw.activeEventsCount || 0,
-    // isRecruiting is a manual organizer flag; hasOpenRecruitment reflects an
-    // actual live CommunityRecruitment drive — a community with real open
-    // positions should read as "recruiting" even if the flag was never set.
-    recruiting: Boolean(raw.isRecruiting) || Boolean(raw.hasOpenRecruitment),
+    // The Recruiting badge should ONLY show when the Recruitment Drive is active
+    recruiting: raw.hasOpenRecruitment !== undefined
+      ? Boolean(raw.hasOpenRecruitment)
+      : Array.isArray(raw.drives)
+        ? raw.drives.some((d) => d.isOpen && d.isActive !== false && (!d.deadline || new Date(d.deadline) >= new Date()))
+        : false,
     recruitingRole: openRoles.length ? openRoles.join(', ') : null,
     establishedYear: raw.establishedYear,
     tags: raw.tags || [],

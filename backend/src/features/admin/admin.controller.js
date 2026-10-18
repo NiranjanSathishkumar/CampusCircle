@@ -90,7 +90,7 @@ module.exports.listOrganizers = async (req, res) => {
 
     const skip = (page - 1) * limit;
     const [organizers, total] = await Promise.all([
-        Community.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
+        Community.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
         Community.countDocuments(filter),
     ]);
 
@@ -138,7 +138,8 @@ module.exports.listStudents = async (req, res) => {
             .select("name email rollNo branch yearOfJoining createdAt isSuspended")
             .sort({ createdAt: -1 })
             .skip(skip)
-            .limit(limit),
+            .limit(limit)
+            .lean(),
         User.countDocuments(filter),
     ]);
 

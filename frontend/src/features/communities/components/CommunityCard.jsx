@@ -85,6 +85,11 @@ export default function CommunityCard({
               <Briefcase size={10} className="flex-shrink-0" />
               <span>Open Role: <strong>{community.recruitingRole}</strong></span>
             </div>
+          ) : community.recruiting ? (
+            <div className="comm-card-role-notice">
+              <Briefcase size={10} className="flex-shrink-0" />
+              <span>Now recruiting — see profile for details</span>
+            </div>
           ) : (
             <div className="comm-card-role-inactive">
               <Check size={11} className="text-[#1A3A2A]" weight="bold" />

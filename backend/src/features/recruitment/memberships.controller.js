@@ -48,12 +48,20 @@ module.exports.addMember = async (req, res) => {
         return res.status(400).json({ message: "This student is already a member" });
     }
 
+    const now = new Date();
     if (membership) {
         membership.isActive = true;
-        membership.joinedAt = new Date();
+        membership.joinedAt = now;
         membership.label = label || "Member";
+        if (!Array.isArray(membership.labelHistory)) membership.labelHistory = [];
+        membership.labelHistory.push({ label: label || "Member", changedAt: now });
     } else {
-        membership = new CommunityMembership({ community: community._id, student: studentId, label });
+        membership = new CommunityMembership({
+            community: community._id,
+            student: studentId,
+            label: label || "Member",
+            labelHistory: [{ label: label || "Member", changedAt: now }],
+        });
     }
 
     try {
@@ -79,7 +87,14 @@ module.exports.updateMemberLabel = async (req, res) => {
     if (!membership) return res.status(404).json({ message: "Member not found" });
 
     const labelChanged = membership.label !== label;
+    // Append to history before overwriting the current label
+    if (!Array.isArray(membership.labelHistory)) membership.labelHistory = [];
+    membership.labelHistory.push({ label, changedAt: new Date() });
     membership.label = label;
+    // Optionally update wing in the same request
+    if (Object.prototype.hasOwnProperty.call(req.body, 'wing')) {
+        membership.wing = req.body.wing || null;
+    }
 
     try {
         await membership.save();
@@ -106,6 +121,22 @@ module.exports.removeMember = async (req, res) => {
     await membership.save();
 
     return res.status(200).json({ message: "Member removed" });
+};
+
+module.exports.bulkRemoveMembers = async (req, res) => {
+    const community = req.user;
+    const { membershipIds } = req.body;
+
+    const result = await CommunityMembership.updateMany(
+        { _id: { $in: membershipIds }, community: community._id, isActive: true },
+        { $set: { isActive: false } }
+    );
+
+    return res.status(200).json({
+        success: true,
+        message: `${result.modifiedCount} member(s) removed`,
+        removedCount: result.modifiedCount,
+    });
 };
 
 // A student's own membership list across every community they belong to.

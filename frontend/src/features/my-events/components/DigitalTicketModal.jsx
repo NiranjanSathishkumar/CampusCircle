@@ -24,6 +24,7 @@ export default function DigitalTicketModal({ event, user, onClose, onDownload })
 
   const attendeeName = user?.name || 'Registered Student';
   const attendeeRoll = user?.rollNo || '—';
+  const isUnconfirmedPaid = (event.price_amount > 0 || event.payment === 'PAID') && event.paymentStatus !== 'confirmed';
 
   return (
     <motion.div
@@ -67,12 +68,18 @@ export default function DigitalTicketModal({ event, user, onClose, onDownload })
         {/* Pass Body */}
         <div className="ticket-pass-body">
           {/* Prominent Ticket ID */}
-          <div className="ticket-id-banner">
-            <span>{event.ticketId}</span>
-          </div>
+          {event.ticketId && !isUnconfirmedPaid ? (
+            <div className="ticket-id-banner">
+              <span>{event.ticketId}</span>
+            </div>
+          ) : (
+            <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-900 text-xs text-center font-mono">
+              Verification Required &bull; Ticket Pass Not Yet Active
+            </div>
+          )}
 
-          {/* Scannable QR — encodes the same qrToken organizers check in with */}
-          {event.ticketId && (
+          {/* Scannable QR — only rendered when ticket is confirmed */}
+          {event.ticketId && !isUnconfirmedPaid ? (
             <div className="ticket-qr-visual">
               <QRCodeSVG
                 value={event.ticketId}
@@ -83,7 +90,16 @@ export default function DigitalTicketModal({ event, user, onClose, onDownload })
                 title={`QR check-in code ${event.ticketId}`}
               />
             </div>
-          )}
+          ) : isUnconfirmedPaid ? (
+            <div className="p-4 bg-amber-50/70 border border-amber-300 rounded-xl text-center space-y-2">
+              <div className="text-xs font-bold text-amber-950 font-['Space_Grotesk']">
+                Payment Verification in Progress
+              </div>
+              <p className="text-[11px] text-amber-800 leading-relaxed max-w-sm mx-auto">
+                Your admission ticket and door check-in QR code will be generated once the event organizer verifies and confirms your payment proof.
+              </p>
+            </div>
+          ) : null}
 
           {/* Event Title */}
           <div>

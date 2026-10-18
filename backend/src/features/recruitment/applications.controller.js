@@ -18,6 +18,9 @@ module.exports.submitApplication = async (req, res) => {
     if (!drive) return res.status(404).json({ message: "Recruitment drive not found" });
 
     if (!drive.isAcceptingApplications) {
+        if (drive.deadline && new Date() > new Date(drive.deadline)) {
+            return res.status(400).json({ message: "Application deadline has passed" });
+        }
         return res.status(400).json({ message: "This recruitment drive is not accepting applications" });
     }
 

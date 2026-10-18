@@ -6,6 +6,11 @@
 import { CATEGORY_ICONS, CATEGORY_COLORS, DEFAULT_CATEGORY_ICON, DEFAULT_CATEGORY_COLOR } from '@/features/events/eventsConstants';
 import { formatEventDateTime } from '@/features/events/eventsDateUtils';
 
+// Capacity-only: whether seats are running out. Time-based closure (event
+// concluded / registration window passed) is layered on top by the caller —
+// this function has no notion of "now" and never did, which used to mean an
+// event card could show a green "Open" badge with 31/60 seats free right
+// next to a disabled "Concluded" button, since only the button read isPast.
 export function computeStatusBadge(registered, capacity) {
   if (!capacity || registered >= capacity) return 'Sold Out';
   const pct = registered / capacity;
@@ -50,6 +55,16 @@ export function mapEvent(raw) {
   const community = raw.community || {};
   const icon = CATEGORY_ICONS[raw.category] || DEFAULT_CATEGORY_ICON;
   const color = CATEGORY_COLORS[raw.category] || DEFAULT_CATEGORY_COLOR;
+  const isPast = eventEndsAt(raw) < now;
+  const registrationClosed = registrationDeadlineFor(raw) < now;
+  // Time-based closure takes priority over capacity: a concluded or
+  // registration-closed event should never read as "Open"/"Filling Fast"
+  // just because it also happens to have free seats.
+  const statusBadge = isPast
+    ? 'Concluded'
+    : registrationClosed
+    ? 'Registration Closed'
+    : computeStatusBadge(registeredCount, raw.capacity);
 
   return {
     id: raw._id,
@@ -75,8 +90,12 @@ export function mapEvent(raw) {
     eventEndDate: raw.eventEndDate ? new Date(raw.eventEndDate) : null,
     dateFormatted: formatEventDateTime(raw.eventDate),
     eventEndDateFormatted: raw.eventEndDate ? formatEventDateTime(raw.eventEndDate) : null,
-    isPast: eventEndsAt(raw) < now,
-    registrationClosed: registrationDeadlineFor(raw) < now,
+    registrationDeadline: raw.registrationDeadline ? new Date(raw.registrationDeadline) : null,
+    registrationDeadlineFormatted: raw.registrationDeadline ? formatEventDateTime(raw.registrationDeadline) : null,
+    effectiveRegistrationDeadline: registrationDeadlineFor(raw),
+    effectiveRegistrationDeadlineFormatted: formatEventDateTime(registrationDeadlineFor(raw)),
+    isPast,
+    registrationClosed,
 
     registrationType: raw.registrationType,
     teamSize: raw.teamSize || null,
@@ -84,6 +103,9 @@ export function mapEvent(raw) {
 
     payment: raw.price > 0 ? 'Paid' : 'Free',
     price_amount: raw.price || 0,
+    paymentQrCode: raw.paymentQrCode || null,
+    paymentInstructions: raw.paymentInstructions || '',
+    upiId: raw.upiId || '',
 
     registered_count: registeredCount,
     // Kept alongside registered_count for compatibility with components
@@ -91,7 +113,7 @@ export function mapEvent(raw) {
     // real data there's no separate "live" figure, so both are the same.
     _liveRegistered: registeredCount,
     capacity: raw.capacity,
-    statusBadge: computeStatusBadge(registeredCount, raw.capacity),
+    statusBadge,
     allowWaitlist: Boolean(raw.allowWaitlist),
 
     collectProfileData: Boolean(raw.collectProfileData),

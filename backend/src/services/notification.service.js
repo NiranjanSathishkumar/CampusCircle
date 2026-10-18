@@ -192,3 +192,57 @@ module.exports.notifyOrganizerStatusChanged = ({ community, isActive }) => safel
     });
 });
 
+// ── Manual Payment Flow Notifications ─────────────────────────────
+
+module.exports.notifyPaymentRequired = ({ student, registration }) => safely(async () => {
+    await Notification.create({
+        recipient: student,
+        recipientType: "User",
+        type: "payment_required",
+        target: registration,
+        targetType: "Registration",
+    });
+});
+
+module.exports.notifyPaymentProofSubmitted = ({ student, registration }) => safely(async () => {
+    await Notification.create({
+        recipient: student,
+        recipientType: "User",
+        type: "payment_proof_submitted",
+        target: registration,
+        targetType: "Registration",
+    });
+});
+
+module.exports.notifyPaymentProofReceived = ({ community, actor, registration }) => safely(async () => {
+    await Notification.create({
+        recipient: community,
+        recipientType: "Community",
+        actor,
+        type: "payment_proof_received",
+        target: registration,
+        targetType: "Registration",
+    });
+});
+
+module.exports.notifyPaymentConfirmed = ({ student, registration }) => safely(async () => {
+    await Notification.create({
+        recipient: student,
+        recipientType: "User",
+        type: "payment_confirmed",
+        target: registration,
+        targetType: "Registration",
+    });
+});
+
+module.exports.notifyPaymentRejected = ({ student, registration, reason }) => safely(async () => {
+    await Notification.create({
+        recipient: student,
+        recipientType: "User",
+        type: "payment_rejected",
+        target: registration,
+        targetType: "Registration",
+        message: reason,
+    });
+});
+
