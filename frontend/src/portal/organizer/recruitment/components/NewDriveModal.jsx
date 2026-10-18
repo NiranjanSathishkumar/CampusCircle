@@ -1,7 +1,12 @@
 import { motion } from 'motion/react';
 import { useRef, useState } from 'react';
-import { CheckCircle, CircleNotch, Plus, Sparkle, Trash, Warning, X } from '@phosphor-icons/react';
-import { STARTER_DRIVE_TEMPLATES } from '@/portal/organizer/recruitment/recruitmentTemplates';
+import { CheckCircle, CircleNotch, Plus, Sparkle, Trash, Warning, X, CaretDown, CaretUp, ShieldCheck } from '@phosphor-icons/react';
+import {
+  ROLE_DEPARTMENTS,
+  STANDARD_COMMUNITY_ROLES,
+  STARTER_DRIVE_TEMPLATES,
+  findStandardRole,
+} from '@/portal/organizer/recruitment/recruitmentTemplates';
 import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
 import { ApiError } from '@/shared/api/httpClient';
 
@@ -81,6 +86,14 @@ export default function NewDriveModal({ onClose, onCreate, drive }) {
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [submitError, setSubmitError] = useState(null);
+  const [selectedDept, setSelectedDept] = useState('all');
+  const [showAllRoles, setShowAllRoles] = useState(false);
+
+  const displayedRoles = showAllRoles
+    ? STANDARD_COMMUNITY_ROLES.filter((r) => selectedDept === 'all' || r.department === selectedDept)
+    : STARTER_DRIVE_TEMPLATES;
+
+  const activeStandardRole = findStandardRole(draft.title);
 
   const isDirty = Boolean(
     draft.title.trim() ||
@@ -252,45 +265,109 @@ export default function NewDriveModal({ onClose, onCreate, drive }) {
             </div>
           )}
 
-          {/* Starter Blueprint Selector — only useful when starting from scratch */}
+          {/* Standard Community Roles & Starter Blueprints */}
           {!isEditing && (
-          <div className="bg-[#FAF8F5] border border-[#D8D2C4] rounded-lg p-3">
-            <span className="text-[11px] font-mono font-bold text-[#0F172A] block mb-2 uppercase tracking-wider">
-              <Sparkle size={12} className="inline mr-1 text-[#991B1B]" />
-              Quick Starter Blueprints:
-            </span>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {STARTER_DRIVE_TEMPLATES.map((tpl) => (
+            <div className="bg-[#FAF8F5] border border-[#D8D2C4] rounded-lg p-3 space-y-2.5">
+              <div className="flex items-center justify-between flex-wrap gap-1.5">
+                <span className="text-[11px] font-mono font-bold text-[#0F172A] uppercase tracking-wider flex items-center gap-1.5">
+                  <Sparkle size={13} className="text-[#991B1B]" weight="fill" />
+                  Standard Community Roles:
+                </span>
                 <button
-                  key={tpl.id}
                   type="button"
-                  className="p-2 rounded-lg border border-[#D8D2C4] bg-white hover:border-[#991B1B] hover:shadow-xs transition-all text-left text-xs"
-                  onClick={() => handleApplyTemplate(tpl)}
+                  onClick={() => setShowAllRoles(!showAllRoles)}
+                  className="text-[11px] font-mono text-[#991B1B] hover:underline flex items-center gap-0.5 cursor-pointer font-bold"
                 >
-                  <span className="text-base block mb-0.5">{tpl.icon}</span>
-                  <span className="font-bold text-[#0F172A] font-['Space_Grotesk'] block truncate leading-tight">
-                    {tpl.name}
-                  </span>
-                  <span className="text-[10px] text-gray-500 font-mono">
-                    {tpl.formQuestions.length} question{tpl.formQuestions.length === 1 ? '' : 's'}
-                  </span>
+                  {showAllRoles ? (
+                    <>
+                      <span>Show Quick Starters</span>
+                      <CaretUp size={12} weight="bold" />
+                    </>
+                  ) : (
+                    <>
+                      <span>Browse All Roles ({STANDARD_COMMUNITY_ROLES.length})</span>
+                      <CaretDown size={12} weight="bold" />
+                    </>
+                  )}
                 </button>
-              ))}
+              </div>
+
+              {/* Department category filters when browsing all roles */}
+              {showAllRoles && (
+                <div className="flex items-center gap-1 overflow-x-auto pb-1 pt-0.5 scrollbar-thin">
+                  {ROLE_DEPARTMENTS.map((dept) => (
+                    <button
+                      key={dept.id}
+                      type="button"
+                      onClick={() => setSelectedDept(dept.id)}
+                      className={`px-2 py-1 rounded text-[10px] font-mono font-bold whitespace-nowrap transition-all cursor-pointer ${
+                        selectedDept === dept.id
+                          ? 'bg-[#0F172A] text-white shadow-xs'
+                          : 'bg-white border border-[#D8D2C4] text-[#475569] hover:border-[#991B1B]'
+                      }`}
+                    >
+                      <span className="mr-1">{dept.icon}</span>
+                      {dept.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Role Cards Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 max-h-[220px] overflow-y-auto pr-0.5">
+                {displayedRoles.map((tpl) => {
+                  const isSelected = draft.title === tpl.title;
+                  return (
+                    <button
+                      key={tpl.id}
+                      type="button"
+                      className={`p-2 rounded-lg border text-left text-xs transition-all cursor-pointer flex flex-col justify-between ${
+                        isSelected
+                          ? 'border-[#991B1B] bg-[#FEF2F2] shadow-xs ring-1 ring-[#991B1B]'
+                          : 'border-[#D8D2C4] bg-white hover:border-[#991B1B] hover:shadow-xs'
+                      }`}
+                      onClick={() => handleApplyTemplate(tpl)}
+                    >
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-base leading-none">{tpl.icon}</span>
+                          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-[#F1F5F9] text-[#475569] font-bold truncate max-w-[80px]">
+                            {tpl.level || tpl.tag}
+                          </span>
+                        </div>
+                        <span className="font-bold text-[#0F172A] font-['Space_Grotesk'] block text-[11px] leading-tight mb-1">
+                          {tpl.shortName || tpl.title}
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-gray-500 font-mono block mt-1">
+                        {tpl.formQuestions.length} screening q's
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
           )}
 
           {/* Drive Title */}
           <div className="org-form-group">
-            <label htmlFor="drive-title" className="org-form-label">
-              Position Title <span className="text-[#991B1B]">*</span>
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label htmlFor="drive-title" className="org-form-label mb-0">
+                Position Title <span className="text-[#991B1B]">*</span>
+              </label>
+              {activeStandardRole && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#DCFCE7] text-[#166534] border border-[#86EFAC]">
+                  <ShieldCheck size={12} weight="fill" />
+                  {activeStandardRole.wing} • {activeStandardRole.level}
+                </span>
+              )}
+            </div>
             <input
               id="drive-title"
               className="org-form-input text-xs font-bold font-['Space_Grotesk']"
               value={draft.title}
               onChange={(e) => setDraft({ ...draft, title: e.target.value })}
-              placeholder="e.g. Design Lead"
+              placeholder="e.g. Technical Lead"
             />
           </div>
 

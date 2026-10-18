@@ -19,6 +19,8 @@ import EventFormQuestionsFieldset, {
 } from '@/features/events/components/EventFormQuestionsFieldset';
 import { submitDriveApplication } from '@/features/communities/communities.api';
 import { ApiError } from '@/shared/api/httpClient';
+import { getRoleTheme } from '@/portal/organizer/roster/rosterConstants';
+import { findStandardRole } from '@/portal/organizer/recruitment/recruitmentTemplates';
 import '@/features/events/styles/events-registration.css';
 import '@/features/communities/components/drive-application-dialog.css';
 
@@ -83,6 +85,8 @@ export default function DriveApplicationDialog({ drive, communityName, onSuccess
   const waiverValid = !drive.requireWaiver || waiverAccepted;
   const canSubmit = questionsValid && waiverValid && !isClosed;
   const deadline = formatDeadline(drive.deadline);
+  const standardRole = findStandardRole(drive.title);
+  const roleTheme = getRoleTheme(drive.title);
 
   const studentName = user?.name || 'Logged-In Student';
   const studentSub =
@@ -230,6 +234,10 @@ export default function DriveApplicationDialog({ drive, communityName, onSuccess
                 <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#0F172A' }}>{drive.title}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.75rem', fontFamily: 'JetBrains Mono, monospace', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Wing / Tier</span>
+                <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#0F172A' }}>{standardRole ? `${standardRole.wing} (${standardRole.level})` : roleTheme.label}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: '0.75rem', fontFamily: 'JetBrains Mono, monospace', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Community</span>
                 <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#991B1B' }}>{communityName || 'Chapter Leadership'}</span>
               </div>
@@ -312,7 +320,19 @@ export default function DriveApplicationDialog({ drive, communityName, onSuccess
               <Flame size={20} weight="fill" />
             </div>
             <div className="drv-apply-header-text">
-              <span className="drv-apply-eyebrow">Recruitment Application</span>
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className="drv-apply-eyebrow mb-0">Recruitment Application</span>
+                <span
+                  className="font-mono text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider inline-flex items-center gap-1"
+                  style={{
+                    background: roleTheme.badgeBg,
+                    color: roleTheme.badgeColor,
+                    border: `1px solid ${roleTheme.badgeBorder}`,
+                  }}
+                >
+                  {standardRole ? `${standardRole.wing} • ${standardRole.level}` : roleTheme.label}
+                </span>
+              </div>
               <h2 className="drv-apply-title" id="drive-apply-dialog-title">
                 {drive.title}
               </h2>

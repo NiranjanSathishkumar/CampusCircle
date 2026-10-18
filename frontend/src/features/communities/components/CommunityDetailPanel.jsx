@@ -48,6 +48,8 @@ import {
 import { COMMUNITY_CATEGORIES } from '@/features/communities/communitiesConstants';
 import { fetchCommunityDrives, submitDriveApplication, fetchMyApplications } from '@/features/communities/communities.api';
 import { ApiError } from '@/shared/api/httpClient';
+import { getRoleTheme } from '@/portal/organizer/roster/rosterConstants';
+import { findStandardRole } from '@/portal/organizer/recruitment/recruitmentTemplates';
 import DriveApplicationDialog from '@/features/communities/components/DriveApplicationDialog';
 import '@/features/communities/communities.css';
 
@@ -871,6 +873,8 @@ export default function CommunityDetailPanel({
                     ) : (
                       <div className="cdp-drives-list">
                         {drives.map((drive, idx) => {
+                          const standardRole = findStandardRole(drive.title);
+                          const roleTheme = getRoleTheme(drive.title);
                           const applicationStatus = appliedDrives.get(String(drive._id)) || appliedDrives.get(drive._id);
                           const applied = Boolean(applicationStatus);
                           const isDeadlinePassed = drive.deadline ? new Date() > new Date(drive.deadline) : false;
@@ -908,8 +912,18 @@ export default function CommunityDetailPanel({
                                 {String(idx + 1).padStart(2, '0')}
                               </div>
                               <div className="cdp-drive-card__content">
-                                <div className="flex items-center gap-2 mb-1">
+                                <div className="flex items-center gap-2 mb-1 flex-wrap">
                                   <h3 className="cdp-drive-card__title">{drive.title}</h3>
+                                  <span
+                                    className="font-mono text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider inline-flex items-center gap-1"
+                                    style={{
+                                      background: roleTheme.badgeBg,
+                                      color: roleTheme.badgeColor,
+                                      border: `1px solid ${roleTheme.badgeBorder}`,
+                                    }}
+                                  >
+                                    {standardRole ? `${standardRole.wing} • ${standardRole.level}` : roleTheme.label}
+                                  </span>
                                   {statusLabel && (
                                     <span
                                       className={`cdp-status-pill ${

@@ -14,19 +14,28 @@ export function getInitials(name = '') {
 }
 
 export const PRESET_ROLES = [
-  'Lead Organiser',
+  'Lead Organiser / Chairperson',
+  'Co-Lead / Vice Chairperson',
+  'General Secretary',
   'Technical Lead',
-  'Design Lead',
-  'Events Coordinator',
-  'Treasurer',
+  'Web & Full-Stack Lead',
+  'Design & Creatives Lead',
+  'UI/UX Designer',
+  'Events & Operations Head',
+  'Event Operations Coordinator',
   'PR & Outreach Lead',
-  'Web Master',
-  'Volunteer Coordinator',
-  'Volunteer',
+  'Corporate Sponsorship Lead',
+  'Content & Editorial Writer',
+  'Social Media Strategist',
+  'Treasurer & Financial Controller',
+  'Technical Associate & Mentor',
+  'Event Day Operations Volunteer',
+  'Core Team Volunteer',
 ];
 
 /** Predefined domain wings. Also used for the inline wing selector. */
 export const WING_OPTIONS = [
+  'Executive Council',
   'Technical',
   'Design & Creative',
   'Operations & Events',
