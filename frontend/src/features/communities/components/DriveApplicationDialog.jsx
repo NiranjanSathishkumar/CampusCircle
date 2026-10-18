@@ -9,8 +9,9 @@
  * ticketing.
  */
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { Flame, PaperPlaneTilt, CircleNotch, ShieldCheck, Warning, Check, X, Clock } from '@phosphor-icons/react';
+import { Flame, PaperPlaneTilt, CircleNotch, ShieldCheck, Warning, Check, CheckCircle, X, Clock, ArrowRight } from '@phosphor-icons/react';
 import { useAuth } from '@/shared/auth/AuthContext';
 import EventFormQuestionsFieldset, {
   validateAnswers,
@@ -35,6 +36,7 @@ function formatDeadline(deadline) {
 
 export default function DriveApplicationDialog({ drive, communityName, onSuccess, onClose }) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const dialogRef = useRef(null);
   const isMountedRef = useRef(true);
   const [answers, setAnswers] = useState({});
@@ -42,13 +44,15 @@ export default function DriveApplicationDialog({ drive, communityName, onSuccess
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
+  const [submittedApplication, setSubmittedApplication] = useState(null);
+  const [confirmationMessage, setConfirmationMessage] = useState('');
 
-  useEffect(
-    () => () => {
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
       isMountedRef.current = false;
-    },
-    []
-  );
+    };
+  }, []);
 
   const requestClose = () => {
     // A submit is in flight — closing now would abandon the request with no
@@ -97,7 +101,9 @@ export default function DriveApplicationDialog({ drive, communityName, onSuccess
     try {
       const res = await submitDriveApplication(drive._id, answersToPayload(drive.formQuestions, answers));
       if (!isMountedRef.current) return;
-      onSuccess(res.application, res.message);
+      setSubmittedApplication(res.application || { status: 'pending' });
+      setConfirmationMessage(res.message || '');
+      onSuccess?.(res.application, res.message, drive._id);
     } catch (err) {
       if (!isMountedRef.current) return;
       setSubmitError(err instanceof ApiError ? err.message : err.message || 'Could not submit application.');
@@ -105,6 +111,176 @@ export default function DriveApplicationDialog({ drive, communityName, onSuccess
       if (isMountedRef.current) setSubmitting(false);
     }
   };
+
+  if (submittedApplication) {
+    return (
+      <motion.div
+        className="events-dialog-overlay drv-apply-overlay"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) requestClose();
+        }}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="drive-apply-success-title"
+      >
+        <motion.div
+          ref={dialogRef}
+          tabIndex={-1}
+          className="events-dialog drv-apply-dialog"
+          initial={{ opacity: 0, y: 24, scale: 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 16, scale: 0.96 }}
+          transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+          onClick={(e) => e.stopPropagation()}
+          style={{ outline: 'none' }}
+        >
+          <div className="drv-apply-header">
+            <div className="drv-apply-header-left">
+              <div
+                className="drv-apply-icon-badge"
+                style={{
+                  background: 'linear-gradient(135deg, #15803D 0%, #166534 100%)',
+                  boxShadow: '0 4px 12px rgba(22, 101, 52, 0.3)',
+                }}
+              >
+                <Check size={20} weight="bold" />
+              </div>
+              <div className="drv-apply-header-text">
+                <span className="drv-apply-eyebrow" style={{ color: '#15803D' }}>Application Submitted</span>
+                <h2 className="drv-apply-title" id="drive-apply-success-title">
+                  {drive.title}
+                </h2>
+              </div>
+            </div>
+            <button
+              type="button"
+              className="events-dialog-close"
+              onClick={requestClose}
+              aria-label="Close application dialog"
+              title="Close (Esc)"
+            >
+              <X size={15} weight="bold" />
+            </button>
+          </div>
+
+          <div className="drv-apply-body" style={{ textAlign: 'center', padding: '2.5rem 1.75rem' }}>
+            <div
+              style={{
+                width: '4.25rem',
+                height: '4.25rem',
+                borderRadius: '50%',
+                background: '#DCFCE7',
+                border: '2px solid #86EFAC',
+                color: '#166534',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 1.25rem',
+                boxShadow: '0 6px 16px rgba(22, 101, 52, 0.15)',
+              }}
+            >
+              <CheckCircle size={40} weight="fill" />
+            </div>
+
+            <h3
+              style={{
+                fontFamily: 'Space Grotesk, sans-serif',
+                fontSize: '1.5rem',
+                fontWeight: 700,
+                color: '#0F172A',
+                marginBottom: '0.5rem',
+                letterSpacing: '-0.02em',
+              }}
+            >
+              Application Submitted Successfully!
+            </h3>
+
+            <p
+              style={{
+                fontFamily: 'Plus Jakarta Sans, sans-serif',
+                fontSize: '0.9375rem',
+                color: '#475569',
+                maxWidth: '480px',
+                margin: '0 auto 1.5rem',
+                lineHeight: 1.55,
+              }}
+            >
+              {confirmationMessage || drive.confirmationMessage || 'Your application has been received and recorded in the recruitment roster. The community executive council will review your profile and answers.'}
+            </p>
+
+            <div
+              style={{
+                background: '#FAF8F5',
+                border: '1px solid #E5DFD3',
+                borderRadius: '12px',
+                padding: '1.125rem 1.25rem',
+                maxWidth: '480px',
+                margin: '0 auto 1.75rem',
+                textAlign: 'left',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.75rem',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.75rem', fontFamily: 'JetBrains Mono, monospace', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Role Applied</span>
+                <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#0F172A' }}>{drive.title}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.75rem', fontFamily: 'JetBrains Mono, monospace', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Community</span>
+                <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#991B1B' }}>{communityName || 'Chapter Leadership'}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.75rem', fontFamily: 'JetBrains Mono, monospace', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Status</span>
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, padding: '0.1875rem 0.625rem', borderRadius: '999px', background: '#FEF3C7', color: '#92400E', fontFamily: 'JetBrains Mono, monospace', border: '1px solid #FCD34D' }}>
+                  UNDER REVIEW
+                </span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.75rem', fontFamily: 'JetBrains Mono, monospace', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Applicant</span>
+                <span style={{ fontSize: '0.875rem', color: '#334155', fontWeight: 500 }}>{studentName}</span>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                className="events-dialog-cancel"
+                onClick={onClose}
+                style={{ padding: '0.625rem 1.5rem', fontWeight: 600, minWidth: '130px' }}
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                className="events-dialog-confirm"
+                onClick={() => {
+                  onClose();
+                  navigate('/profile');
+                }}
+                style={{
+                  padding: '0.625rem 1.5rem',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  background: '#0F172A',
+                  color: '#fff',
+                  minWidth: '180px',
+                  justifyContent: 'center',
+                }}
+              >
+                <span>View in Profile</span>
+                <ArrowRight size={15} weight="bold" />
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div

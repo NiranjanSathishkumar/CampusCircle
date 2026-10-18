@@ -252,17 +252,18 @@ export default function CommunityDetailPanel({
     }
     const isDeadlinePassed = drive.deadline ? new Date() > new Date(drive.deadline) : false;
     if (isDeadlinePassed || !drive.isOpen) {
-      onShowToast('This recruitment drive is closed and no longer accepting applications.');
+      onShowToast?.('This recruitment drive is closed and no longer accepting applications.');
       return;
     }
-    if (busyDriveId || appliedDrives.has(drive._id)) return;
+    const driveKey = String(drive._id);
+    if (busyDriveId || appliedDrives.has(driveKey)) return;
     setBusyDriveId(drive._id);
     try {
       const { application } = await submitDriveApplication(drive._id, []);
-      setAppliedDrives((prev) => new Map(prev).set(drive._id, application?.status || 'pending'));
-      onShowToast('Application submitted successfully!');
+      setAppliedDrives((prev) => new Map(prev).set(driveKey, application?.status || 'pending'));
+      onShowToast?.('Application submitted successfully!');
     } catch (err) {
-      onShowToast(err instanceof ApiError ? err.message : 'Could not submit application.');
+      onShowToast?.(err instanceof ApiError ? err.message : 'Could not submit application.');
     } finally {
       setBusyDriveId(null);
     }
@@ -275,17 +276,20 @@ export default function CommunityDetailPanel({
     }
     const isDeadlinePassed = drive.deadline ? new Date() > new Date(drive.deadline) : false;
     if (isDeadlinePassed || !drive.isOpen) {
-      onShowToast('This recruitment drive is closed and no longer accepting applications.');
+      onShowToast?.('This recruitment drive is closed and no longer accepting applications.');
       return;
     }
-    if (appliedDrives.has(drive._id)) return;
+    const driveKey = String(drive._id);
+    if (appliedDrives.has(driveKey)) return;
     setApplyDialogDrive(drive);
   };
 
-  const handleFullApplicationSuccess = (application, message) => {
-    setAppliedDrives((prev) => new Map(prev).set(applyDialogDrive._id, application?.status || 'pending'));
-    setApplyDialogDrive(null);
-    onShowToast(message || 'Application submitted successfully!');
+  const handleFullApplicationSuccess = (application, message, driveId) => {
+    const id = String(driveId || applyDialogDrive?._id || application?.recruitment || '');
+    if (id) {
+      setAppliedDrives((prev) => new Map(prev).set(id, application?.status || 'pending'));
+    }
+    onShowToast?.(message || 'Application submitted successfully!');
   };
 
   const handleMessageLeader = (leader) => {
@@ -867,7 +871,7 @@ export default function CommunityDetailPanel({
                     ) : (
                       <div className="cdp-drives-list">
                         {drives.map((drive, idx) => {
-                          const applicationStatus = appliedDrives.get(drive._id);
+                          const applicationStatus = appliedDrives.get(String(drive._id)) || appliedDrives.get(drive._id);
                           const applied = Boolean(applicationStatus);
                           const isDeadlinePassed = drive.deadline ? new Date() > new Date(drive.deadline) : false;
                           const isDriveClosed = !drive.isOpen || isDeadlinePassed;
